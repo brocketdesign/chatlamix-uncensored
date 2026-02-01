@@ -550,6 +550,34 @@
                         <textarea class="form-control bg-secondary text-white border-secondary" id="draftCaptionText" rows="8" placeholder="Enter a caption for your post..."></textarea>
                         <small class="text-muted">A caption will be auto-generated if left empty</small>
                     </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Style</label>
+                            <select class="form-select form-select-sm bg-secondary text-white border-secondary" id="draftCaptionStyle">
+                                <option value="engaging" selected>Engaging</option>
+                                <option value="casual">Casual</option>
+                                <option value="professional">Professional</option>
+                                <option value="funny">Funny</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Language</label>
+                            <select class="form-select form-select-sm bg-secondary text-white border-secondary" id="draftCaptionLanguage">
+                                <option value="english">🇬🇧 English</option>
+                                <option value="japanese">🇯🇵 日本語</option>
+                                <option value="french">🇫🇷 Français</option>
+                                <option value="portuguese">🇧🇷 Português</option>
+                                <option value="spanish">🇪🇸 Español</option>
+                                <option value="chinese">🇨🇳 中文</option>
+                                <option value="korean">🇰🇷 한국어</option>
+                                <option value="thai">🇹🇭 ไทย</option>
+                                <option value="german">🇩🇪 Deutsch</option>
+                                <option value="italian">🇮🇹 Italiano</option>
+                                <option value="russian">🇷🇺 Русский</option>
+                                <option value="hindi">🇮🇳 हिन्दी</option>
+                            </select>
+                        </div>
+                    </div>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-outline-info btn-sm" id="generateCaptionBtn" onclick="generateDraftCaption()">
                             <i class="bi bi-magic me-1"></i>Generate Caption with AI

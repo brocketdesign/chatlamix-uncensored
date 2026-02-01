@@ -2656,13 +2656,22 @@ async function generateDraftCaption() {
     captionInput.disabled = true;
     
     try {
+        // Get style and language from dropdowns
+        const captionStyle = document.getElementById('draftCaptionStyle')?.value || 'engaging';
+        const captionLanguage = document.getElementById('draftCaptionLanguage')?.value || 'english';
+        
+        // Get existing caption (if any) to use as a starting point
+        const existingCaption = captionInput.value.trim();
+        
         const response = await fetch('/api/posts/generate-caption', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 prompt: currentDraftData.prompt,
                 platform: 'general',
-                style: 'engaging'
+                style: captionStyle,
+                language: captionLanguage,
+                existingCaption: existingCaption || undefined
             })
         });
         
