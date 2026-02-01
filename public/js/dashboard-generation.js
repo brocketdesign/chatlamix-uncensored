@@ -2518,14 +2518,23 @@ class GenerationDashboard {
     captionInput.disabled = true;
     
     try {
+      // Get style and language from dropdowns
+      const captionStyle = document.getElementById('postCaptionStyle')?.value || 'engaging';
+      const captionLanguage = document.getElementById('postCaptionLanguage')?.value || 'english';
+      
+      // Get existing caption (if any) to use as a starting point
+      const existingCaption = captionInput.value.trim();
+      
       const response = await fetch('/api/posts/generate-caption', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: this._currentPostData.prompt,
           platform: 'general',
-          style: 'engaging',
-          mediaType: this._currentPostData.mediaType
+          style: captionStyle,
+          language: captionLanguage,
+          mediaType: this._currentPostData.mediaType,
+          existingCaption: existingCaption || undefined
         })
       });
       

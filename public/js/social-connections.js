@@ -338,13 +338,6 @@
         // Generate caption button
         $('#generateCaptionBtn').on('click', generateCaption);
         
-        // Caption style buttons
-        $('.caption-style-btn').on('click', function() {
-            $('.caption-style-btn').removeClass('active');
-            $(this).addClass('active');
-            state.captionStyle = $(this).data('style');
-        });
-        
         // Publish button
         $('#publishSnsPostBtn').on('click', publishPost);
         
@@ -507,6 +500,13 @@
             // Determine target platform
             const targetPlatform = state.selectedPlatforms[0] || 'general';
             
+            // Get style and language from dropdowns
+            const captionStyle = $('#captionStyleSelect').val() || 'engaging';
+            const captionLanguage = $('#captionLanguageSelect').val() || 'english';
+            
+            // Get existing caption (if any) to use as a starting point
+            const existingCaption = $('#snsPostCaption').val().trim();
+            
             const response = await fetch('/api/social/generate-caption', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -515,8 +515,9 @@
                     imagePrompt: state.currentImage.prompt,
                     imageUrl: state.currentImage.url,
                     platform: targetPlatform,
-                    style: state.captionStyle,
-                    language: window.lang || 'en'
+                    style: captionStyle,
+                    language: captionLanguage,
+                    existingCaption: existingCaption || undefined
                 })
             });
 
