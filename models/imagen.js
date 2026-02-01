@@ -4,7 +4,7 @@ const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const { createHash } = require('crypto');
 const { saveChatImageToDB, getLanguageName, uploadImage } = require('../models/tool')
-const { getAutoMergeFaceSetting } = require('../models/chat-tool-settings-utils')
+const { getAutoMergeFaceSetting, getPreferredChatLanguage } = require('../models/chat-tool-settings-utils')
 const { awardImageGenerationReward, awardCharacterImageMilestoneReward } = require('./user-points-utils');
 const slugify = require('slugify');
 const { generateImageSlug } = require('./slug-utils');
@@ -364,13 +364,14 @@ async function generateImg({
     // Generate title if not provided
     let newTitle = title;
     if (!title) {
-      const lang = getLanguageName(user?.lang || 'en');
-      const userLangTitle = await generatePromptTitle(requestData.prompt, lang);
-      // Create title object with just the user's language
+      // Get preferred chat language: settings > user profile > interface language > default english
+      const preferredChatLang = await getPreferredChatLanguage(db, userId, chatId) || getLanguageName(user?.lang || 'en') || 'english';
+      const userLangTitle = await generatePromptTitle(requestData.prompt, preferredChatLang);
+      console.log(`\x1b[33m[generateImg] Generated title in preferred language (${preferredChatLang}): ${userLangTitle}\x1b[0m`);
+      // Create title object with the preferred language and english fallback
       newTitle = {
-        en: lang === 'english' ? userLangTitle : '',
-        ja: lang === 'japanese' ? userLangTitle : '',
-        fr: lang === 'french' ? userLangTitle : ''
+        en: preferredChatLang === 'english' ? userLangTitle : '',
+        [preferredChatLang]: userLangTitle // Store title in the preferred language key
       };
     }
 
@@ -378,7 +379,7 @@ async function generateImg({
     let taskSlug = '';
     if (newTitle && typeof newTitle === 'object') {
       // If title is an object with language keys, use the first available title
-      const firstAvailableTitle = newTitle.en || newTitle.ja || newTitle.fr || '';
+      const firstAvailableTitle = newTitle.en || Object.values(newTitle).find(v => !!v) || '';
       taskSlug = slugify(firstAvailableTitle.substring(0, 50), { lower: true, strict: true });
     } else if (newTitle) {
       // If title is a string
