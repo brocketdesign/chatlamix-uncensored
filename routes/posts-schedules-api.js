@@ -37,6 +37,7 @@ const {
 } = require('../models/unified-post-utils');
 
 const { generateCompletion } = require('../models/openai');
+const { getLanguageCode, getLanguageName } = require('../models/language-utils');
 
 const {
   createSingleSchedule,
@@ -250,41 +251,9 @@ Return ONLY the caption text with hashtags, nothing else.`;
         return reply.code(400).send({ error: 'Prompt/image description is required' });
       }
 
-      // Map language names to language codes
-      const languageMap = {
-        'english': 'en',
-        'japanese': 'ja',
-        'french': 'fr',
-        'portuguese': 'pt',
-        'spanish': 'es',
-        'chinese': 'zh',
-        'korean': 'ko',
-        'thai': 'th',
-        'german': 'de',
-        'italian': 'it',
-        'russian': 'ru',
-        'hindi': 'hi'
-      };
-
-      const languageCode = languageMap[language] || language || request.lang || 'en';
-      
-      // Language names for system prompt
-      const languageNames = {
-        'en': 'English',
-        'ja': 'Japanese',
-        'fr': 'French',
-        'pt': 'Portuguese',
-        'es': 'Spanish',
-        'zh': 'Chinese',
-        'ko': 'Korean',
-        'th': 'Thai',
-        'de': 'German',
-        'it': 'Italian',
-        'ru': 'Russian',
-        'hi': 'Hindi'
-      };
-
-      const languageName = languageNames[languageCode] || 'English';
+      // Convert language name to code
+      const languageCode = getLanguageCode(language, request.lang || 'en');
+      const languageName = getLanguageName(languageCode);
       
       // Build system prompt based on whether we have an existing caption
       let systemPrompt;

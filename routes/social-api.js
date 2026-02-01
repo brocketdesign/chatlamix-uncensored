@@ -5,6 +5,7 @@
 
 const { ObjectId } = require('mongodb');
 const { generateCompletion } = require('../models/openai');
+const { getLanguageCode, getLanguageName } = require('../models/language-utils');
 const { createProfilePost } = require('../models/unified-post-utils');
 
 // Late.dev API Configuration
@@ -735,43 +736,11 @@ async function routes(fastify, options) {
         return reply.code(400).send({ error: 'Image prompt or URL is required' });
       }
 
-      // Map language names to language codes
-      const languageMap = {
-        'english': 'en',
-        'japanese': 'ja',
-        'french': 'fr',
-        'portuguese': 'pt',
-        'spanish': 'es',
-        'chinese': 'zh',
-        'korean': 'ko',
-        'thai': 'th',
-        'german': 'de',
-        'italian': 'it',
-        'russian': 'ru',
-        'hindi': 'hi'
-      };
-
-      const languageCode = languageMap[language] || language || request.lang || 'en';
+      // Convert language name to code
+      const languageCode = getLanguageCode(language, request.lang || 'en');
+      const languageName = getLanguageName(languageCode);
       const targetPlatform = platform || 'general';
       const captionStyle = style || 'engaging';
-
-      // Language names for system prompt
-      const languageNames = {
-        'en': 'English',
-        'ja': 'Japanese',
-        'fr': 'French',
-        'pt': 'Portuguese',
-        'es': 'Spanish',
-        'zh': 'Chinese',
-        'ko': 'Korean',
-        'th': 'Thai',
-        'de': 'German',
-        'it': 'Italian',
-        'ru': 'Russian',
-        'hi': 'Hindi'
-      };
-
-      const languageName = languageNames[languageCode] || 'English';
 
       // Build prompt for caption generation
       let systemPrompt;
