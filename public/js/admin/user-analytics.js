@@ -11,14 +11,14 @@ $(document).ready(function() {
     
     $('#refreshData').on('click', function() {
         $(this).html('<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...');
-        loadAnalyticsData();
-        loadBehaviorTrackingData();
+        loadAnalyticsData(true); // Force refresh, bypass cache
+        loadBehaviorTrackingData(true); // Force refresh
     });
 });
 
 /**
  * Debug function to test IP geolocation
- * Retrieves the current user's IP and location data directly from ip-api.com
+ * Retrieves the current user's IP and location data using HTTPS services
  * This shows exactly what data would be saved to the database
  */
 async function debugIPGeolocation() {
@@ -26,25 +26,32 @@ async function debugIPGeolocation() {
     console.log('═══════════════════════════════════════════════════════════════');
     
     try {
-        // Call ip-api.com directly from the browser (same service used by backend)
-        // This will automatically detect the public IP and return geolocation
-        console.log('📡 [IP Geolocation Debug] Calling ip-api.com (same service used by backend)...');
+        // Use ipinfo.io (HTTPS, free tier) - works from HTTPS pages
+        console.log('📡 [IP Geolocation Debug] Calling ipinfo.io (HTTPS service)...');
         
-        const response = await fetch('http://ip-api.com/json/?fields=status,message,country,countryCode,region,regionName,city,lat,lon,timezone,isp,query');
-        const ipApiData = await response.json();
+        const response = await fetch('https://ipinfo.io/json?token=');
+        const ipInfoData = await response.json();
         
-        if (ipApiData.status === 'success') {
+        if (ipInfoData && ipInfoData.ip) {
+            // Parse coordinates (ipinfo returns "lat,lon" as string)
+            let latitude = 0, longitude = 0;
+            if (ipInfoData.loc) {
+                const [lat, lon] = ipInfoData.loc.split(',');
+                latitude = parseFloat(lat) || 0;
+                longitude = parseFloat(lon) || 0;
+            }
+            
             // Format data exactly as backend would save it
             const locationData = {
-                ip: ipApiData.query,
-                country: ipApiData.country,
-                countryCode: ipApiData.countryCode,
-                region: ipApiData.regionName,
-                city: ipApiData.city,
-                latitude: ipApiData.lat,
-                longitude: ipApiData.lon,
-                timezone: ipApiData.timezone,
-                isp: ipApiData.isp,
+                ip: ipInfoData.ip,
+                country: ipInfoData.country || 'Unknown',
+                countryCode: ipInfoData.country || 'XX',
+                region: ipInfoData.region || 'Unknown',
+                city: ipInfoData.city || 'Unknown',
+                latitude: latitude,
+                longitude: longitude,
+                timezone: ipInfoData.timezone || 'UTC',
+                isp: ipInfoData.org || 'Unknown',
                 isLocal: false
             };
             
@@ -56,7 +63,7 @@ async function debugIPGeolocation() {
             console.log('═══════════════════════════════════════════════════════════════');
             
             console.log('');
-            console.log('📦 [IP Geolocation Debug] Raw ip-api.com response:', ipApiData);
+            console.log('📦 [IP Geolocation Debug] Raw ipinfo.io response:', ipInfoData);
             console.log('');
             console.log('💾 [IP Geolocation Debug] Formatted location object (as stored in DB):', locationData);
             
@@ -71,13 +78,14 @@ async function debugIPGeolocation() {
                 const storedLocation = await storedResponse.json();
                 console.log('💾 [IP Geolocation Debug] Currently stored in database:', storedLocation);
                 
-                if (storedLocation.ip === '127.0.0.1' || storedLocation.isLocal) {
-                    console.warn('⚠️ [IP Geolocation Debug] Backend detected localhost (127.0.0.1)');
-                    console.warn('   This is because you are running locally. In production, the server');
-                    console.warn('   would detect your public IP from headers (x-forwarded-for, cf-connecting-ip, etc.)');
-                    console.warn('');
-                    console.warn('   Your ACTUAL public IP is: ' + locationData.ip);
-                    console.warn('   Your ACTUAL location would be: ' + locationData.city + ', ' + locationData.region + ', ' + locationData.country);
+                // Compare with what we detected
+                if (storedLocation.ip !== locationData.ip) {
+                    console.log('');
+                    console.log('📋 [IP Geolocation Debug] COMPARISON:');
+                    console.log('   Server detected IP: ' + storedLocation.ip);
+                    console.log('   Client detected IP: ' + locationData.ip);
+                    console.log('   Server location: ' + (storedLocation.city || 'Unknown') + ', ' + (storedLocation.country || 'Unknown'));
+                    console.log('   Client location: ' + locationData.city + ', ' + locationData.country);
                 }
             } catch (err) {
                 console.warn('⚠️ [IP Geolocation Debug] Could not fetch stored location:', err.message);
@@ -86,12 +94,11 @@ async function debugIPGeolocation() {
             console.log('');
             console.log('═══════════════════════════════════════════════════════════════');
             console.log('✅ [IP Geolocation Debug] Test complete!');
-            console.log('   The ip-api.com service is working correctly.');
-            console.log('   In production, users will have their location tracked properly.');
+            console.log('   IP geolocation service is working correctly.');
             console.log('═══════════════════════════════════════════════════════════════');
             
         } else {
-            console.error('❌ [IP Geolocation Debug] ip-api.com returned error:', ipApiData.message);
+            console.error('❌ [IP Geolocation Debug] ipinfo.io returned error or empty data:', ipInfoData);
         }
         
     } catch (error) {
@@ -100,9 +107,12 @@ async function debugIPGeolocation() {
 }
 
 // Load all analytics data
-async function loadAnalyticsData() {
+async function loadAnalyticsData(forceRefresh = false) {
     try {
-        const response = await fetch('/admin/api/analytics/dashboard');
+        const url = forceRefresh 
+            ? '/admin/api/analytics/dashboard?refresh=true' 
+            : '/admin/api/analytics/dashboard';
+        const response = await fetch(url);
         const data = await response.json();
         
         if (data.success) {
@@ -437,10 +447,11 @@ function animateValue(id, start, end, duration, decimals = 0) {
 // ============================================
 
 // Load behavior tracking data
-async function loadBehaviorTrackingData() {
+async function loadBehaviorTrackingData(forceRefresh = false) {
     try {
         // Load aggregate stats
-        const statsResponse = await fetch('/api/tracking/admin/stats');
+        const refreshParam = forceRefresh ? '?refresh=true' : '';
+        const statsResponse = await fetch('/api/tracking/admin/stats' + refreshParam);
         const statsData = await statsResponse.json();
         
         if (statsData) {

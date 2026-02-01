@@ -32,6 +32,7 @@ async function addAdminEmails(fastify, emails) {
     const result = await usersCollection.updateMany({ email: { $in: emails } }, { $set: { role: 'admin' } });
     return result;
 }
+
 // Configure Supabase Storage
 const { createClient } = require('@supabase/supabase-js');
 const supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY
@@ -865,6 +866,7 @@ module.exports = {
     saveChatImageToDB,
     saveUserChatBackgroundImageToDB,
     addAdminEmails,
+    adminEmails,
     getApiUrl,
     generateSeoMetadata,
     // Thumbnail functions

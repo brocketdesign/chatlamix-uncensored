@@ -214,20 +214,26 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
   fastify.get('/admin/api/analytics/dashboard', async (request, reply) => {
     try {
       const db = fastify.mongo.db;
+      const forceRefresh = request.query.refresh === 'true';
       
-      // Fetch analytics data from cache collection
+      // Fetch analytics data from cache collection (unless force refresh)
       const analyticsCache = db.collection('analytics_cache');
-      const cachedData = await analyticsCache.findOne({ type: 'dashboard' });
       
-      if (cachedData && cachedData.data) {
-        return reply.send({
-          success: true,
-          ...cachedData.data,
-          lastUpdated: cachedData.updatedAt
-        });
+      if (!forceRefresh) {
+        const cachedData = await analyticsCache.findOne({ type: 'dashboard' });
+        
+        if (cachedData && cachedData.data) {
+          return reply.send({
+            success: true,
+            ...cachedData.data,
+            lastUpdated: cachedData.updatedAt
+          });
+        }
       }
       
-      // If no cache, calculate on the fly (fallback)
+      console.log('[Dashboard Analytics] Calculating fresh data (forceRefresh:', forceRefresh, ')');
+      
+      // Calculate fresh data
       const [stats, userGrowth, genderDist, nationalityDist, contentTrends] = await Promise.all([
         calculateDashboardStats(db),
         calculateUserGrowth(db),
@@ -245,6 +251,19 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
         contentTrends,
         lastUpdated: new Date().toISOString()
       };
+      
+      // Update cache with fresh data
+      await analyticsCache.updateOne(
+        { type: 'dashboard' },
+        { 
+          $set: { 
+            type: 'dashboard',
+            data: responseData,
+            updatedAt: new Date().toISOString()
+          } 
+        },
+        { upsert: true }
+      );
       
       return reply.send(responseData);
     } catch (err) {
@@ -397,10 +416,16 @@ async function calculateNationalityDistribution(db) {
 async function calculateContentTrends(db) {
   const galleryCollection = db.collection('gallery');
   const userChatCollection = db.collection('userChat');
+  const usersCollection = db.collection('users');
   
   const labels = [];
   const images = [];
   const messages = [];
+  
+  // Get admin user IDs to exclude from stats
+  const adminUsers = await usersCollection.find({ role: 'admin' }).project({ _id: 1 }).toArray();
+  const adminUserIds = adminUsers.map(u => u._id);
+  console.log(`[calculateContentTrends] Excluding ${adminUserIds.length} admin user(s) from stats`);
   
   // First, let's check what fields exist in messages
   const sampleChat = await userChatCollection.findOne({ 'messages.0': { $exists: true } });
@@ -417,8 +442,9 @@ async function calculateContentTrends(db) {
     const nextDate = new Date(date);
     nextDate.setDate(nextDate.getDate() + 1);
     
-    // Count images from gallery collection
+    // Count images from gallery collection (excluding admin users)
     const imageCount = await galleryCollection.aggregate([
+      { $match: { userId: { $nin: adminUserIds } } }, // Exclude admin users
       { $unwind: '$images' },
       { 
         $match: { 
@@ -428,11 +454,12 @@ async function calculateContentTrends(db) {
       { $count: 'total' }
     ]).toArray();
     
-    // Count messages - try multiple approaches
+    // Count messages - try multiple approaches (excluding admin users)
     let messageCountValue = 0;
     
     // Try with createdAt field first (for new messages)
     const messageCountWithCreatedAt = await userChatCollection.aggregate([
+      { $match: { userId: { $nin: adminUserIds } } }, // Exclude admin users
       { $unwind: '$messages' },
       { 
         $match: { 

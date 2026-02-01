@@ -84,6 +84,7 @@ fastify.ready(async () => {
   // Import checkExpiredDayPasses from plan.js routes
   const planRoutes = require('./routes/plan');
   initializeDayPassExpirationCheck(fastify, planRoutes.checkExpiredDayPasses);
+
 });
 
 // Every 3 cron jobs for cleanup and maintenance
@@ -99,7 +100,6 @@ cron.schedule('0 0 * * *', async () => {
     deleteTemporaryChats(db);
     deleteOldTasks(db);
     updateCounter(db, 0);
-    
 
   } catch (err) {
     console.log('Failed to execute cron tasks or access database:', err);
