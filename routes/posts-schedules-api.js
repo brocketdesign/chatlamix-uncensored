@@ -244,16 +244,70 @@ Return ONLY the caption text with hashtags, nothing else.`;
         return reply.code(401).send({ error: 'Authentication required' });
       }
 
-      const { prompt, platform = 'general', style = 'engaging', language } = request.body;
+      const { prompt, platform = 'general', style = 'engaging', language, existingCaption } = request.body;
 
       if (!prompt) {
         return reply.code(400).send({ error: 'Prompt/image description is required' });
       }
 
-      const lang = language || request.lang || 'en';
+      // Map language names to language codes
+      const languageMap = {
+        'english': 'en',
+        'japanese': 'ja',
+        'french': 'fr',
+        'portuguese': 'pt',
+        'spanish': 'es',
+        'chinese': 'zh',
+        'korean': 'ko',
+        'thai': 'th',
+        'german': 'de',
+        'italian': 'it',
+        'russian': 'ru',
+        'hindi': 'hi'
+      };
+
+      const languageCode = languageMap[language] || language || request.lang || 'en';
       
-      const systemPrompt = `You are a social media expert creating captions for ${platform === 'instagram' ? 'Instagram' : platform === 'twitter' ? 'X/Twitter' : 'social media'}.
-Create a ${style} caption in ${lang === 'ja' ? 'Japanese' : lang === 'fr' ? 'French' : 'English'}.
+      // Language names for system prompt
+      const languageNames = {
+        'en': 'English',
+        'ja': 'Japanese',
+        'fr': 'French',
+        'pt': 'Portuguese',
+        'es': 'Spanish',
+        'zh': 'Chinese',
+        'ko': 'Korean',
+        'th': 'Thai',
+        'de': 'German',
+        'it': 'Italian',
+        'ru': 'Russian',
+        'hi': 'Hindi'
+      };
+
+      const languageName = languageNames[languageCode] || 'English';
+      
+      // Build system prompt based on whether we have an existing caption
+      let systemPrompt;
+      if (existingCaption) {
+        systemPrompt = `You are a social media expert improving captions for ${platform === 'instagram' ? 'Instagram' : platform === 'twitter' ? 'X/Twitter' : 'social media'}.
+Enhance the existing caption to be more ${style} while keeping it in ${languageName}.
+
+Guidelines:
+- Keep the core message and meaning from the existing caption
+- Make it more ${style} in tone and style
+- Keep it concise and engaging
+- Include 3-5 relevant hashtags at the end
+- Match the tone to the platform${platform === 'instagram' ? ' (visual, aesthetic, longer captions OK)' : platform === 'twitter' ? ' (witty, conversational, under 280 chars)' : ''}
+- Make it shareable
+
+Existing caption: ${existingCaption}
+
+Image context: ${prompt}
+
+Return ONLY the improved caption text with hashtags, nothing else.`;
+      } else {
+        systemPrompt = `You are a social media expert creating captions for ${platform === 'instagram' ? 'Instagram' : platform === 'twitter' ? 'X/Twitter' : 'social media'}.
+Create a ${style} caption in ${languageName}.
 
 Guidelines:
 - Keep it concise and engaging
@@ -265,19 +319,20 @@ Guidelines:
 Image context: ${prompt}
 
 Return ONLY the caption text with hashtags, nothing else.`;
+      }
 
       const messages = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: 'Generate a social media caption for this image.' }
+        { role: 'user', content: existingCaption ? 'Improve this caption.' : 'Generate a social media caption for this image.' }
       ];
 
-      const caption = await generateCompletion(messages, 200, 'gpt-4o-mini', lang);
+      const caption = await generateCompletion(messages, 200, 'gpt-4o-mini', languageCode);
 
       return reply.send({
         success: true,
         caption: caption?.trim() || '',
         platform,
-        language: lang
+        language: languageCode
       });
     } catch (error) {
       console.error('[Posts API] Caption generation error:', error);

@@ -729,19 +729,73 @@ async function routes(fastify, options) {
         return reply.code(401).send({ error: 'Authentication required' });
       }
 
-      const { imagePrompt, imageUrl, platform, style, language } = request.body;
+      const { imagePrompt, imageUrl, platform, style, language, existingCaption } = request.body;
 
       if (!imagePrompt && !imageUrl) {
         return reply.code(400).send({ error: 'Image prompt or URL is required' });
       }
 
-      const lang = language || request.lang || 'en';
+      // Map language names to language codes
+      const languageMap = {
+        'english': 'en',
+        'japanese': 'ja',
+        'french': 'fr',
+        'portuguese': 'pt',
+        'spanish': 'es',
+        'chinese': 'zh',
+        'korean': 'ko',
+        'thai': 'th',
+        'german': 'de',
+        'italian': 'it',
+        'russian': 'ru',
+        'hindi': 'hi'
+      };
+
+      const languageCode = languageMap[language] || language || request.lang || 'en';
       const targetPlatform = platform || 'general';
       const captionStyle = style || 'engaging';
 
+      // Language names for system prompt
+      const languageNames = {
+        'en': 'English',
+        'ja': 'Japanese',
+        'fr': 'French',
+        'pt': 'Portuguese',
+        'es': 'Spanish',
+        'zh': 'Chinese',
+        'ko': 'Korean',
+        'th': 'Thai',
+        'de': 'German',
+        'it': 'Italian',
+        'ru': 'Russian',
+        'hi': 'Hindi'
+      };
+
+      const languageName = languageNames[languageCode] || 'English';
+
       // Build prompt for caption generation
-      const systemPrompt = `You are a social media expert creating captions for ${targetPlatform}. 
-Create a ${captionStyle} caption in ${lang === 'ja' ? 'Japanese' : lang === 'fr' ? 'French' : 'English'}.
+      let systemPrompt;
+      if (existingCaption) {
+        systemPrompt = `You are a social media expert improving captions for ${targetPlatform}. 
+Enhance the existing caption to be more ${captionStyle} while keeping it in ${languageName}.
+
+Guidelines:
+- Keep the core message and meaning from the existing caption
+- Make it more ${captionStyle} in tone and style
+- Keep it concise and engaging
+- Include 3-5 relevant hashtags at the end
+- Match the tone to the platform (${targetPlatform === 'instagram' ? 'visual, aesthetic' : 'conversational, witty'})
+- If the image seems to be AI-generated art, subtly reference that
+- Make it shareable and engaging
+
+Existing caption: ${existingCaption}
+
+Image context: ${imagePrompt || 'An interesting AI-generated image'}
+
+Return ONLY the improved caption text with hashtags, nothing else.`;
+      } else {
+        systemPrompt = `You are a social media expert creating captions for ${targetPlatform}. 
+Create a ${captionStyle} caption in ${languageName}.
 
 Guidelines:
 - Keep it concise and engaging
@@ -753,21 +807,22 @@ Guidelines:
 Image context: ${imagePrompt || 'An interesting AI-generated image'}
 
 Return ONLY the caption text with hashtags, nothing else.`;
+      }
 
       const messages = [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: 'Generate a social media caption for this image.' }
+        { role: 'user', content: existingCaption ? 'Improve this caption.' : 'Generate a social media caption for this image.' }
       ];
 
-      console.log(`[Social API] Generating caption for ${targetPlatform} in ${lang}`);
+      console.log(`[Social API] Generating caption for ${targetPlatform} in ${languageName} (${languageCode})`);
 
-      const caption = await generateCompletion(messages, 200, 'gpt-4o-mini', lang);
+      const caption = await generateCompletion(messages, 200, 'gpt-4o-mini', languageCode);
 
       return reply.send({
         success: true,
         caption: caption?.trim() || '',
         platform: targetPlatform,
-        language: lang
+        language: languageCode
       });
     } catch (error) {
       console.error(`[Social API] Caption generation error:`, error);
