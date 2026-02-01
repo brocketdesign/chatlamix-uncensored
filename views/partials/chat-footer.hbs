@@ -234,11 +234,12 @@
                 <!-- Prompts will be dynamically generated here -->
                 {{#each promptData}}
                     <div 
-                        class="prompt-card nsfw-{{eq nsfw 'on'}} col-6 col-sm-4 col-md-3 border-0 shadow-0 mb-3 position-relative d-flex justify-content-center align-items-center"
+                        class="prompt-card nsfw-{{eq nsfw 'on'}} {{#if (eq nsfw 'on')}}nsfw-blur-non-premium{{/if}} col-6 col-sm-4 col-md-3 border-0 shadow-0 mb-3 position-relative d-flex justify-content-center align-items-center"
                         data-id="{{_id}}" 
                         data-nsfw="{{eq nsfw 'on'}}" 
                         data-cost="{{cost}}"
-                        style="cursor:pointer;">
+                        style="cursor:pointer;"
+                        onclick="handlePromptCardClick(this, '{{eq nsfw 'on'}}')">
                         <div class="modern-prompt-container position-relative overflow-hidden">
                             <div class="prompt-image-wrapper">
                                 <img 
@@ -263,6 +264,14 @@
                                     {{/if}}
                                 </div>
                             </div>
+                            
+                            <!-- Premium lock overlay for NSFW non-premium -->
+                            {{#if (eq nsfw 'on')}}
+                            <div class="nsfw-premium-lock-overlay">
+                                <i class="bi bi-lock-fill"></i>
+                                <span>Premium</span>
+                            </div>
+                            {{/if}}
                             
                             <div class="prompt-selection-indicator">
                                 <i class="bi bi-check-circle-fill"></i>
@@ -990,6 +999,118 @@
         </div>
     </div>
 </div>
+
+<style>
+/* NSFW blur effect for non-premium users */
+.nsfw-blur-non-premium .prompt-image {
+    filter: blur(15px);
+    transition: filter 0.3s ease;
+}
+
+.nsfw-blur-non-premium .nsfw-premium-lock-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    z-index: 5;
+    gap: 5px;
+}
+
+.nsfw-blur-non-premium .nsfw-premium-lock-overlay i {
+    font-size: 1.5rem;
+}
+
+/* Hide lock overlay for premium users or non-NSFW cards */
+.prompt-card:not(.nsfw-blur-non-premium) .nsfw-premium-lock-overlay {
+    display: none;
+}
+
+/* Premium users - no blur */
+body.is-premium .nsfw-blur-non-premium .prompt-image {
+    filter: none;
+}
+
+body.is-premium .nsfw-blur-non-premium .nsfw-premium-lock-overlay {
+    display: none;
+}
+</style>
+
+<script>
+// Handle prompt card click - redirect to plan page if NSFW and non-premium
+function handlePromptCardClick(element, isNsfw) {
+    const subscriptionStatus = window.user ? window.user.subscriptionStatus === 'active' : false;
+    const isTemporary = window.user ? !!window.user.isTemporary : true;
+    
+    if (isNsfw === 'true' && !subscriptionStatus) {
+        // User is not premium and trying to access NSFW content
+        // Mark the card to prevent customPromptModal from opening
+        $(element).data('blocked', true);
+        
+        if (isTemporary) {
+            if (typeof openLoginForm === 'function') {
+                openLoginForm();
+            } else {
+                window.location.href = '/login';
+            }
+        } else if (typeof loadPlanPage === 'function') {
+            loadPlanPage();
+        }
+
+        return false;
+    }
+    
+    // Premium user or SFW content - allow normal behavior
+    $(element).data('blocked', false);
+    return true;
+}
+
+// Override prompt card click behavior to check for blocked NSFW cards
+$(document).ready(function() {
+    // Intercept prompt-card clicks before the PromptManager handles them
+    $(document).on('click', '.prompt-card.nsfw-blur-non-premium', function(e) {
+        const subscriptionStatus = window.user ? window.user.subscriptionStatus === 'active' : false;
+        const isTemporary = window.user ? !!window.user.isTemporary : true;
+        
+        // Block the event completely for non-premium users on NSFW cards
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        
+        if (isTemporary) {
+            if (typeof openLoginForm === 'function') {
+                openLoginForm();
+            } else {
+                window.location.href = '/login';
+            }
+        } else if (typeof loadPlanPage === 'function') {
+            loadPlanPage();
+        }
+        
+        return false;
+    });
+});
+
+// On page load, remove blur class for premium users
+document.addEventListener('DOMContentLoaded', function() {
+    const subscriptionStatus = window.user ? window.user.subscriptionStatus === 'active' : false;
+
+    if (subscriptionStatus) {
+        // Remove blur class for premium users
+        document.querySelectorAll('.nsfw-blur-non-premium').forEach(function(card) {
+            card.classList.remove('nsfw-blur-non-premium');
+        });
+    }
+});
+</script>
 
 <script>
 // Ensure toolbar scrolling works properly on mobile

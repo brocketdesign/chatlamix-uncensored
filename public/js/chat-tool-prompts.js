@@ -94,7 +94,7 @@ class PromptManager {
             const cancelButtonText = translations.customPromptModal?.cancelButton || "Cancel";
             const enhanceButtonText = translations.customPromptModal?.enhanceButton || "✨ Enhance with AI";
             const styleTags = translations.customPromptModal?.styleTags || "Quick Style Tags:";
-
+            
             const modalHtml = `
                 <div class="modal fade" id="customPromptModal" tabindex="-1" aria-labelledby="customPromptModalLabel" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered">
