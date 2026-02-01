@@ -542,6 +542,13 @@ async function saveVideoToDB({
   const db = fastify.mongo.db;
   const videosCollection = db.collection('videos');
 
+  console.log(`\n🎬🎬🎬 [saveVideoToDB] ═══════════════════════════════════════════════════════════════════════════`);
+  console.log(`📹 [saveVideoToDB] Starting save for:`);
+  console.log(`   taskId: ${taskId}`);
+  console.log(`   userChatId: ${userChatId}`);
+  console.log(`   imageId: ${imageId}`);
+  console.log(`   videoUrl: ${videoUrl?.substring(0, 60)}...`);
+
   // Check multiple conditions to prevent duplicates
   const existingVideo = await videosCollection.findOne({
     $or: [
@@ -557,6 +564,7 @@ async function saveVideoToDB({
   console.log(`[saveVideoToDB] Checking for existing video with taskId ${taskId} or matching user/image/url`);
   if (existingVideo) {
     console.log(`[saveVideoToDB] Video already exists with ID ${existingVideo._id}, returning existing video`);
+    console.log(`🎬🎬🎬 [saveVideoToDB] END (exists) ═══════════════════════════════════════════════════════════════\n`);
     return existingVideo;
   }
 
@@ -580,6 +588,17 @@ async function saveVideoToDB({
   // Add video message to userChat with atomic duplicate check
   const userDataCollection = db.collection('userChat');
   
+  // Get current message count BEFORE operation
+  const chatDocBefore = await userDataCollection.findOne({ _id: new ObjectId(userChatId) });
+  const messageCountBefore = chatDocBefore?.messages?.length || 0;
+  const existingVideoCount = chatDocBefore?.messages?.filter(m => m.videoId === result.insertedId.toString()).length || 0;
+  
+  console.log(`📊 [saveVideoToDB] BEFORE - Total messages: ${messageCountBefore}, Existing with this videoId: ${existingVideoCount}`);
+  
+  // Generate unique debug ID to trace message source
+  const debugId = `video_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  console.log(`🆔 [saveVideoToDB] Creating message with debugId: ${debugId}`);
+  
   const videoMessage = { 
     role: "assistant", 
     content: prompt, 
@@ -589,12 +608,15 @@ async function saveVideoToDB({
     videoUrl, 
     duration, 
     prompt,
-    createdAt: new Date() 
+    createdAt: new Date(),
+    _debugSource: 'saveVideoToDB',
+    _debugId: debugId,
   };
   
   // CRITICAL FIX: Use atomic operation to check and insert in one step
   // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
   // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
+  console.log(`🔒 [saveVideoToDB] Executing atomic updateOne with $not+$elemMatch filter...`);
   const updateResult = await userDataCollection.updateOne(
     { 
       userId: new ObjectId(userId), 
@@ -607,11 +629,18 @@ async function saveVideoToDB({
     }
   );
   
+  console.log(`🔒 [saveVideoToDB] UpdateOne result: matchedCount=${updateResult.matchedCount}, modifiedCount=${updateResult.modifiedCount}`);
+  
   if (updateResult.modifiedCount > 0) {
-    console.log(`[saveVideoToDB] Video message added to userChat for videoId ${result.insertedId}`);
+    // Verify message count after
+    const chatDocAfter = await userDataCollection.findOne({ _id: new ObjectId(userChatId) });
+    const messageCountAfter = chatDocAfter?.messages?.length || 0;
+    console.log(`✅ [saveVideoToDB] SUCCESS! Video message added. New total messages: ${messageCountAfter} (+${messageCountAfter - messageCountBefore})`);
   } else {
-    console.log(`[saveVideoToDB] Video message already exists or chat not found for videoId ${result.insertedId}`);
+    console.log(`⚠️  [saveVideoToDB] DUPLICATE PREVENTED - Video message already exists or chat not found for videoId ${result.insertedId}`);
   }
+
+  console.log(`🎬🎬🎬 [saveVideoToDB] END ═══════════════════════════════════════════════════════════════════════════\n`);
 
   // Update the original image message with video generation action
   if (userChatId) {

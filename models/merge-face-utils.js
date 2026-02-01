@@ -496,7 +496,11 @@ async function saveMergedFaceToDB({
  */
 async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fastify) {
   const callId = require('crypto').randomUUID();
-  console.log(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - Starting add message for mergeId: ${mergeId}, userChatId: ${userChatId}`);
+  console.log(`\n🟣🟣🟣 [addMergeFaceMessageToChat] ═══════════════════════════════════════════════════════════`);
+  console.log(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId}`);
+  console.log(`   mergeId: ${mergeId}`);
+  console.log(`   userChatId: ${userChatId}`);
+  console.log(`   mergedImageUrl: ${mergedImageUrl?.substring(0, 60)}...`);
 
   try {
     const db = fastify.mongo.db;
@@ -505,8 +509,20 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
     // Validate that we have all required data
     if (!mergedImageUrl || !mergeId) {
       console.error(`[addMergeFaceMessageToChat] Call ID: ${callId} - Invalid data: mergedImageUrl=${mergedImageUrl}, mergeId=${mergeId}`);
+      console.log(`🟣🟣🟣 [addMergeFaceMessageToChat] END (invalid data) ═════════════════════════════════════════\n`);
       return;
     }
+
+    // Get current message count BEFORE operation
+    const chatDocBefore = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+    const messageCountBefore = chatDocBefore?.messages?.length || 0;
+    const mergeCountBefore = chatDocBefore?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+    
+    console.log(`📊 [addMergeFaceMessageToChat] BEFORE - Total messages: ${messageCountBefore}, Messages with this mergeId: ${mergeCountBefore}`);
+
+    // Generate unique debug ID to trace message source
+    const debugId = `merge_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    console.log(`🆔 [addMergeFaceMessageToChat] Creating message with debugId: ${debugId}`);
 
     // Create assistant message for the merged face with unique timestamp
     const assistantMessage = {
@@ -519,12 +535,27 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
       imageUrl: mergedImageUrl,
       hidden: true,
       type: 'mergeFace',
+      _debugSource: 'addMergeFaceMessageToChat',
+      _debugId: debugId,
     };
 
     // CRITICAL FIX: Use atomic operation to check and insert in one step
     // This prevents race conditions where two processes both check, find nothing, and both insert
     // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
     // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
+    console.log(`🔒 [addMergeFaceMessageToChat] Executing atomic updateOne with $not+$elemMatch filter...`);
+    console.log(`🔒 [addMergeFaceMessageToChat] Filter: { _id: "${userChatId}", messages: { $not: { $elemMatch: { mergeId: "${mergeId}" } } } }`);
+    
+    // Double-check: verify the current state BEFORE the atomic operation
+    const preCheckDoc = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+    const preCheckCount = preCheckDoc?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+    console.log(`🔍 [addMergeFaceMessageToChat] PRE-CHECK: Found ${preCheckCount} existing messages with mergeId=${mergeId}`);
+    if (preCheckCount > 0) {
+      console.warn(`⚠️  [addMergeFaceMessageToChat] PRE-CHECK DUPLICATE DETECTED! Will skip atomic operation.`);
+      console.log(`🟣🟣🟣 [addMergeFaceMessageToChat] END (pre-check duplicate) ═════════════════════════════════\n`);
+      return;
+    }
+    
     const updateResult = await collectionUserChat.updateOne(
       { 
         _id: new ObjectId(userChatId),
@@ -536,17 +567,45 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
       }
     );
 
+    console.log(`🔒 [addMergeFaceMessageToChat] UpdateOne result: matchedCount=${updateResult.matchedCount}, modifiedCount=${updateResult.modifiedCount}`);
+
     if (updateResult.matchedCount === 0) {
-      console.log(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - Message with mergeId ${mergeId} already exists, skipping duplicate`);
+      console.log(`🧬 [addMergeFaceMessageToChat] ⚠️  DUPLICATE PREVENTED - Message with mergeId ${mergeId} already exists`);
+      
+      // Verify the duplicate exists
+      const verifyDoc = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+      const existingCount = verifyDoc?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+      console.log(`🧬 [addMergeFaceMessageToChat] Verified: Found ${existingCount} messages with mergeId=${mergeId}`);
+      console.log(`🟣🟣🟣 [addMergeFaceMessageToChat] END (duplicate prevented) ═════════════════════════════════\n`);
       return;
     }
 
     if (updateResult.modifiedCount === 0) {
       console.warn(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - UserChat not found or update failed: ${userChatId}`);
+      console.log(`🟣🟣🟣 [addMergeFaceMessageToChat] END (update failed) ═════════════════════════════════════\n`);
       return;
     }
 
-    console.log(`[addMergeFaceMessageToChat] Call ID: ${callId} - Message added successfully`);
+    // Get message count AFTER operation
+    const chatDocAfter = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+    const messageCountAfter = chatDocAfter?.messages?.length || 0;
+    const mergeCountAfter = chatDocAfter?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+    
+    // POST-CHECK: If we have more than 1 message with this mergeId, we have a race condition
+    if (mergeCountAfter > 1) {
+      console.error(`🚨🚨🚨 [addMergeFaceMessageToChat] CRITICAL: POST-CHECK FOUND ${mergeCountAfter} DUPLICATES! Race condition detected!`);
+      console.error(`🚨 This means multiple processes inserted despite atomic filter. Check for multiple entry points.`);
+      
+      // Log the duplicates for debugging
+      const duplicates = chatDocAfter?.messages?.filter(m => m.mergeId === mergeId);
+      duplicates?.forEach((dup, i) => {
+        console.error(`🚨 Duplicate ${i + 1}: _debugSource=${dup._debugSource || 'NONE'}, _debugId=${dup._debugId || 'NONE'}, createdAt=${dup.createdAt}`);
+      });
+    }
+    
+    console.log(`✅ [addMergeFaceMessageToChat] SUCCESS! Message added.`);
+    console.log(`📊 [addMergeFaceMessageToChat] AFTER - Total messages: ${messageCountAfter} (+${messageCountAfter - messageCountBefore}), Messages with this mergeId: ${mergeCountAfter}`);
+    console.log(`🟣🟣🟣 [addMergeFaceMessageToChat] END (success) ═══════════════════════════════════════════════\n`);
   } catch (error) {
     console.error(`[addMergeFaceMessageToChat] Call ID: ${callId} - Error: ${error.message}`);
   }

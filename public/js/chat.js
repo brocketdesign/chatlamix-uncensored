@@ -38,6 +38,44 @@ function attachImageToolsEventListeners(swiperElement) {
 
 let language
 
+/**
+ * Get user's preferred chat language
+ * Priority: userChat.preferredChatLanguage > chatToolSettings > user.preferredChatLanguage > user.lang
+ * @param {Object} userChatData - Optional userChat object with preferredChatLanguage field
+ * @returns {string} Language name (e.g., 'english', 'japanese', 'french')
+ */
+function getPreferredLanguage(userChatData = null) {
+    // First priority: userChat's preferredChatLanguage (stored per chat session)
+    if (userChatData?.preferredChatLanguage) {
+        return getLanguageName(userChatData.preferredChatLanguage) || userChatData.preferredChatLanguage;
+    }
+    
+    // Second priority: chatToolSettings (if loaded)
+    const settingsLang = window.chatToolSettings?.getPreferredChatLanguage?.();
+    if (settingsLang) {
+        return getLanguageName(settingsLang) || settingsLang;
+    }
+    
+    // Third priority: user's preferredChatLanguage (set during onboarding or settings)
+    if (window.user?.preferredChatLanguage) {
+        return getLanguageName(window.user.preferredChatLanguage) || window.user.preferredChatLanguage;
+    }
+    
+    // Fall back to user.lang, then global lang, then default to 'ja'
+    return getLanguageName(window.user?.lang) || getLanguageName(window.lang) || getLanguageName('ja');
+}
+
+// Expose getPreferredLanguage globally so it can be called after settings updates
+window.getPreferredLanguage = getPreferredLanguage;
+
+// Listen for settings updates to refresh the language
+document.addEventListener('chatSettingsUpdated', function(e) {
+    if (e.detail?.preferredChatLanguage) {
+        language = getPreferredLanguage();
+        $('#language').val(language);
+    }
+});
+
 function getIdFromUrl(url) {
     if(!url){return null}
     var regex = /\/chat\/([a-zA-Z0-9]+)/;
@@ -102,7 +140,7 @@ $(document).ready(async function() {
     let feedback = false
     let isTemporary = !!user.isTemporary
 
-    language = getLanguageName(user.lang) || getLanguageName(lang) || getLanguageName('ja');
+    language = getPreferredLanguage();
     $('#language').val(language)
 
     $('body').attr('data-temporary-user',isTemporary)
@@ -506,6 +544,7 @@ $(document).ready(async function() {
 
     async function handleChatSuccess(data, fetch_reset, fetch_userId, userChatId) {
         logChatDataFetch(data);
+        
         $(document).find(`.chat-list.item[data-id="${chatId}"]`).addClass('active').siblings().removeClass('active');
         // Handle fetch_reset and isNew logic robustly
 
@@ -522,6 +561,12 @@ $(document).ready(async function() {
         if (!data.chat) {
             showDiscovery();
             return;
+        }
+
+        // Update language from userChat if available
+        if (data.userChat?.preferredChatLanguage) {
+            language = getPreferredLanguage(data.userChat);
+            $('#language').val(language);
         }
 
         setupChatData(data.chat);
@@ -792,6 +837,7 @@ function setupChatInterface(chat, character, userChat, isNew) {
     function displayImageThumb(imageId, imageUrl, origineUserChatId = null, shouldBlur = false){
         // Safeguard: Check if this image is already in the thumb nav gallery
         if (thumbNavGalleryImageIds.has(imageId)) {
+            console.log(`[displayImageThumb] SKIPPED - imageId ${imageId} already in thumbNavGalleryImageIds`);
             return;
         }
 
@@ -802,9 +848,12 @@ function setupChatInterface(chat, character, userChat, isNew) {
 
         // Check if element already exists in DOM (additional safeguard)
         if ($(`#chat-thumbnail-gallery [data-id="${imageId}"]`).length > 0) {
+            console.log(`[displayImageThumb] SKIPPED - imageId ${imageId} already exists in DOM`);
             thumbNavGalleryImageIds.add(imageId);
             return;
         }
+
+        console.log(`[displayImageThumb] ADDING thumbnail for imageId: ${imageId}`);
 
         // Create the card element
         var card = $(`
@@ -1021,6 +1070,11 @@ function setupChatInterface(chat, character, userChat, isNew) {
 
     async function displayChat(userChat, persona, callback) {
         
+        console.log(`\n🔵🔵🔵 [displayChat] ═══════════════════════════════════════════════════════════════════════════`);
+        console.log(`📊 [displayChat] Starting to display chat`);
+        console.log(`   userChatId: ${userChat._id}`);
+        console.log(`   Total messages from server: ${userChat.messages?.length || 0}`);
+        
         $('body').css('overflow', 'hidden');
         $('#stability-gen-button').show();
         $('.auto-gen').each(function() { $(this).show(); });
@@ -1041,6 +1095,72 @@ function setupChatInterface(chat, character, userChat, isNew) {
         }
 
         let userChatMessages = userChat.messages || [];
+        
+        // DEBUG: Log message type breakdown
+        const messageTypes = {};
+        userChatMessages.forEach(msg => {
+            const type = msg?.type || msg?.role || 'unknown';
+            messageTypes[type] = (messageTypes[type] || 0) + 1;
+        });
+        console.log(`📊 [displayChat] Message type breakdown:`, messageTypes);
+        
+        // DEBUG: Count duplicates by mergeId and imageId
+        const mergeIdCounts = {};
+        const imageIdCounts = {};
+        const batchIdCounts = {};
+        userChatMessages.forEach(msg => {
+            if (msg?.mergeId) {
+                mergeIdCounts[msg.mergeId] = (mergeIdCounts[msg.mergeId] || 0) + 1;
+            }
+            if (msg?.imageId) {
+                imageIdCounts[msg.imageId] = (imageIdCounts[msg.imageId] || 0) + 1;
+            }
+            if (msg?.batchId && msg?.batchIndex !== undefined) {
+                const key = `${msg.batchId}:${msg.batchIndex}`;
+                batchIdCounts[key] = (batchIdCounts[key] || 0) + 1;
+            }
+        });
+        
+        // Find duplicates (count > 1)
+        const duplicateMergeIds = Object.entries(mergeIdCounts).filter(([k, v]) => v > 1);
+        const duplicateImageIds = Object.entries(imageIdCounts).filter(([k, v]) => v > 1);
+        const duplicateBatchIds = Object.entries(batchIdCounts).filter(([k, v]) => v > 1);
+        
+        if (duplicateMergeIds.length > 0) {
+            console.warn(`⚠️  [displayChat] DUPLICATE MERGE IDS FOUND:`, duplicateMergeIds);
+            // Log _debugSource for duplicates
+            duplicateMergeIds.forEach(([mergeId]) => {
+                const dupes = userChatMessages.filter(m => m?.mergeId === mergeId);
+                console.warn(`⚠️  [displayChat] MergeId ${mergeId} duplicate details:`, dupes.map((d, i) => ({
+                    index: userChatMessages.indexOf(d),
+                    _debugSource: d._debugSource || 'NO_SOURCE',
+                    _debugId: d._debugId || 'NO_ID',
+                    createdAt: d.createdAt,
+                    imageId: d.imageId
+                })));
+            });
+        }
+        if (duplicateImageIds.length > 0) {
+            console.warn(`⚠️  [displayChat] DUPLICATE IMAGE IDS FOUND:`, duplicateImageIds);
+            // Log _debugSource for duplicates
+            duplicateImageIds.forEach(([imageId]) => {
+                const dupes = userChatMessages.filter(m => m?.imageId === imageId);
+                console.warn(`⚠️  [displayChat] ImageId ${imageId} duplicate details:`, dupes.map((d, i) => ({
+                    index: userChatMessages.indexOf(d),
+                    _debugSource: d._debugSource || 'NO_SOURCE',
+                    _debugId: d._debugId || 'NO_ID',
+                    createdAt: d.createdAt,
+                    mergeId: d.mergeId
+                })));
+            });
+        }
+        if (duplicateBatchIds.length > 0) {
+            console.warn(`⚠️  [displayChat] DUPLICATE BATCH IDS FOUND:`, duplicateBatchIds);
+        }
+        
+        const totalDuplicates = duplicateMergeIds.reduce((sum, [k, v]) => sum + v - 1, 0) +
+                                duplicateImageIds.reduce((sum, [k, v]) => sum + v - 1, 0);
+        console.log(`📊 [displayChat] Duplicate summary: ${totalDuplicates} potential duplicates (${duplicateMergeIds.length} mergeId, ${duplicateImageIds.length} imageId, ${duplicateBatchIds.length} batchId duplicates)`);
 
         // CRITICAL FIX: Filter out invalid/undefined messages before processing
         const invalidMessages = [];
@@ -1513,6 +1633,13 @@ function setupChatInterface(chat, character, userChat, isNew) {
             window.ChatScenarioModule.displaySelectedScenario(userChatScenarios);
         }
         
+        // Final display summary
+        console.log(`📊 [displayChat] DISPLAY COMPLETE SUMMARY:`);
+        console.log(`   Total messages displayed: ${displayedMessageIds.size}`);
+        console.log(`   Images tracked: ${displayedImageIds.size}`);
+        console.log(`   Image URLs tracked: ${displayedImageUrls.size}`);
+        console.log(`🔵🔵🔵 [displayChat] END ═══════════════════════════════════════════════════════════════════════════\n`);
+        
         if( typeof callback == 'function'){
             callback()
         }
@@ -1602,8 +1729,12 @@ function setupChatInterface(chat, character, userChat, isNew) {
                     if (response.success && response.result) {
                         const mergeResult = response.result;
                         const mergedImageUrl = mergeResult.mergedImageUrl;
+                        // Use originalImageId (gallery imageId) for thumbnail to prevent duplicates
+                        // The gallery API returns images by imageId, so we need to use the same ID here
+                        const thumbId = mergeResult.originalImageId || mergeId;
+                        console.log(`[getMergeFaceUrlById] Using thumbId: ${thumbId} (originalImageId: ${mergeResult.originalImageId}, mergeId: ${mergeId})`);
                         // Update the placeholder image
-                        displayImageThumb(mergeId, mergedImageUrl);
+                        displayImageThumb(thumbId, mergedImageUrl);
                         $(`#merge-${mergeId}`).attr('src', mergedImageUrl).fadeIn();
                         $(`#merge-${mergeId}`).attr('alt', 'Merged Face Result').fadeIn();
                         $(`#merge-${mergeId}`).attr('data-prompt', 'Face merge completed');
@@ -1637,6 +1768,7 @@ function setupChatInterface(chat, character, userChat, isNew) {
 
 
     function getImageUrlById(imageId, designStep, thumbnail, actions = null) {
+
         const placeholderImageUrl = '/img/placeholder-image-2.gif'; // Placeholder image URL
 
         // Return immediately with placeholder and update asynchronously
@@ -1676,8 +1808,11 @@ function setupChatInterface(chat, character, userChat, isNew) {
                         const shouldBlur = shouldBlurNSFW(item, subscriptionStatus);
                         const displayMode = getNSFWDisplayMode(item, subscriptionStatus);
                         
-                        // Update the placeholder image
-                        displayImageThumb(imageId, response.imageUrl, null, shouldBlur);
+                        // Update the placeholder image - use galleryImageId for deduplication if available
+                        // This prevents duplicates when the same image is added via mergeId and gallery _id
+                        const thumbId = response.galleryImageId || imageId;
+                        console.log(`[getImageUrlById] Using thumbId: ${thumbId} (galleryImageId: ${response.galleryImageId || 'none'}, imageId: ${imageId})`);
+                        displayImageThumb(thumbId, response.imageUrl, null, shouldBlur);
                         
                         if (shouldBlur || displayMode !== 'show') {
                             // Apply blur effect - set data-src and add blur class
@@ -1692,7 +1827,7 @@ function setupChatInterface(chat, character, userChat, isNew) {
                             // Image is safe to show - set src normally
                             $(`#image-${imageId}`).attr('src', response.imageUrl).fadeIn();
                             // Update the alt text
-                            const title = response?.title?.[lang]?.trim() || '';
+                            const title = response?.title?.[language]?.trim() || '';
                             $(`#image-${imageId}`).attr('alt', title);
                             //update the image prompt
                             $(`#image-${imageId}`).attr('data-prompt', response.imagePrompt);
@@ -1704,7 +1839,7 @@ function setupChatInterface(chat, character, userChat, isNew) {
                                 userChatId,
                                 imageId, 
                                 isLiked: response?.likedBy?.some(id => id.toString() === userId.toString()),
-                                title: response?.title?.[lang], 
+                                title: response?.title?.[language], 
                                 prompt: response.imagePrompt, 
                                 nsfw: response.nsfw, 
                                 imageUrl: response.imageUrl,
@@ -2445,7 +2580,7 @@ function setupChatInterface(chat, character, userChat, isNew) {
 });
 
 function logChatDataFetch(data){
-    return
+    return; // Disable logging for now
     console.log('[logChatDataFetch] Chat data fetched:', data);
 }
 //.reset-chat,.new-chat

@@ -648,13 +648,49 @@ fastify.post('/api/deprecated/init-chat', async (request, reply) => {
         
         const messageType = image_request ? 'IMAGE_REQUEST' : (name ? `SUGGESTION_${name.toUpperCase()}` : 'TEXT');
 
+        console.log(`\n📨📨📨 [/api/chat/add-message] ═══════════════════════════════════════════════════════════`);
+        console.log(`📨 [/api/chat/add-message] START - Adding ${messageType} message to userChatId: ${userChatId}`);
+
         try {
             const collectionUserChat = fastify.mongo.db.collection('userChat');
             let userData = await collectionUserChat.findOne({ _id: new fastify.mongo.ObjectId(userChatId) });
     
             if (!userData) {
+                console.log(`📨📨📨 [/api/chat/add-message] END (user not found) ═══════════════════════════════════\n`);
                 return reply.status(404).send({ error: 'User data not found' });
             }
+            
+            // DEBUG: Log current state BEFORE modification
+            const messageCountBefore = userData.messages?.length || 0;
+            const imageMessagesBefore = userData.messages?.filter(m => m.imageId || m.type === 'image' || m.type === 'mergeFace') || [];
+            console.log(`📊 [/api/chat/add-message] FETCHED STATE:`);
+            console.log(`   Total messages fetched: ${messageCountBefore}`);
+            console.log(`   Image messages: ${imageMessagesBefore.length}`);
+            
+            // Check for any duplicates in fetched data
+            const debugIdCounts = {};
+            userData.messages?.forEach(m => {
+                if (m._debugId) {
+                    debugIdCounts[m._debugId] = (debugIdCounts[m._debugId] || 0) + 1;
+                }
+            });
+            const duplicateDebugIds = Object.entries(debugIdCounts).filter(([k, v]) => v > 1);
+            if (duplicateDebugIds.length > 0) {
+                console.error(`🚨🚨🚨 [/api/chat/add-message] CRITICAL: DUPLICATES ALREADY IN FETCHED DATA!`);
+                duplicateDebugIds.forEach(([debugId, count]) => {
+                    console.error(`🚨 _debugId ${debugId} appears ${count} times`);
+                    const dupes = userData.messages.filter(m => m._debugId === debugId);
+                    dupes.forEach((d, i) => {
+                        console.error(`   [${i}] index=${userData.messages.indexOf(d)}, imageId=${d.imageId}, createdAt=${d.createdAt}`);
+                    });
+                });
+            }
+            
+            // Log image messages for debugging
+            imageMessagesBefore.forEach((img, i) => {
+                console.log(`   [${i}] imageId=${img.imageId}, _debugId=${img._debugId || 'none'}, batchId=${img.batchId || 'none'}`);
+            });
+            
             let newMessage = { role: role };    
             newMessage.content = message
             newMessage.name = name || null;
@@ -667,11 +703,38 @@ fastify.post('/api/deprecated/init-chat', async (request, reply) => {
             newMessage.createdAt = nowIsoString;
             userData.messages.push(newMessage);
             userData.updatedAt = now;
+            
+            console.log(`📊 [/api/chat/add-message] AFTER LOCAL PUSH: ${userData.messages.length} messages`);
 
             const result = await collectionUserChat.updateOne(
                 { _id: new fastify.mongo.ObjectId(userChatId) },
                 { $set: { messages: userData.messages, updatedAt: now } }
             );
+            
+            console.log(`🔒 [/api/chat/add-message] UpdateOne ($set) result: matchedCount=${result.matchedCount}, modifiedCount=${result.modifiedCount}`);
+            
+            // VERIFY: Check actual DB state after update
+            const verifyDoc = await collectionUserChat.findOne({ _id: new fastify.mongo.ObjectId(userChatId) });
+            const messageCountAfter = verifyDoc?.messages?.length || 0;
+            const imageMessagesAfter = verifyDoc?.messages?.filter(m => m.imageId || m.type === 'image' || m.type === 'mergeFace') || [];
+            console.log(`📊 [/api/chat/add-message] VERIFIED DB STATE:`);
+            console.log(`   Total messages in DB: ${messageCountAfter}`);
+            console.log(`   Image messages: ${imageMessagesAfter.length}`);
+            
+            // Check for duplicates after save
+            const debugIdCountsAfter = {};
+            verifyDoc?.messages?.forEach(m => {
+                if (m._debugId) {
+                    debugIdCountsAfter[m._debugId] = (debugIdCountsAfter[m._debugId] || 0) + 1;
+                }
+            });
+            const duplicateDebugIdsAfter = Object.entries(debugIdCountsAfter).filter(([k, v]) => v > 1);
+            if (duplicateDebugIdsAfter.length > 0) {
+                console.error(`🚨🚨🚨 [/api/chat/add-message] CRITICAL: DUPLICATES AFTER $set!`);
+                duplicateDebugIdsAfter.forEach(([debugId, count]) => {
+                    console.error(`🚨 _debugId ${debugId} appears ${count} times`);
+                });
+            }
 
             try {
                 const chatsCollection = fastify.mongo.db.collection('chats');
@@ -698,12 +761,17 @@ fastify.post('/api/deprecated/init-chat', async (request, reply) => {
                     }
                 }
                 
+                console.log(`✅ [/api/chat/add-message] SUCCESS - Message added`);
+                console.log(`📨📨📨 [/api/chat/add-message] END (success) ═══════════════════════════════════════════\n`);
                 reply.send({ success: true, message: 'Message added successfully' });
             } else {
+                console.log(`❌ [/api/chat/add-message] FAILED - modifiedCount=0`);
+                console.log(`📨📨📨 [/api/chat/add-message] END (failed) ═══════════════════════════════════════════\n`);
                 reply.status(500).send({ error: 'Failed to add message' });
             }
         } catch (error) {
             console.log(error);
+            console.log(`📨📨📨 [/api/chat/add-message] END (error) ═══════════════════════════════════════════\n`);
             reply.status(500).send({ error: 'Error adding message to chat' });
         }
     });

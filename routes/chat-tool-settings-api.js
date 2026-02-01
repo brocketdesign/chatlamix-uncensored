@@ -85,7 +85,7 @@ async function routes(fastify, options) {
     fastify.post('/api/chat-tool-settings/:userId', async (request, reply) => {
         try {
             const { userId } = request.params;
-            const { settings, chatId } = request.body;
+            const { settings, chatId, userChatId } = request.body;
             
             if (!userId || !ObjectId.isValid(userId)) {
                 return reply.status(400).send({ error: 'Invalid user ID' });
@@ -174,6 +174,28 @@ async function routes(fastify, options) {
             }
 
             const result = await collection.updateOne(query, updateDoc, { upsert: true });
+
+            // If userChatId is provided and preferredChatLanguage is set, also update the userChat collection
+            if (userChatId && ObjectId.isValid(userChatId) && validSettings.preferredChatLanguage !== undefined) {
+                try {
+                    const userChatCollection = fastify.mongo.db.collection('userChat');
+                    await userChatCollection.updateOne(
+                        { 
+                            _id: new ObjectId(userChatId),
+                            userId: new ObjectId(userId)
+                        },
+                        { 
+                            $set: { 
+                                preferredChatLanguage: validSettings.preferredChatLanguage,
+                                updatedAt: now
+                            } 
+                        }
+                    );
+                } catch (userChatError) {
+                    console.error('Error updating userChat preferredChatLanguage:', userChatError);
+                    // Don't fail the whole request if userChat update fails
+                }
+            }
 
             reply.send({ 
                 success: true, 

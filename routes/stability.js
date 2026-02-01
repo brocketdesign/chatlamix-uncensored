@@ -218,6 +218,8 @@ async function routes(fastify, options) {
       const image = imageDocument.images[0];
       const { imageUrl, originalImageUrl, prompt: imagePrompt, isUpscaled, title, nsfw, likedBy = [], actions, isMerged, mergeId } = image;
       const { chatId } = imageDocument;
+      // Include gallery image _id for thumbnail deduplication (prevents duplicates when using mergeId vs _id)
+      const galleryImageId = image._id ? image._id.toString() : null;
 
       let chatData = {};
       if (chatId) {
@@ -227,7 +229,7 @@ async function routes(fastify, options) {
         ) || {};
       }
 
-      return reply.status(200).send({ imageUrl, originalImageUrl, imagePrompt, isUpscaled, title, likedBy, nsfw, actions, isMerged, mergeId, ...chatData });
+      return reply.status(200).send({ imageUrl, originalImageUrl, imagePrompt, isUpscaled, title, likedBy, nsfw, actions, isMerged, mergeId, galleryImageId, ...chatData });
     } catch (error) {
       console.error('Error fetching image details:', error);
       return reply.status(500).send({ error: 'An error occurred while fetching the image details' });

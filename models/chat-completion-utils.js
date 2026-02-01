@@ -476,6 +476,10 @@ async function updateChatLastMessage(db, chatId, userId, completion, updatedAt) 
 
 // Updates user chat messages in 'userChat' collection
 async function updateUserChat(db, userId, userChatId, newMessages, updatedAt) {
+    console.log(`\n📝📝📝 [updateUserChat] ═══════════════════════════════════════════════════════════`);
+    console.log(`📝 [updateUserChat] START - userChatId: ${userChatId}`);
+    console.log(`📝 [updateUserChat] newMessages count: ${newMessages?.length || 0}`);
+    
     const collectionUserChat = db.collection('userChat');
     const userChat = await collectionUserChat.findOne({
         userId: new ObjectId(userId),
@@ -486,6 +490,30 @@ async function updateUserChat(db, userId, userChatId, newMessages, updatedAt) {
 
     const existingMessages = userChat.messages || [];
     const combinedMessages = [...existingMessages];
+    
+    console.log(`📊 [updateUserChat] FETCHED existingMessages: ${existingMessages.length}`);
+    
+    // Check for duplicates in existing messages
+    const existingDebugIds = {};
+    existingMessages.forEach(m => {
+        if (m._debugId) {
+            existingDebugIds[m._debugId] = (existingDebugIds[m._debugId] || 0) + 1;
+        }
+    });
+    const existingDuplicates = Object.entries(existingDebugIds).filter(([k, v]) => v > 1);
+    if (existingDuplicates.length > 0) {
+        console.error(`🚨 [updateUserChat] DUPLICATES IN FETCHED DATA!`);
+        existingDuplicates.forEach(([debugId, count]) => {
+            console.error(`🚨 _debugId ${debugId} appears ${count} times in existing`);
+        });
+    }
+    
+    // Log existing image messages
+    const existingImageMsgs = existingMessages.filter(m => m.imageId || m.type === 'image' || m.type === 'mergeFace');
+    console.log(`📊 [updateUserChat] Existing image messages: ${existingImageMsgs.length}`);
+    existingImageMsgs.forEach((img, i) => {
+        console.log(`   [${i}] imageId=${img.imageId}, _debugId=${img._debugId || 'none'}`);
+    });
 
     // Track how many new messages are added (not updates) for stats
     let newMessageCount = 0;
@@ -497,7 +525,25 @@ async function updateUserChat(db, userId, userChatId, newMessages, updatedAt) {
         const isNewMsgImage = newMsg.imageId || newMsg.batchId || newMsg.type === 'image' || newMsg.type === 'mergeFace';
         
         let index = -1;
-        if (!isNewMsgImage) {
+        
+        if (isNewMsgImage) {
+            // CRITICAL FIX: For image messages, check if an image with same identifiers already exists
+            // This prevents duplicates when the same messages array is passed multiple times
+            if (newMsg._debugId) {
+                index = combinedMessages.findIndex(msg => msg._debugId === newMsg._debugId);
+            } else if (newMsg.imageId) {
+                index = combinedMessages.findIndex(msg => msg.imageId === newMsg.imageId);
+            } else if (newMsg.batchId && newMsg.batchIndex !== undefined) {
+                index = combinedMessages.findIndex(msg => msg.batchId === newMsg.batchId && msg.batchIndex === newMsg.batchIndex);
+            }
+            
+            if (index !== -1) {
+                // Image already exists - update it instead of adding duplicate
+                console.log(`⚠️  [updateUserChat] Image already exists at index ${index}, updating instead of adding duplicate (imageId=${newMsg.imageId})`);
+                combinedMessages[index] = newMsg;
+                continue;
+            }
+        } else {
             // For non-image messages, find by content match (but skip image messages in existing)
             index = combinedMessages.findIndex(
                 (msg) => msg.content === newMsg.content && !msg.imageId && !msg.batchId && msg.type !== 'image' && msg.type !== 'mergeFace'
@@ -514,6 +560,23 @@ async function updateUserChat(db, userId, userChatId, newMessages, updatedAt) {
             }
         }
     }
+    
+    console.log(`📊 [updateUserChat] COMBINED messages: ${combinedMessages.length} (added ${newMessageCount} new)`);
+    
+    // Check for duplicates in combined messages BEFORE saving
+    const combinedDebugIds = {};
+    combinedMessages.forEach(m => {
+        if (m._debugId) {
+            combinedDebugIds[m._debugId] = (combinedDebugIds[m._debugId] || 0) + 1;
+        }
+    });
+    const combinedDuplicates = Object.entries(combinedDebugIds).filter(([k, v]) => v > 1);
+    if (combinedDuplicates.length > 0) {
+        console.error(`🚨🚨🚨 [updateUserChat] CRITICAL: DUPLICATES IN COMBINED before $set!`);
+        combinedDuplicates.forEach(([debugId, count]) => {
+            console.error(`🚨 _debugId ${debugId} appears ${count} times`);
+        });
+    }
 
     await collectionUserChat.updateOne(
         {
@@ -522,6 +585,9 @@ async function updateUserChat(db, userId, userChatId, newMessages, updatedAt) {
         },
         { $set: { messages: combinedMessages, updatedAt } }
     );
+    
+    console.log(`✅ [updateUserChat] $set complete`);
+    console.log(`📝📝📝 [updateUserChat] END ═══════════════════════════════════════════════════════════\n`);
 
     // Increment message count in user_chat_stats if new messages were added
     if (newMessageCount > 0 && userChat.chatId) {
@@ -539,11 +605,17 @@ function removeContentBetweenStars(str) {
 async function handleGalleryImage(db, lastUserMessage, userData, userChatId, userId, fastify) {
    if (!lastUserMessage.sendImage) return;
 
+    console.log(`\n🟡🟡🟡 [handleGalleryImage] ═══════════════════════════════════════════════════════════`);
+    console.log(`📝 [handleGalleryImage] Starting for userChatId: ${userChatId}, userId: ${userId}`);
+
     const chatsGalleryCollection = db.collection('gallery');
     const gallery = await chatsGalleryCollection.findOne({ chatId: new ObjectId(userData.chatId) });
     
     if (gallery && gallery.images && gallery.images.length > 0) {
         const image = gallery.images[Math.floor(Math.random() * gallery.images.length)];
+        
+        console.log(`   Selected imageId: ${image._id}`);
+        console.log(`   imageUrl: ${image.imageUrl?.substring(0, 60)}...`);
         
         const data = {
             userChatId, 
@@ -556,6 +628,10 @@ async function handleGalleryImage(db, lastUserMessage, userData, userChatId, use
         
         fastify.sendNotificationToUser(userId, 'imageGenerated', data);
 
+        // Generate unique debug ID to trace message source
+        const debugId = `handleGallery_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+        console.log(`🆔 [handleGalleryImage] Creating message with debugId: ${debugId}`);
+
         const imageMessage = { 
             role: "assistant", 
             type: "image", 
@@ -563,13 +639,23 @@ async function handleGalleryImage(db, lastUserMessage, userData, userChatId, use
             imageUrl: image.imageUrl,
             content: `I generated an image for you! It describes: ${image.prompt}`,
             timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
-            createdAt: new Date()
+            createdAt: new Date(),
+            _debugSource: 'handleGalleryImage',
+            _debugId: debugId,
         };
+        
+        // Get current message count BEFORE operation
+        const collectionUserChat = db.collection('userChat');
+        const chatDocBefore = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+        const messageCountBefore = chatDocBefore?.messages?.length || 0;
+        const existingImageCount = chatDocBefore?.messages?.filter(m => m.imageId === image._id.toString()).length || 0;
+        
+        console.log(`📊 [handleGalleryImage] BEFORE - Total messages: ${messageCountBefore}, Existing with this imageId: ${existingImageCount}`);
         
         // Update the database directly with atomic duplicate check
         // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
         // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
-        const collectionUserChat = db.collection('userChat');
+        console.log(`🔒 [handleGalleryImage] Executing atomic updateOne with $not+$elemMatch filter...`);
         const updateResult = await collectionUserChat.updateOne(
             {
                 userId: new ObjectId(userId),
@@ -582,15 +668,25 @@ async function handleGalleryImage(db, lastUserMessage, userData, userChatId, use
             }
         );
         
+        console.log(`🔒 [handleGalleryImage] UpdateOne result: matchedCount=${updateResult.matchedCount}, modifiedCount=${updateResult.modifiedCount}`);
+        
         if (updateResult.modifiedCount > 0) {
             // Only update local object if DB was actually modified
             userData.messages.push(imageMessage);
             userData.updatedAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
-            console.log(`[handleGalleryImage] Image message added successfully`);
+            
+            // Verify message count after
+            const chatDocAfter = await collectionUserChat.findOne({ _id: new ObjectId(userChatId) });
+            const messageCountAfter = chatDocAfter?.messages?.length || 0;
+            console.log(`✅ [handleGalleryImage] SUCCESS! New total messages: ${messageCountAfter} (+${messageCountAfter - messageCountBefore})`);
         } else {
-            console.log(`[handleGalleryImage] Image message already exists or chat not found, skipping`);
+            console.log(`⚠️  [handleGalleryImage] DUPLICATE PREVENTED - Image message already exists or chat not found`);
         }
+    } else {
+        console.log(`⚠️  [handleGalleryImage] No gallery images found`);
     }
+    
+    console.log(`🟡🟡🟡 [handleGalleryImage] END ═══════════════════════════════════════════════════════════\n`);
 }
 
 module.exports = {

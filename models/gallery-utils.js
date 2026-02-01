@@ -59,6 +59,10 @@ function buildChatImageMessage(image, { fromGallery = true } = {}) {
     });
   }
 
+  // Generate unique debug ID to trace message source
+  const debugId = `gallery_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+  console.log(`🆔 [buildChatImageMessage] Creating message with debugId: ${debugId}`);
+
   const baseMessage = {
     role: 'assistant',
     content: `[Image] ${imageId}`,
@@ -77,6 +81,8 @@ function buildChatImageMessage(image, { fromGallery = true } = {}) {
     createdAt: messageDate,
     timestamp: formatTimestamp(messageDate),
     addedFromGallery: fromGallery,
+    _debugSource: 'buildChatImageMessage',
+    _debugId: debugId,
   };
 
   if (image.chatId) {
@@ -105,6 +111,17 @@ async function appendMessageToUserChat(db, userChatId, message) {
   const userChatObjectId = toObjectId(userChatId);
   const collection = db.collection('userChat');
 
+  console.log(`\n🟢🟢🟢 [appendMessageToUserChat] ═══════════════════════════════════════════════════════════`);
+  console.log(`📝 [appendMessageToUserChat] Starting for userChatId: ${userChatId}`);
+  console.log(`   message.mergeId: ${message.mergeId || 'none'}`);
+  console.log(`   message.imageId: ${message.imageId || 'none'}`);
+  console.log(`   message.type: ${message.type || 'unknown'}`);
+
+  // Get current message count BEFORE operation
+  const chatDocBefore = await collection.findOne({ _id: userChatObjectId });
+  const messageCountBefore = chatDocBefore?.messages?.length || 0;
+  console.log(`📊 [appendMessageToUserChat] BEFORE - Total messages: ${messageCountBefore}`);
+
   // Build atomic filter to prevent duplicate messages
   // Check for duplicates based on message type
   // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
@@ -114,11 +131,17 @@ async function appendMessageToUserChat(db, userChatId, message) {
   if (message.mergeId) {
     // For merged images, use mergeId as the primary deduplication key
     filter.messages = { $not: { $elemMatch: { mergeId: message.mergeId } } };
+    const existingMerge = chatDocBefore?.messages?.filter(m => m.mergeId === message.mergeId).length || 0;
+    console.log(`   Existing messages with mergeId=${message.mergeId}: ${existingMerge}`);
   } else if (message.imageId) {
     // For regular images, use imageId
     const imageIdStr = typeof message.imageId === 'object' ? message.imageId.toString() : message.imageId;
     filter.messages = { $not: { $elemMatch: { imageId: imageIdStr } } };
+    const existingImage = chatDocBefore?.messages?.filter(m => m.imageId === imageIdStr).length || 0;
+    console.log(`   Existing messages with imageId=${imageIdStr}: ${existingImage}`);
   }
+
+  console.log(`🔒 [appendMessageToUserChat] Executing atomic updateOne with $not+$elemMatch filter...`);
 
   const updateResult = await collection.updateOne(
     filter,
@@ -127,6 +150,19 @@ async function appendMessageToUserChat(db, userChatId, message) {
       $set: { updatedAt: message.timestamp || formatTimestamp() }
     }
   );
+
+  console.log(`🔒 [appendMessageToUserChat] UpdateOne result: matchedCount=${updateResult.matchedCount}, modifiedCount=${updateResult.modifiedCount}`);
+
+  if (updateResult.matchedCount === 0) {
+    console.log(`⚠️  [appendMessageToUserChat] DUPLICATE PREVENTED - Message already exists`);
+  } else if (updateResult.modifiedCount > 0) {
+    // Verify message count after
+    const chatDocAfter = await collection.findOne({ _id: userChatObjectId });
+    const messageCountAfter = chatDocAfter?.messages?.length || 0;
+    console.log(`✅ [appendMessageToUserChat] SUCCESS! New total messages: ${messageCountAfter} (+${messageCountAfter - messageCountBefore})`);
+  }
+  
+  console.log(`🟢🟢🟢 [appendMessageToUserChat] END ═══════════════════════════════════════════════════════════\n`);
 
   return updateResult;
 }

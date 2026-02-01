@@ -331,6 +331,15 @@ window.generateImage = async function(data, disableCompletion = false) {
         batchSize: data?.batchSize
     }, null, 2));
     
+    console.log(`\n🟠🟠🟠 [generateImage] ═══════════════════════════════════════════════════════════════════════════`);
+    console.log(`📷 [generateImage] Received image from server:`);
+    console.log(`   imageId: ${data?.imageId || data?.id || 'none'}`);
+    console.log(`   userChatId: ${data?.userChatId || 'none'}`);
+    console.log(`   mergeId: ${data?.mergeId || 'none'}`);
+    console.log(`   isMergeFace/isMerged: ${data?.isMergeFace || data?.isMerged || false}`);
+    console.log(`   batchId: ${data?.batchId || 'none'}, batchIndex: ${data?.batchIndex}, batchSize: ${data?.batchSize}`);
+    console.log(`   imageUrl: ${(data?.imageUrl || data?.url || '').substring(0, 60)}...`);
+    
     // Validate essential data
     if (!data || !data.userChatId || (!data.imageUrl && !data.url)) {
         console.error('[generateImage] Missing essential data:', {
@@ -339,6 +348,7 @@ window.generateImage = async function(data, disableCompletion = false) {
             hasImageUrl: !!(data && data.imageUrl),
             hasUrl: !!(data && data.url)
         });
+        console.log(`🟠🟠🟠 [generateImage] END (missing data) ═══════════════════════════════════════════════════\n`);
         return;
     }
     
@@ -346,13 +356,16 @@ window.generateImage = async function(data, disableCompletion = false) {
     const imageUrl = data.imageUrl || data.url;
     const imageId = data.imageId || data.id;
     const checkImageExist = $(`.assistant-image-box[data-id='${imageId}']`);
-    console.log(`[generateImage] Processing image with ID ${imageId} for chat ${data.userChatId}, isMergeFace: ${data.isMergeFace}`);
+    console.log(`📷 [generateImage] Processing image: id=${imageId}, exists in DOM: ${checkImageExist.length > 0}, already sent: ${sentImageIds.has(imageId)}`);
+    
     if(!imageId || imageId === '' || imageId === null || imageId === undefined) {
         console.warn(`[generateImage] Invalid image ID for chat ${data.userChatId}`);
+        console.log(`🟠🟠🟠 [generateImage] END (invalid imageId) ═══════════════════════════════════════════════════\n`);
         return;
     }
     if ((!imageId || sentImageIds.has(imageId)) && checkImageExist.length) {
-        console.warn(`[generateImage] Image with ID ${imageId} has already been sent to chat ${data.userChatId}`);
+        console.warn(`⚠️  [generateImage] DUPLICATE PREVENTED - Image with ID ${imageId} already displayed`);
+        console.log(`🟠🟠🟠 [generateImage] END (duplicate prevented) ═══════════════════════════════════════════════\n`);
         return;
     }
     
@@ -375,6 +388,7 @@ window.generateImage = async function(data, disableCompletion = false) {
       'Generated Image';
     
     sentImageIds.add(imageId);
+    console.log(`📷 [generateImage] Added to sentImageIds, total tracked: ${sentImageIds.size}`);
 
     // Create image data object
     const imageData = {
@@ -391,10 +405,11 @@ window.generateImage = async function(data, disableCompletion = false) {
 
     // Handle batched images for slider display
     if (batchId && batchSize > 1) {
-        console.log(`[generateImage] Batched image ${batchIndex + 1}/${batchSize} for batch ${batchId}`);
+        console.log(`📷 [generateImage] Batched image ${batchIndex + 1}/${batchSize} for batch ${batchId}`);
         
         if (!imageBatches.has(batchId)) {
             // Initialize batch tracker
+            console.log(`📷 [generateImage] Creating new batch tracker for ${batchId}`);
             imageBatches.set(batchId, {
                 images: [],
                 expectedSize: batchSize,
@@ -403,7 +418,7 @@ window.generateImage = async function(data, disableCompletion = false) {
                     // Timeout handler: display whatever we have
                     const batch = imageBatches.get(batchId);
                     if (batch && batch.images.length > 0) {
-                        console.log(`[generateImage] Batch ${batchId} timeout - displaying ${batch.images.length}/${batch.expectedSize} images`);
+                        console.log(`📷 [generateImage] Batch ${batchId} timeout - displaying ${batch.images.length}/${batch.expectedSize} images`);
                         displayBatchedImages(batch);
                         imageBatches.delete(batchId);
                     }
@@ -413,23 +428,30 @@ window.generateImage = async function(data, disableCompletion = false) {
         
         const batch = imageBatches.get(batchId);
         batch.images.push(imageData);
+        console.log(`📷 [generateImage] Batch ${batchId} now has ${batch.images.length}/${batch.expectedSize} images`);
         
         // Check if batch is complete
         if (batch.images.length >= batch.expectedSize) {
-            console.log(`[generateImage] Batch ${batchId} complete - displaying ${batch.images.length} images in slider`);
+            console.log(`✅ [generateImage] Batch ${batchId} COMPLETE - displaying ${batch.images.length} images in slider`);
+            clearTimeout(batch.timeout);
             clearTimeout(batch.timeout);
             displayBatchedImages(batch);
             imageBatches.delete(batchId);
         }
+        console.log(`🟠🟠🟠 [generateImage] END (batched) ═══════════════════════════════════════════════════════════\n`);
     } else {
         // Single image - display immediately using existing logic
+        console.log(`📷 [generateImage] Displaying single image immediately`);
         displaySingleImage(imageData, disableCompletion);
+        console.log(`🟠🟠🟠 [generateImage] END (single image) ═════════════════════════════════════════════════════\n`);
     }
 };
 
 // Display a single image (original behavior)
 function displaySingleImage(imageData, disableCompletion = false) {
     const { imageId, imageUrl, titleText, imagePrompt, imageNsfw, isUpscaled, isMergeFace, userChatId } = imageData;
+
+    console.log(`📷 [displaySingleImage] Displaying imageId: ${imageId}, userChatId: ${userChatId}`);
 
     const img = document.createElement('img');
     img.setAttribute('src', imageUrl);
@@ -450,7 +472,9 @@ function displaySingleImage(imageData, disableCompletion = false) {
     setTimeout(() => {
         const addedImage = $(`img[data-id='${imageId}']`);
         if (!addedImage.length) {
-            console.warn(`[generateImage] Failed to add image with ID ${imageId} to chat ${userChatId}`);
+            console.warn(`⚠️  [displaySingleImage] Failed to add image with ID ${imageId} to DOM`);
+        } else {
+            console.log(`✅ [displaySingleImage] Successfully added image ${imageId} to DOM`);
         }
     }, 1000);
 
@@ -465,6 +489,8 @@ function displaySingleImage(imageData, disableCompletion = false) {
 // Display batched images in a slider
 function displayBatchedImages(batch) {
     const { images, userChatId } = batch;
+
+    console.log(`📷 [displayBatchedImages] Displaying batch with ${images.length} images for userChatId: ${userChatId}`);
 
     if (images.length === 0) return;
 

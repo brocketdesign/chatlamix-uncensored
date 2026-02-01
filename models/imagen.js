@@ -1051,11 +1051,14 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
   }
 
   try {
+    console.log(`\n🔵🔵🔵 [addImageMessageToChatHelper] ═══════════════════════════════════════════════════════════`);
     console.log(`📝 [addImageMessageToChatHelper] START:`);
+    console.log(`   userChatId=${userChatId}`);
     console.log(`   imageId=${imageIdStr}`);
     console.log(`   batchId=${batchId}, batchIndex=${batchIndex}/${batchSize}`);
     console.log(`   isMerged=${isMerged}, mergeId=${mergeId || 'none'}`);
     console.log(`   imageUrl=${imageUrl?.substring(0, 60)}...`);
+    console.log(`   lockKey=${lockKey}`);
 
     // ===== SAFEGUARD 1: Database-level lock using MongoDB =====
     // This works across multiple processes/workers unlike in-memory locks
@@ -1093,9 +1096,28 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     });
 
     if (chatDoc && chatDoc.messages) {
+      const totalMessageCount = chatDoc.messages.length;
       const imageMessageCount = chatDoc.messages.filter(m =>
         m.type === 'image' || m.type === 'mergeFace' || m.type === 'bot-image-slider'
       ).length;
+      const mergeMessageCount = chatDoc.messages.filter(m => m.type === 'mergeFace' || m.isMerged).length;
+      
+      console.log(`📊 [addImageMessageToChatHelper] CURRENT MESSAGE COUNT:`);
+      console.log(`   Total messages: ${totalMessageCount}`);
+      console.log(`   Image messages (image/mergeFace/slider): ${imageMessageCount}`);
+      console.log(`   Merge messages: ${mergeMessageCount}`);
+      
+      // Log if we find any messages with same mergeId/imageId/batchId
+      if (isMerged && mergeId) {
+        const existingWithMergeId = chatDoc.messages.filter(m => m.mergeId === mergeId);
+        console.log(`   Existing with mergeId=${mergeId}: ${existingWithMergeId.length}`);
+      }
+      if (batchId) {
+        const existingWithBatch = chatDoc.messages.filter(m => m.batchId === batchId && m.batchIndex === batchIndex);
+        console.log(`   Existing with batchId=${batchId}, batchIndex=${batchIndex}: ${existingWithBatch.length}`);
+      }
+      const existingWithImageId = chatDoc.messages.filter(m => m.imageId === imageIdStr);
+      console.log(`   Existing with imageId=${imageIdStr}: ${existingWithImageId.length}`);
 
       if (imageMessageCount >= MAX_IMAGE_MESSAGES_PER_CHAT) {
         console.warn(`⚠️ [addImageMessageToChatHelper] Chat ${userChatId} has reached max image limit (${imageMessageCount}/${MAX_IMAGE_MESSAGES_PER_CHAT}), skipping`);
@@ -1140,6 +1162,10 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     const messageTitle = titleString || '';
     const messagePrompt = prompt || '';
 
+    // Generate unique debug ID to trace message source
+    const debugId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+    console.log(`🆔 [addImageMessageToChatHelper] Creating message with debugId: ${debugId}`);
+
     const imageMessage = {
       role: "assistant",
       content: messageContent,
@@ -1153,6 +1179,8 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
       isMerged: isMerged || false,
       createdAt: new Date(),
       timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
+      _debugSource: 'addImageMessageToChatHelper',
+      _debugId: debugId,
     };
 
     // Store batch metadata for slider reconstruction
@@ -1174,6 +1202,41 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
     // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
     // $not + $elemMatch correctly checks if NO element matches
+    console.log(`\n🔒 [addImageMessageToChatHelper] Using FIXED $not+$elemMatch atomic filter (v2026-02-01)`);
+    console.log(`🔒 [addImageMessageToChatHelper] Building atomic filter for: ${isMerged ? `mergeId=${mergeId}` : batchId ? `batchId=${batchId}, batchIndex=${batchIndex}` : `imageId=${imageIdStr}`}`);
+    
+    // Double-check: verify the current state BEFORE the atomic operation
+    const preCheckDoc = await userDataCollection.findOne({
+      userId: new ObjectId(userId),
+      _id: new ObjectId(userChatId)
+    });
+    let preCheckCount = 0;
+    if (isMerged && mergeId) {
+      preCheckCount = preCheckDoc?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] PRE-CHECK: Found ${preCheckCount} existing messages with mergeId=${mergeId}`);
+    } else if (batchId && batchIndex !== null) {
+      preCheckCount = preCheckDoc?.messages?.filter(m => m.batchId === batchId && m.batchIndex === batchIndex).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] PRE-CHECK: Found ${preCheckCount} existing messages with batchId=${batchId}, batchIndex=${batchIndex}`);
+    } else {
+      preCheckCount = preCheckDoc?.messages?.filter(m => m.imageId === imageIdStr).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] PRE-CHECK: Found ${preCheckCount} existing messages with imageId=${imageIdStr}`);
+    }
+    if (preCheckCount > 0) {
+      console.warn(`⚠️  [addImageMessageToChatHelper] PRE-CHECK DUPLICATE DETECTED! Will skip atomic operation.`);
+      
+      // Release the lock
+      await locksCollection.deleteOne({ key: lockKey }).catch(() => {});
+      
+      // Log AFTER verification
+      const chatDocAfter = await userDataCollection.findOne({
+        userId: new ObjectId(userId),
+        _id: new ObjectId(userChatId)
+      });
+      console.log(`📊 [addImageMessageToChatHelper] AFTER (pre-check skip) - Total messages: ${chatDocAfter?.messages?.length || 0}`);
+      console.log(`🔵🔵🔵 [addImageMessageToChatHelper] END (pre-check duplicate) ═════════════════════════════\n`);
+      return;
+    }
+    
     let atomicFilter;
     
     if (isMerged && mergeId) {
@@ -1202,25 +1265,87 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     }
 
     // Atomic update: only adds if filter matches (no duplicate exists)
+    console.log(`🔒 [addImageMessageToChatHelper] Executing atomic updateOne...`);
+    console.log(`   Filter: ${JSON.stringify(atomicFilter, (key, value) => {
+      if (value instanceof ObjectId) return value.toString();
+      if (value && value.$not) return { $not: { $elemMatch: value.$not.$elemMatch } };
+      return value;
+    })}`);
+    
     const result = await userDataCollection.updateOne(
       atomicFilter,
       { $push: { messages: imageMessage } }
     );
 
+    console.log(`🔒 [addImageMessageToChatHelper] UpdateOne result: matchedCount=${result.matchedCount}, modifiedCount=${result.modifiedCount}`);
+
     // Release the lock after operation completes
     await locksCollection.deleteOne({ key: lockKey }).catch(() => {});
 
     if (result.matchedCount === 0) {
-      console.log(`💾 [addImageMessageToChatHelper] Message already exists (atomic check) for ${isMerged ? `mergeId=${mergeId}` : batchId ? `batchIndex=${batchIndex}` : `imageId=${imageIdStr}`}, skipping duplicate`);
+      console.log(`💾 [addImageMessageToChatHelper] ⚠️  DUPLICATE PREVENTED (atomic check) for ${isMerged ? `mergeId=${mergeId}` : batchId ? `batchIndex=${batchIndex}` : `imageId=${imageIdStr}`}`);
+      
+      // Log a verification query to confirm the duplicate exists
+      const verifyDoc = await userDataCollection.findOne({
+        userId: new ObjectId(userId),
+        _id: new ObjectId(userChatId)
+      });
+      if (verifyDoc && verifyDoc.messages) {
+        const matchingMessages = verifyDoc.messages.filter(m => {
+          if (isMerged && mergeId) return m.mergeId === mergeId;
+          if (batchId && batchIndex !== null) return m.batchId === batchId && m.batchIndex === batchIndex;
+          return m.imageId === imageIdStr;
+        });
+        console.log(`💾 [addImageMessageToChatHelper] Verified: Found ${matchingMessages.length} matching messages in DB`);
+      }
+      console.log(`🔵🔵🔵 [addImageMessageToChatHelper] END (duplicate prevented) ═══════════════════════════════\n`);
       return true;
     }
 
     if (result.modifiedCount === 0) {
       console.error(`❌ [addImageMessageToChatHelper] Failed to add message - document not found for userChatId: ${userChatId}`);
+      console.log(`🔵🔵🔵 [addImageMessageToChatHelper] END (failed - no document) ═══════════════════════════════\n`);
       return false;
     }
 
+    // Verify message was added by checking count
+    const verifyAfterDoc = await userDataCollection.findOne({
+      userId: new ObjectId(userId),
+      _id: new ObjectId(userChatId)
+    });
+    const newMessageCount = verifyAfterDoc?.messages?.length || 0;
+    
+    // POST-CHECK: Verify we don't have duplicates after insert
+    let postCheckCount = 0;
+    if (isMerged && mergeId) {
+      postCheckCount = verifyAfterDoc?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] POST-CHECK: Found ${postCheckCount} messages with mergeId=${mergeId}`);
+    } else if (batchId && batchIndex !== null) {
+      postCheckCount = verifyAfterDoc?.messages?.filter(m => m.batchId === batchId && m.batchIndex === batchIndex).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] POST-CHECK: Found ${postCheckCount} messages with batchId=${batchId}, batchIndex=${batchIndex}`);
+    } else {
+      postCheckCount = verifyAfterDoc?.messages?.filter(m => m.imageId === imageIdStr).length || 0;
+      console.log(`🔍 [addImageMessageToChatHelper] POST-CHECK: Found ${postCheckCount} messages with imageId=${imageIdStr}`);
+    }
+    
+    if (postCheckCount > 1) {
+      console.error(`🚨🚨🚨 [addImageMessageToChatHelper] CRITICAL: POST-CHECK FOUND ${postCheckCount} DUPLICATES! Race condition detected!`);
+      console.error(`🚨 This means multiple processes inserted despite atomic filter. Check for multiple entry points.`);
+      
+      // Log the duplicates for debugging
+      const duplicates = verifyAfterDoc?.messages?.filter(m => {
+        if (isMerged && mergeId) return m.mergeId === mergeId;
+        if (batchId && batchIndex !== null) return m.batchId === batchId && m.batchIndex === batchIndex;
+        return m.imageId === imageIdStr;
+      });
+      duplicates?.forEach((dup, i) => {
+        console.error(`🚨 Duplicate ${i + 1}: _debugSource=${dup._debugSource || 'NONE'}, _debugId=${dup._debugId || 'NONE'}, createdAt=${dup.createdAt}`);
+      });
+    }
+    
+    console.log(`✅ [addImageMessageToChatHelper] SUCCESS! Message added. New total message count: ${newMessageCount}`);
     console.log(`💾 [addImageMessageToChatHelper] Successfully added message for imageId: ${imageIdStr}, batchIndex=${batchIndex}/${batchSize}`);
+    console.log(`🔵🔵🔵 [addImageMessageToChatHelper] END (success) ═══════════════════════════════════════════\n`);
     return true;
   } catch (error) {
     console.error(`❌ [addImageMessageToChatHelper] Error adding image message (batchIndex=${batchIndex}):`, error.message);
@@ -2174,25 +2299,55 @@ async function getImageSeed(db, imageId) {
 }
 async function saveImageToDB({taskId, userId, chatId, userChatId, prompt, title, slug, imageUrl, aspectRatio, seed, blurredImageUrl = null, nsfw = false, fastify, isMerged = false, originalImageUrl = null, mergeId = null, shouldAutoMerge = false, thumbnailUrl = null, batchId = null, batchIndex = null, batchSize = null, imageModelId = null}) {
 
-  console.log(`🖼️ [saveImageToDB] START: batchIndex=${batchIndex}/${batchSize}, batchId=${batchId}, taskId=${taskId}, imageUrl=${imageUrl?.substring(0, 60)}...`);
+  console.log(`\n🖼️🖼️🖼️ [saveImageToDB] ═══════════════════════════════════════════════════════════════════════════`);
+  console.log(`🖼️ [saveImageToDB] START:`);
+  console.log(`   taskId: ${taskId}`);
+  console.log(`   userChatId: ${userChatId}`);
+  console.log(`   batchId: ${batchId}, batchIndex: ${batchIndex}/${batchSize}`);
+  console.log(`   isMerged: ${isMerged}, mergeId: ${mergeId || 'none'}`);
+  console.log(`   imageUrl: ${imageUrl?.substring(0, 60)}...`);
 
   // CRITICAL VALIDATION: Ensure we have all required data before saving
   if (!imageUrl || !taskId || !userId || !chatId) {
     console.error(`❌ [saveImageToDB] CRITICAL: Missing required data - imageUrl=${!!imageUrl}, taskId=${!!taskId}, userId=${!!userId}, chatId=${!!chatId}`);
     console.error(`❌ [saveImageToDB] Refusing to save incomplete image to prevent database corruption`);
+    console.log(`🖼️🖼️🖼️ [saveImageToDB] END (missing data) ═════════════════════════════════════════════════════\n`);
     return false;
   }
 
   // Validate imageUrl is a proper URL or data URI
   if (!imageUrl.startsWith('http') && !imageUrl.startsWith('data:image/')) {
     console.error(`❌ [saveImageToDB] CRITICAL: Invalid imageUrl format: ${imageUrl?.substring(0, 60)}...`);
+    console.log(`🖼️🖼️🖼️ [saveImageToDB] END (invalid URL) ═════════════════════════════════════════════════════\n`);
     return false;
   }
 
   // Validate ObjectId formats
   if (!ObjectId.isValid(userId) || !ObjectId.isValid(chatId)) {
     console.error(`❌ [saveImageToDB] CRITICAL: Invalid ObjectId - userId=${userId}, chatId=${chatId}`);
+    console.log(`🖼️🖼️🖼️ [saveImageToDB] END (invalid ObjectId) ══════════════════════════════════════════════\n`);
     return false;
+  }
+
+  // Get current message count BEFORE any operations
+  if (userChatId && ObjectId.isValid(userChatId)) {
+    const db = fastify.mongo.db;
+    const userDataCollection = db.collection('userChat');
+    const chatDocBefore = await userDataCollection.findOne({
+      userId: new ObjectId(userId),
+      _id: new ObjectId(userChatId)
+    });
+    const messageCountBefore = chatDocBefore?.messages?.length || 0;
+    console.log(`📊 [saveImageToDB] INITIAL message count: ${messageCountBefore}`);
+    
+    if (isMerged && mergeId) {
+      const existingMerge = chatDocBefore?.messages?.filter(m => m.mergeId === mergeId).length || 0;
+      console.log(`   Existing messages with mergeId=${mergeId}: ${existingMerge}`);
+    }
+    if (batchId && batchIndex !== null) {
+      const existingBatch = chatDocBefore?.messages?.filter(m => m.batchId === batchId && m.batchIndex === batchIndex).length || 0;
+      console.log(`   Existing messages with batchId=${batchId}, batchIndex=${batchIndex}: ${existingBatch}`);
+    }
   }
 
   const db = fastify.mongo.db;
@@ -2541,6 +2696,20 @@ async function saveImageToDB({taskId, userId, chatId, userChatId, prompt, title,
       
     }
 
+    // Verify final message count
+    if (userChatId && ObjectId.isValid(userChatId)) {
+      const userDataCollection = db.collection('userChat');
+      const chatDocAfter = await userDataCollection.findOne({
+        userId: new ObjectId(userId),
+        _id: new ObjectId(userChatId)
+      });
+      const messageCountAfter = chatDocAfter?.messages?.length || 0;
+      console.log(`📊 [saveImageToDB] FINAL message count: ${messageCountAfter}`);
+    }
+
+    console.log(`✅ [saveImageToDB] Completed successfully for imageId: ${imageId}`);
+    console.log(`🖼️🖼️🖼️ [saveImageToDB] END (success) ═══════════════════════════════════════════════════════════\n`);
+
     return { 
       imageId, 
       imageUrl,
@@ -2552,6 +2721,8 @@ async function saveImageToDB({taskId, userId, chatId, userChatId, prompt, title,
     };
     
   } catch (error) {
+    console.error(`❌ [saveImageToDB] Error:`, error.message);
+    console.log(`🖼️🖼️🖼️ [saveImageToDB] END (error) ═══════════════════════════════════════════════════════════\n`);
     return false;
   }
 }

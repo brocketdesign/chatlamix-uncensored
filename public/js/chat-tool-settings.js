@@ -1140,7 +1140,7 @@ class ChatToolSettings {
             this.isLoading = true;
             this.showSavingState();
             
-            // Get chatId from session storage
+            // Get chatId and userChatId from session storage
             const chatId = sessionStorage.getItem('lastChatId') || sessionStorage.getItem('chatId');
             const userChatId = sessionStorage.getItem('userChatId');
 
@@ -1151,6 +1151,11 @@ class ChatToolSettings {
             // Include chatId if available for chat-specific settings
             if (chatId && chatId !== 'null' && chatId !== 'undefined') {
                 requestBody.chatId = chatId;
+            }
+
+            // Include userChatId to save preferredChatLanguage to userChat collection
+            if (userChatId && userChatId !== 'null' && userChatId !== 'undefined') {
+                requestBody.userChatId = userChatId;
             }
             const response = await fetch(`/api/chat-tool-settings/${this.userId}`, {
                 method: 'POST',
@@ -1634,6 +1639,10 @@ class ChatToolSettings {
     getScenariosEnabled() {
         return this.settings.scenariosEnabled !== undefined ? 
             this.settings.scenariosEnabled : false;
+    }
+    
+    getPreferredChatLanguage() {
+        return this.settings.preferredChatLanguage || '';
     }
 
     // Chat-specific methods

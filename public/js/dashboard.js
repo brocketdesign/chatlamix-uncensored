@@ -3541,7 +3541,7 @@ window.getLanguageName = function(langCode) {
         fr: "french",
         ja: "japanese"
     };
-    return langMap[langCode] || "japanese";
+    return langMap[langCode] || langCode || "english";
 }
 
 // Pagination logic simplified with loadingStates

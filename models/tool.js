@@ -646,12 +646,13 @@ const processPromptToTags = async (db, prompt) => {
 
   
   function getLanguageName(langCode) {
+
     const langMap = {
         en: "english",
         fr: "french",
         ja: "japanese"
     };
-    return langMap[langCode] || "japanese";
+    return langMap[langCode] || langCode || "english";
 }
 async function updateUserLang(db, userId, lang) {
     if (!userId || !lang) {
