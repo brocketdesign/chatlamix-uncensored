@@ -476,6 +476,11 @@ async function loadBehaviorTrackingData(forceRefresh = false) {
 function updateBehaviorStats(data) {
     if (!data || !data.events) return;
     
+    // New Users (from metadata)
+    const newUsersCount = data.metadata?.recentUsersCount || 0;
+    $('#newUsersCount').text(newUsersCount.toLocaleString());
+    $('#newUsersCountBadge').text(newUsersCount.toLocaleString() + ' new users');
+    
     // Chat Sessions Started
     $('#totalChatStarts').text(data.events.startChat?.count?.toLocaleString() || '0');
     $('#uniqueChatStartUsers').text((data.events.startChat?.uniqueUsers || 0) + ' users');

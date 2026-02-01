@@ -13,7 +13,6 @@ const {
   ChatStartSources,
   PremiumViewSources
 } = require('../models/user-behavior-tracking-utils');
-const { checkUserAdmin } = require('../models/tool');
 
 /**
  * User Behavior Tracking Routes
@@ -114,12 +113,18 @@ async function trackingRoutes(fastify, options) {
   /**
    * Track a "Premium View" event (when premium modal is shown)
    * POST /api/tracking/premium-view
+   * Note: Admin users (role: 'admin') are skipped to avoid polluting analytics data
    */
   fastify.post('/api/tracking/premium-view', async (request, reply) => {
     try {
       const user = request.user;
       if (!user || !user._id) {
         return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
+      // Skip tracking for admin users (check role field)
+      if (user.role === 'admin') {
+        return reply.send({ success: true, skipped: true, reason: 'admin_user' });
       }
 
       const { source, triggerAction, pageUrl } = request.body;
@@ -236,7 +241,7 @@ async function trackingRoutes(fastify, options) {
   // ============================================
 
   /**
-   * Check if user is admin using shared checkUserAdmin function
+   * Check if user is admin using role field
    */
   async function checkAdmin(request, reply) {
     const user = request.user;
@@ -245,20 +250,13 @@ async function trackingRoutes(fastify, options) {
       return false;
     }
     
-    try {
-      const isAdmin = await checkUserAdmin(fastify, user._id);
-      
-      if (!isAdmin) {
-        await reply.status(403).send({ error: 'Access denied - admin privileges required' });
-        return false;
-      }
-      
-      return true;
-    } catch (error) {
-      console.error('Error checking admin status:', error);
-      await reply.status(500).send({ error: 'Internal server error' });
+    // Check role field directly
+    if (user.role !== 'admin') {
+      await reply.status(403).send({ error: 'Access denied - admin privileges required' });
       return false;
     }
+    
+    return true;
   }
 
   /**

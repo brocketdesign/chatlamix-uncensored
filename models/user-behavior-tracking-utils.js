@@ -474,6 +474,7 @@ async function getUserTrackingStats(db, userId) {
  * Get aggregate tracking statistics for admin dashboard
  * Queries the userChat collection for chat sessions and messages
  * Only for users created in the last 7 days
+ * Excludes admin users (role: 'admin') from all statistics
  * @param {Object} db - MongoDB database instance
  * @param {Date} startDate - Start date for filtering (optional)
  * @param {Date} endDate - End date for filtering (optional)
@@ -491,9 +492,10 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     sevenDaysAgo.setHours(0, 0, 0, 0);
 
-    // Get users created in the last 7 days
+    // Get users created in the last 7 days, excluding admin users
     const recentUsers = await usersCollection.find({
-      createdAt: { $gte: sevenDaysAgo }
+      createdAt: { $gte: sevenDaysAgo },
+      role: { $ne: 'admin' }  // Exclude admin users
     }, { projection: { _id: 1 } }).toArray();
     
     const recentUserIds = recentUsers.map(u => u._id);
@@ -589,11 +591,12 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
     }
 
     // Get start chat sources distribution (from tracking collection, filtered by recent users)
+    // Note: userId is stored as ObjectId in tracking collection
     const startChatSources = await trackingCollection.aggregate([
       { 
         $match: { 
           eventType: TrackingEventTypes.START_CHAT,
-          userId: { $in: recentUserIds.map(id => id.toString()) },
+          userId: { $in: recentUserIds },
           createdAt: { $gte: sevenDaysAgo }
         } 
       },
@@ -607,11 +610,12 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
     ]).toArray();
 
     // Get premium view sources distribution (filtered by recent users)
+    // Note: userId is stored as ObjectId in tracking collection
     const premiumViewSources = await trackingCollection.aggregate([
       { 
         $match: { 
           eventType: TrackingEventTypes.PREMIUM_VIEW,
-          userId: { $in: recentUserIds.map(id => id.toString()) },
+          userId: { $in: recentUserIds },
           createdAt: { $gte: sevenDaysAgo }
         } 
       },
@@ -625,11 +629,12 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
     ]).toArray();
 
     // Get premium view count from tracking collection (filtered by recent users)
+    // Note: userId is stored as ObjectId in tracking collection
     const premiumViewStats = await trackingCollection.aggregate([
       { 
         $match: { 
           eventType: TrackingEventTypes.PREMIUM_VIEW,
-          userId: { $in: recentUserIds.map(id => id.toString()) },
+          userId: { $in: recentUserIds },
           createdAt: { $gte: sevenDaysAgo }
         } 
       },
@@ -729,6 +734,7 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
 /**
  * Get daily tracking trends from userChat collection
  * Only for users created in the last 7 days
+ * Excludes admin users from all statistics
  * @param {Object} db - MongoDB database instance
  * @param {number} days - Number of days to look back
  * @returns {Promise<Object>} Daily tracking trends
@@ -744,14 +750,15 @@ async function getDailyTrackingTrends(db, days = 7) {
     startDate.setDate(startDate.getDate() - days);
     startDate.setHours(0, 0, 0, 0);
 
-    // Get users created in the last 7 days
+    // Get users created in the last 7 days, excluding admin users
     const recentUsers = await usersCollection.find({
-      createdAt: { $gte: startDate }
+      createdAt: { $gte: startDate },
+      role: { $ne: 'admin' }  // Exclude admin users
     }, { projection: { _id: 1 } }).toArray();
     
     const recentUserIds = recentUsers.map(u => u._id);
     
-    console.log(`[getDailyTrackingTrends] Found ${recentUserIds.length} users created since ${startDate.toISOString()}`);
+    console.log(`[getDailyTrackingTrends] Found ${recentUserIds.length} users (excluding admins) created since ${startDate.toISOString()}`);
     
     // Initialize result object with all dates
     const result = {};
@@ -864,12 +871,13 @@ async function getDailyTrackingTrends(db, days = 7) {
       });
 
       // Get premium view trends from tracking collection (filtered by recent users)
+      // Note: userId is stored as ObjectId in tracking collection
       const premiumTrends = await trackingCollection.aggregate([
         { 
           $match: { 
             createdAt: { $gte: startDate },
             eventType: TrackingEventTypes.PREMIUM_VIEW,
-            userId: { $in: recentUserIds.map(id => id.toString()) }
+            userId: { $in: recentUserIds }
           } 
         },
         {

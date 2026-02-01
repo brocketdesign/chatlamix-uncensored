@@ -236,11 +236,35 @@
                 <div class="section-header mb-3 mt-5">
                     <h5 class="section-title">
                         <i class="bi bi-activity me-2"></i>User Behavior Tracking
+                        <span class="badge bg-secondary ms-2" id="newUsersCountBadge" title="New users registered in the last 7 days (excluding admins)">0 new users</span>
                     </h5>
                 </div>
 
                 <div class="row g-3 g-lg-4 mb-4">
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
+                        <div class="info-card card-shadow">
+                            <div class="info-card-body">
+                                <div class="info-card-header">
+                                    <div class="info-icon bg-primary-soft">
+                                        <i class="bi bi-person-plus-fill text-primary"></i>
+                                    </div>
+                                    <h6 class="info-card-title mb-0">New Users (7 Days)</h6>
+                                </div>
+                                <div class="info-card-content">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h2 class="info-value mb-0" id="newUsersCount">0</h2>
+                                        <span class="badge badge-primary">registered</span>
+                                    </div>
+                                    <div class="info-detail">
+                                        <i class="bi bi-info-circle me-1"></i>
+                                        <small class="text-muted">Excludes admin users</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-md-6">
                         <div class="info-card card-shadow">
                             <div class="info-card-body">
                                 <div class="info-card-header">
@@ -263,7 +287,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
                         <div class="info-card card-shadow">
                             <div class="info-card-body">
                                 <div class="info-card-header">
@@ -286,7 +310,7 @@
                         </div>
                     </div>
 
-                    <div class="col-xl-4 col-md-6">
+                    <div class="col-xl-3 col-md-6">
                         <div class="info-card card-shadow">
                             <div class="info-card-body">
                                 <div class="info-card-header">
