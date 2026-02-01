@@ -502,26 +502,6 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
     const db = fastify.mongo.db;
     const collectionUserChat = db.collection('userChat');
 
-    const userChatDoc = await collectionUserChat.findOne({
-      _id: new ObjectId(userChatId)
-    });
-
-    if (!userChatDoc) {
-      console.error(`[addMergeFaceMessageToChat] Call ID: ${callId} - UserChat not found: ${userChatId}`);
-      return;
-    }
-
-    // CRITICAL FIX: Check if this mergeId already exists to prevent duplicates
-    const existingMessage = await collectionUserChat.findOne({
-      _id: new ObjectId(userChatId),
-      'messages.mergeId': mergeId
-    });
-
-    if (existingMessage) {
-      console.log(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - Message with mergeId ${mergeId} already exists, skipping duplicate`);
-      return;
-    }
-
     // Validate that we have all required data
     if (!mergedImageUrl || !mergeId) {
       console.error(`[addMergeFaceMessageToChat] Call ID: ${callId} - Invalid data: mergedImageUrl=${mergedImageUrl}, mergeId=${mergeId}`);
@@ -533,6 +513,7 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
       role: 'assistant',
       content: `[MergeFace] ${mergeId}`,
       timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
+      createdAt: new Date(),
       isMerged: true, // Use isMerged instead of isMergeFace for consistency
       mergeId: mergeId,
       imageUrl: mergedImageUrl,
@@ -540,14 +521,28 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
       type: 'mergeFace',
     };
 
-    // Add the message to the chat using $push for atomicity
+    // CRITICAL FIX: Use atomic operation to check and insert in one step
+    // This prevents race conditions where two processes both check, find nothing, and both insert
     const updateResult = await collectionUserChat.updateOne(
-      { _id: new ObjectId(userChatId) },
+      { 
+        _id: new ObjectId(userChatId),
+        'messages.mergeId': { $ne: mergeId }  // Only update if mergeId doesn't exist
+      },
       {
         $push: { messages: assistantMessage },
         $set: { updatedAt: new Date() }
       }
     );
+
+    if (updateResult.matchedCount === 0) {
+      console.log(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - Message with mergeId ${mergeId} already exists, skipping duplicate`);
+      return;
+    }
+
+    if (updateResult.modifiedCount === 0) {
+      console.warn(`🧬 [addMergeFaceMessageToChat] Call ID: ${callId} - UserChat not found or update failed: ${userChatId}`);
+      return;
+    }
 
     console.log(`[addMergeFaceMessageToChat] Call ID: ${callId} - Message added successfully`);
   } catch (error) {

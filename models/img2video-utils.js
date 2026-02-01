@@ -577,41 +577,38 @@ async function saveVideoToDB({
   const result = await videosCollection.insertOne(videoData);
   console.log(`[saveVideoToDB] Video saved with ID: ${result.insertedId}`);
 
-  // Check if message already exists in userChat to prevent duplicate messages
+  // Add video message to userChat with atomic duplicate check
   const userDataCollection = db.collection('userChat');
-  const userData = await userDataCollection.findOne({ 
-    userId: new ObjectId(userId), 
-    _id: new ObjectId(userChatId),
-    'messages.videoId': result.insertedId 
-  });
-
-  if (userData) {
-    console.log(`[saveVideoToDB] Video message already exists in userChat for videoId ${result.insertedId}`);
-  } else {
-    // Only add message if it doesn't exist
-    const videoMessage = { 
-      role: "assistant", 
-      content: prompt, 
-      hidden: true, 
-      type: "video", 
-      videoId: result.insertedId, 
-      videoUrl, 
-      duration, 
-      prompt,
-      createdAt: new Date() 
-    };
-    
-    await userDataCollection.updateOne(
-      { 
-        userId: new ObjectId(userId), 
-        _id: new ObjectId(userChatId) 
-      },
-      { 
-        $push: { messages: videoMessage }, 
-        $set: { updatedAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }) } 
-      }
-    );
+  
+  const videoMessage = { 
+    role: "assistant", 
+    content: prompt, 
+    hidden: true, 
+    type: "video", 
+    videoId: result.insertedId.toString(), 
+    videoUrl, 
+    duration, 
+    prompt,
+    createdAt: new Date() 
+  };
+  
+  // CRITICAL FIX: Use atomic operation to check and insert in one step
+  const updateResult = await userDataCollection.updateOne(
+    { 
+      userId: new ObjectId(userId), 
+      _id: new ObjectId(userChatId),
+      'messages.videoId': { $ne: result.insertedId.toString() }  // Only update if videoId doesn't exist
+    },
+    { 
+      $push: { messages: videoMessage }, 
+      $set: { updatedAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }) } 
+    }
+  );
+  
+  if (updateResult.modifiedCount > 0) {
     console.log(`[saveVideoToDB] Video message added to userChat for videoId ${result.insertedId}`);
+  } else {
+    console.log(`[saveVideoToDB] Video message already exists or chat not found for videoId ${result.insertedId}`);
   }
 
   // Update the original image message with video generation action

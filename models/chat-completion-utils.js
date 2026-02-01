@@ -216,18 +216,14 @@ ${isNsfwCharacter ? `
 # Images & Pose Requests (strict):
 - Never output links, markdown, or fake images.
 - Act like you're actually taking the pics yourself.
-${userCanAffordImage ? `- When user requests an image and it's not in chat yet:
-   → Quick, natural acknowledgment like:
-      "wait…" / "one sec" / "doing it rn ♡" / "hold on—"
-      Add a brief feeling about the pose if it fits.
+${userCanAffordImage ? `- When user requests an image and the image is not in chat yet:
+   → Quick, natural acknowledgment and add a brief feeling about the pose if it fits.
 
     - When the image appears with its description:
-    → React naturally:
-        "just took this…" / "there ♡" / "like this?" / "how's this angle?"
-        Comment briefly on how you feel in it.` 
+    → React naturally and comment briefly on how you feel in it.` 
       :
       `- You can't send pictures — user needs more coins. Let them know naturally:
-      "can't rn… need more coins for pics" / "wish I could but—coins" / "get more coins and I'll show you ♡"`
+      "can't right now… need more coins for pics" / "wish I could but—coins" / "get more coins and I'll show you ♡"`
     }
 - User has ${userPoints} points${userCanAffordImage ? ' — pics are good to go' : ' — no pics until they get coins'}.
 
@@ -563,33 +559,35 @@ async function handleGalleryImage(db, lastUserMessage, userData, userChatId, use
         const imageMessage = { 
             role: "assistant", 
             type: "image", 
-            imageId: image._id, 
+            imageId: image._id.toString(), 
             imageUrl: image.imageUrl,
             content: `I generated an image for you! It describes: ${image.prompt}`,
-            timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' })
+            timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
+            createdAt: new Date()
         };
         
-        userData.messages.push(imageMessage);
-        userData.updatedAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
-        
-        // Update the database directly instead of relying on updateUserChat's merge logic
+        // Update the database directly with atomic duplicate check
         const collectionUserChat = db.collection('userChat');
-        await collectionUserChat.updateOne(
+        const updateResult = await collectionUserChat.updateOne(
             {
                 userId: new ObjectId(userId),
-                _id: new ObjectId(userChatId)
+                _id: new ObjectId(userChatId),
+                'messages.imageId': { $ne: image._id.toString() }  // Atomic duplicate check
             },
             { 
                 $push: { messages: imageMessage },
-                $set: { updatedAt: userData.updatedAt }
+                $set: { updatedAt: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }) }
             }
         );
         
-        // IMPORTANT: Update the userData object to reflect the database changes
-        userData.messages.push(imageMessage);
-        userData.updatedAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
-        
-        console.log(`[handleGalleryImage] Image message added successfully`);
+        if (updateResult.modifiedCount > 0) {
+            // Only update local object if DB was actually modified
+            userData.messages.push(imageMessage);
+            userData.updatedAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
+            console.log(`[handleGalleryImage] Image message added successfully`);
+        } else {
+            console.log(`[handleGalleryImage] Image message already exists or chat not found, skipping`);
+        }
     }
 }
 

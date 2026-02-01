@@ -1039,9 +1039,16 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
   }
 
   // Generate a unique lock key for this specific message
-  const lockKey = batchId && batchIndex !== null
-    ? `msg:${userChatId}:batch:${batchId}:${batchIndex}`
-    : `msg:${userChatId}:image:${imageIdStr}`;
+  // CRITICAL FIX: Include mergeId in lock key for merged images to prevent duplicate merges
+  let lockKey;
+  if (isMerged && mergeId) {
+    // For merged images, use mergeId as the primary deduplication key
+    lockKey = `msg:${userChatId}:merge:${mergeId}`;
+  } else if (batchId && batchIndex !== null) {
+    lockKey = `msg:${userChatId}:batch:${batchId}:${batchIndex}`;
+  } else {
+    lockKey = `msg:${userChatId}:image:${imageIdStr}`;
+  }
 
   try {
     console.log(`📝 [addImageMessageToChatHelper] START:`);
@@ -1097,8 +1104,22 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
       }
 
       // ===== SAFEGUARD 3: Early duplicate check before building message =====
-      // Check if message already exists with same batchId+batchIndex or imageId
+      // Check if message already exists with same mergeId, batchId+batchIndex, or imageId
+      // CRITICAL FIX: Always check mergeId first for merged images to catch duplicates
+      // regardless of batch metadata differences
       let existingMessage;
+      
+      // For merged images, ALWAYS check mergeId first - this is the primary key
+      if (isMerged && mergeId) {
+        existingMessage = chatDoc.messages.find(m => m.mergeId === mergeId);
+        if (existingMessage) {
+          console.log(`💾 [addImageMessageToChatHelper] Message already exists (early check) for mergeId=${mergeId}, skipping duplicate`);
+          await locksCollection.deleteOne({ key: lockKey }).catch(() => {});
+          return true;
+        }
+      }
+      
+      // Also check batch or imageId as secondary deduplication
       if (batchId && batchIndex !== null) {
         existingMessage = chatDoc.messages.find(m =>
           m.batchId === batchId && m.batchIndex === batchIndex
@@ -1149,8 +1170,18 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
 
     // ===== SAFEGUARD 4: Atomic duplicate check + insert using updateOne =====
     // Build the filter to check for duplicates atomically
+    // CRITICAL FIX: For merged images, always include mergeId check to prevent duplicates
     let atomicFilter;
-    if (batchId && batchIndex !== null) {
+    
+    if (isMerged && mergeId) {
+      // For merged images: ensure no message with same mergeId exists
+      // This is the most reliable deduplication for merged images
+      atomicFilter = {
+        userId: new ObjectId(userId),
+        _id: new ObjectId(userChatId),
+        'messages.mergeId': { $ne: mergeId }
+      };
+    } else if (batchId && batchIndex !== null) {
       // For batched images: ensure no message with same batchId+batchIndex exists
       atomicFilter = {
         userId: new ObjectId(userId),
@@ -1176,7 +1207,7 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     await locksCollection.deleteOne({ key: lockKey }).catch(() => {});
 
     if (result.matchedCount === 0) {
-      console.log(`💾 [addImageMessageToChatHelper] Message already exists (atomic check) for ${batchId ? `batchIndex=${batchIndex}` : `imageId=${imageIdStr}`}, skipping duplicate`);
+      console.log(`💾 [addImageMessageToChatHelper] Message already exists (atomic check) for ${isMerged ? `mergeId=${mergeId}` : batchId ? `batchIndex=${batchIndex}` : `imageId=${imageIdStr}`}, skipping duplicate`);
       return true;
     }
 
@@ -2180,28 +2211,18 @@ async function saveImageToDB({taskId, userId, chatId, userChatId, prompt, title,
       if (existingImage) {
         const image = existingImage.images.find(img => img.mergeId === mergeId);
         if (image) {
-          console.log(`⚠️  [saveImageToDB] Found existing merged image in gallery for mergeId=${mergeId}, imageId=${image._id}, will add message with batchIndex=${batchIndex}`);
-          // CRITICAL FIX: Even if image exists in gallery, ensure chat message exists WITH batch metadata
+          console.log(`⚠️  [saveImageToDB] Found existing merged image in gallery for mergeId=${mergeId}, imageId=${image._id}, will check for message`);
+          // CRITICAL FIX: Even if image exists in gallery, ensure chat message exists
           if (userChatId && ObjectId.isValid(userChatId)) {
             const userDataCollection = db.collection('userChat');
             
-            // For batched images, check for this specific batchIndex, not just mergeId
-            // This allows the same merged image to appear in multiple batch slots
-            // CRITICAL FIX: Use $elemMatch to ensure both conditions match on the SAME array element
-            let existingMessage;
-            if (batchId && batchIndex !== null) {
-              existingMessage = await userDataCollection.findOne({
-                userId: new ObjectId(userId),
-                _id: new ObjectId(userChatId),
-                messages: { $elemMatch: { batchId: batchId, batchIndex: batchIndex } }
-              });
-            } else {
-              existingMessage = await userDataCollection.findOne({
-                userId: new ObjectId(userId),
-                _id: new ObjectId(userChatId),
-                'messages.mergeId': mergeId
-              });
-            }
+            // CRITICAL FIX: For merged images, ALWAYS check by mergeId first
+            // This is the primary deduplication key for merged images
+            let existingMessage = await userDataCollection.findOne({
+              userId: new ObjectId(userId),
+              _id: new ObjectId(userChatId),
+              'messages.mergeId': mergeId
+            });
             
             if (!existingMessage) {
               console.log(`💾 [saveImageToDB] Adding message for mergeId: ${mergeId}, batchIndex=${batchIndex}`);
@@ -2222,6 +2243,8 @@ async function saveImageToDB({taskId, userId, chatId, userChatId, prompt, title,
                 batchIndex,
                 batchSize
               );
+            } else {
+              console.log(`💾 [saveImageToDB] Message already exists for mergeId: ${mergeId}, skipping`);
             }
           }
           return { 
