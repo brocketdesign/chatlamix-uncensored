@@ -4,6 +4,7 @@ const {
   trackMessageSent,
   trackPremiumView,
   saveUserLocation,
+  saveUserLocationDirect,
   getUserLocation,
   getUserTrackingStats,
   getAggregateTrackingStats,
@@ -138,12 +139,21 @@ async function trackingRoutes(fastify, options) {
   /**
    * Save/update user location based on IP
    * POST /api/tracking/location
+   * Accepts optional clientDetectedLocation in body for client-side fallback
    */
   fastify.post('/api/tracking/location', async (request, reply) => {
     try {
       const user = request.user;
       if (!user || !user._id) {
         return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
+      // Check if client sent a detected location (fallback for localhost)
+      const clientLocation = request.body?.clientDetectedLocation;
+      if (clientLocation && clientLocation.ip && !clientLocation.isLocal) {
+        // Use client-detected location directly
+        const result = await saveUserLocationDirect(db, user._id.toString(), clientLocation);
+        return reply.send(result);
       }
 
       const ipAddress = getClientIP(request);

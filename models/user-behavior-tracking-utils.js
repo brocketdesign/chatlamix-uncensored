@@ -353,6 +353,54 @@ async function saveUserLocation(db, userId, ipAddress) {
 }
 
 /**
+ * Save or update user location with pre-detected location data
+ * Used when client-side detection provides location (fallback for localhost)
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userId - User ID
+ * @param {Object} locationData - Pre-detected location data from client
+ * @returns {Promise<Object>} Location data
+ */
+async function saveUserLocationDirect(db, userId, locationData) {
+  try {
+    const locationsCollection = db.collection(USER_LOCATIONS_COLLECTION);
+    
+    const record = {
+      userId: new ObjectId(userId),
+      ip: locationData.ip,
+      country: locationData.country || 'Unknown',
+      countryCode: locationData.countryCode || 'XX',
+      region: locationData.region || 'Unknown',
+      city: locationData.city || 'Unknown',
+      latitude: locationData.latitude || 0,
+      longitude: locationData.longitude || 0,
+      timezone: locationData.timezone || 'UTC',
+      isp: locationData.isp || 'Unknown',
+      isLocal: false,
+      detectedBy: 'client', // Mark as client-detected
+      lastIpAddress: locationData.ip,
+      updatedAt: new Date()
+    };
+
+    // Upsert: update if exists, insert if not
+    await locationsCollection.updateOne(
+      { userId: new ObjectId(userId) },
+      { 
+        $set: record,
+        $setOnInsert: { createdAt: new Date() }
+      },
+      { upsert: true }
+    );
+
+    console.log(`📍 [Tracking] User location saved (client-detected): ${userId} - ${locationData.city}, ${locationData.country}`);
+    
+    return { success: true, location: record };
+  } catch (error) {
+    console.error('❌ [Tracking] Error saving user location (direct):', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
  * Get user's saved location
  * @param {Object} db - MongoDB database instance
  * @param {string} userId - User ID
@@ -878,6 +926,7 @@ module.exports = {
   // Location functions
   getLocationFromIP,
   saveUserLocation,
+  saveUserLocationDirect,
   getUserLocation,
   
   // Statistics functions

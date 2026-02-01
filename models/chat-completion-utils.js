@@ -76,6 +76,9 @@ function getLanguageDirectiveMessage(language) {
         case 'russian':
             content = 'Начните отвечать на русском языке. Однако, если пользователь пишет на другом языке, естественно переключитесь на его язык и продолжайте разговор на этом языке.';
             break;
+        case 'hindi':
+            content = 'हिंदी में जवाब देना शुरू करें। हालांकि, यदि उपयोगकर्ता किसी अन्य भाषा में लिखता है, तो स्वाभाविक रूप से उनकी भाषा में स्विच करें और उस भाषा में बातचीत जारी रखें।';
+            break;
         default:
             // For any other language, provide a flexible English instruction
             content = `Start responding in ${language}. However, if the user writes in another language, naturally switch to their language and continue the conversation in that language.`;

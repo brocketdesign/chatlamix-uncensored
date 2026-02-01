@@ -204,25 +204,78 @@
 
     /**
      * Save user location based on IP
+     * Uses server-side IP detection, with client-side ipinfo.io as fallback
      * @returns {Promise<Object>} API response with location data
      */
     saveLocation: async function() {
       try {
         this.log('Saving user location...');
 
+        // First try server-side detection
         const response = await fetch('/api/tracking/location', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          credentials: 'include'
+          credentials: 'include',
+          body: JSON.stringify({}) // Send empty body to avoid 400 error
         });
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const result = await response.json();
+        let result = await response.json();
+        
+        // If server detected localhost/local IP, use client-side geolocation as fallback
+        if (result.success && result.location && (result.location.isLocal || result.location.ip === '127.0.0.1')) {
+          this.log('Server detected localhost, trying client-side geolocation...');
+          try {
+            const ipInfoResponse = await fetch('https://ipinfo.io/json?token=');
+            const ipInfoData = await ipInfoResponse.json();
+            
+            if (ipInfoData && ipInfoData.ip) {
+              // Parse coordinates
+              let latitude = 0, longitude = 0;
+              if (ipInfoData.loc) {
+                const [lat, lon] = ipInfoData.loc.split(',');
+                latitude = parseFloat(lat) || 0;
+                longitude = parseFloat(lon) || 0;
+              }
+              
+              // Save the client-detected location to server
+              const saveResponse = await fetch('/api/tracking/location', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                  clientDetectedLocation: {
+                    ip: ipInfoData.ip,
+                    country: ipInfoData.country || 'Unknown',
+                    countryCode: ipInfoData.country || 'XX',
+                    region: ipInfoData.region || 'Unknown',
+                    city: ipInfoData.city || 'Unknown',
+                    latitude: latitude,
+                    longitude: longitude,
+                    timezone: ipInfoData.timezone || 'UTC',
+                    isp: ipInfoData.org || 'Unknown',
+                    isLocal: false
+                  }
+                })
+              });
+              
+              if (saveResponse.ok) {
+                result = await saveResponse.json();
+                this.log('Client-side location saved successfully');
+              }
+            }
+          } catch (ipInfoError) {
+            this.log('Client-side geolocation fallback failed:', ipInfoError.message);
+          }
+        }
+        
         this.log('Location saved successfully:', result);
         return result;
       } catch (error) {

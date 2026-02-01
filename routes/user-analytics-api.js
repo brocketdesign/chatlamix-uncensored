@@ -289,8 +289,14 @@ async function calculateDashboardStats(db) {
   
   console.log('Calculating dashboard stats...');
   
-  // Count total messages from userChat collection
+  // Get admin user IDs to exclude from stats
+  const adminUsers = await usersCollection.find({ role: 'admin' }).project({ _id: 1 }).toArray();
+  const adminUserIds = adminUsers.map(u => u._id);
+  console.log(`[calculateDashboardStats] Excluding ${adminUserIds.length} admin user(s) from stats`);
+  
+  // Count total messages from userChat collection (excluding admin users)
   const totalMessagesResult = await userChatCollection.aggregate([
+    { $match: { userId: { $nin: adminUserIds } } }, // Exclude admin users
     { $unwind: '$messages' },
     { $count: 'total' }
   ]).toArray();
@@ -308,19 +314,22 @@ async function calculateDashboardStats(db) {
     totalLikes,
     usersWithImages
   ] = await Promise.all([
-    usersCollection.countDocuments({ isTemporary: { $ne: true } }),
-    usersCollection.countDocuments({ createdAt: { $gte: lastWeek }, isTemporary: { $ne: true } }),
-    imagesCollection.aggregate([{ $group: { _id: null, total: { $sum: '$generationCount' } } }]).toArray(),
+    usersCollection.countDocuments({ isTemporary: { $ne: true }, role: { $ne: 'admin' } }), // Exclude admins
+    usersCollection.countDocuments({ createdAt: { $gte: lastWeek }, isTemporary: { $ne: true }, role: { $ne: 'admin' } }), // Exclude admins
     imagesCollection.aggregate([
-      { $match: { createdAt: { $gte: lastWeek } } },
+      { $match: { userId: { $nin: adminUserIds } } }, // Exclude admin users
+      { $group: { _id: null, total: { $sum: '$generationCount' } } }
+    ]).toArray(),
+    imagesCollection.aggregate([
+      { $match: { createdAt: { $gte: lastWeek }, userId: { $nin: adminUserIds } } }, // Exclude admin users
       { $group: { _id: null, total: { $sum: '$generationCount' } } }
     ]).toArray(),
     subscriptionsCollection.countDocuments({ 
       subscriptionStatus: 'active', 
       subscriptionType: 'subscription' // Only count subscription type, not day-pass
     }),
-    likesCollection.countDocuments({}),
-    imagesCollection.distinct('userId').then(arr => arr.length)
+    likesCollection.countDocuments({ userId: { $nin: adminUserIds } }), // Exclude admin users from likes
+    imagesCollection.distinct('userId', { userId: { $nin: adminUserIds } }).then(arr => arr.length) // Exclude admin users from image generators
   ]);
   
   const totalImagesCount = totalImages[0]?.total || 0;

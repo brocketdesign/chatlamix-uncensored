@@ -6,8 +6,8 @@ $(document).ready(function() {
     loadAnalyticsData();
     loadBehaviorTrackingData();
     
-    // Debug: Get and display IP geolocation data
-    debugIPGeolocation();
+    // Debug: Get and display IP geolocation data (disabled in production)
+    // debugIPGeolocation();
     
     $('#refreshData').on('click', function() {
         $(this).html('<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...');
