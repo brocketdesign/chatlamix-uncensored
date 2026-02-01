@@ -1171,15 +1171,18 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
     // ===== SAFEGUARD 4: Atomic duplicate check + insert using updateOne =====
     // Build the filter to check for duplicates atomically
     // CRITICAL FIX: For merged images, always include mergeId check to prevent duplicates
+    // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
+    // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
+    // $not + $elemMatch correctly checks if NO element matches
     let atomicFilter;
     
     if (isMerged && mergeId) {
       // For merged images: ensure no message with same mergeId exists
-      // This is the most reliable deduplication for merged images
+      // CRITICAL: Use $not + $elemMatch instead of $ne for proper array checking
       atomicFilter = {
         userId: new ObjectId(userId),
         _id: new ObjectId(userChatId),
-        'messages.mergeId': { $ne: mergeId }
+        messages: { $not: { $elemMatch: { mergeId: mergeId } } }
       };
     } else if (batchId && batchIndex !== null) {
       // For batched images: ensure no message with same batchId+batchIndex exists
@@ -1190,10 +1193,11 @@ async function addImageMessageToChatHelper(userDataCollection, userId, userChatI
       };
     } else {
       // For non-batched: ensure no message with same imageId exists
+      // CRITICAL: Use $not + $elemMatch instead of $ne for proper array checking
       atomicFilter = {
         userId: new ObjectId(userId),
         _id: new ObjectId(userChatId),
-        'messages.imageId': { $ne: imageIdStr }
+        messages: { $not: { $elemMatch: { imageId: imageIdStr } } }
       };
     }
 

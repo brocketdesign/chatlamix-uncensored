@@ -18,3 +18,9 @@
 *.backup.v*
 public/img/.DS_Store
 test-carousel-fix.html
+
+# Entire Scripts Folder
+/scripts
+
+#Entire Docs Folder
+/docs

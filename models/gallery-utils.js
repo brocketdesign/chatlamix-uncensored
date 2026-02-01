@@ -107,15 +107,17 @@ async function appendMessageToUserChat(db, userChatId, message) {
 
   // Build atomic filter to prevent duplicate messages
   // Check for duplicates based on message type
+  // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
+  // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
   let filter = { _id: userChatObjectId };
   
   if (message.mergeId) {
     // For merged images, use mergeId as the primary deduplication key
-    filter['messages.mergeId'] = { $ne: message.mergeId };
+    filter.messages = { $not: { $elemMatch: { mergeId: message.mergeId } } };
   } else if (message.imageId) {
     // For regular images, use imageId
     const imageIdStr = typeof message.imageId === 'object' ? message.imageId.toString() : message.imageId;
-    filter['messages.imageId'] = { $ne: imageIdStr };
+    filter.messages = { $not: { $elemMatch: { imageId: imageIdStr } } };
   }
 
   const updateResult = await collection.updateOne(

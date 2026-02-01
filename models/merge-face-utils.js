@@ -523,10 +523,12 @@ async function addMergeFaceMessageToChat(userChatId, mergeId, mergedImageUrl, fa
 
     // CRITICAL FIX: Use atomic operation to check and insert in one step
     // This prevents race conditions where two processes both check, find nothing, and both insert
+    // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
+    // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
     const updateResult = await collectionUserChat.updateOne(
       { 
         _id: new ObjectId(userChatId),
-        'messages.mergeId': { $ne: mergeId }  // Only update if mergeId doesn't exist
+        messages: { $not: { $elemMatch: { mergeId: mergeId } } }  // Only update if no message has this mergeId
       },
       {
         $push: { messages: assistantMessage },

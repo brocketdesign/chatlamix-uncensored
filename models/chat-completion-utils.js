@@ -567,12 +567,14 @@ async function handleGalleryImage(db, lastUserMessage, userData, userChatId, use
         };
         
         // Update the database directly with atomic duplicate check
+        // IMPORTANT: Must use $not + $elemMatch for array field checks, NOT $ne!
+        // $ne on arrays matches if ANY element doesn't match, which is always true for arrays
         const collectionUserChat = db.collection('userChat');
         const updateResult = await collectionUserChat.updateOne(
             {
                 userId: new ObjectId(userId),
                 _id: new ObjectId(userChatId),
-                'messages.imageId': { $ne: image._id.toString() }  // Atomic duplicate check
+                messages: { $not: { $elemMatch: { imageId: image._id.toString() } } }  // Atomic duplicate check
             },
             { 
                 $push: { messages: imageMessage },

@@ -1045,7 +1045,6 @@ function setupChatInterface(chat, character, userChat, isNew) {
         // CRITICAL FIX: Filter out invalid/undefined messages before processing
         const invalidMessages = [];
         userChatMessages = userChatMessages.filter((msg, index) => {
-            console.log(`[displayChat] Validating message at index ${index}:`, msg);
             // Skip null or undefined messages
             if (!msg) {
                 console.warn(`[displayChat] Removing undefined/null message at index ${index}`);
