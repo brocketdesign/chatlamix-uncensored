@@ -248,6 +248,71 @@
     margin-top: 1.5rem !important;
 }
 
+/* Onboarding character recommendations - vertical scroll grid */
+.onboarding-character-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 12px !important;
+    max-height: 420px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding-right: 6px !important;
+}
+
+.onboarding-character-card {
+    cursor: pointer !important;
+    height: 200px !important;
+}
+
+.onboarding-character-card .card {
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    height: 100% !important;
+    position: relative !important;
+    background: var(--bg-tertiary, #3d3d3d) !important;
+}
+
+.onboarding-character-img {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
+.onboarding-character-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    display: flex !important;
+    align-items: flex-end !important;
+    padding: 0.65rem !important;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), transparent 60%) !important;
+}
+
+.onboarding-character-name {
+    color: #fff !important;
+    font-size: 0.9rem !important;
+    font-weight: 600 !important;
+    margin: 0 !important;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6) !important;
+}
+
+.onboarding-character-card.selected .card {
+    outline: 2px solid #8B4CF8 !important;
+    box-shadow: 0 0 0 4px rgba(139, 76, 248, 0.25) !important;
+}
+
+@media (max-width: 480px) {
+    .onboarding-character-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        max-height: 360px !important;
+    }
+
+    .onboarding-character-card {
+        height: 170px !important;
+    }
+}
+
 .style-btn,
 .char-gender-btn {
     background: #f8fafc !important;
@@ -312,39 +377,43 @@
     box-shadow: 0 4px 16px rgba(110, 32, 244, 0.2) !important;
 }
 
-/* Character Grid - Horizontal Scroll */
-.character-grid,
+/* Character Grid - Vertical Scroll */
+.onboarding-character-grid,
 #character-recommendations {
-    display: flex !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    padding: 1.5rem 0.5rem 2rem !important;
-    flex-wrap: nowrap !important;
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-    gap: 1rem !important;
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 1rem 0.5rem 1.5rem !important;
+    scrollbar-width: thin !important;
+    gap: 12px !important;
     min-height: 280px !important;
+    max-height: 420px !important;
 }
 
-.character-grid::-webkit-scrollbar,
+.onboarding-character-grid::-webkit-scrollbar,
 #character-recommendations::-webkit-scrollbar {
-    display: none !important;
+    width: 8px !important;
 }
 
-.character-grid .gallery-card,
+.onboarding-character-grid::-webkit-scrollbar-thumb,
+#character-recommendations::-webkit-scrollbar-thumb {
+    background: rgba(130, 64, 255, 0.4) !important;
+    border-radius: 8px !important;
+}
+
+.onboarding-character-grid .gallery-card,
 #character-recommendations .gallery-card {
-    flex: 0 0 auto !important;
-    white-space: normal !important;
-    width: 160px !important;
-    min-width: 160px !important;
+    width: 100% !important;
+    min-width: 0 !important;
     position: relative !important;
 }
 
-.character-grid .gallery-card .card,
+.onboarding-character-grid .gallery-card .card,
 #character-recommendations .gallery-card .card,
 #character-recommendations .gallery-card > .card {
-    width: 160px !important;
-    height: 240px !important;
+    width: 100% !important;
+    height: 200px !important;
     border-radius: 16px !important;
     overflow: hidden !important;
     background: var(--bg-tertiary, #1a1a2e) !important;
@@ -353,38 +422,19 @@
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-.character-grid .gallery-card .card:hover,
+.onboarding-character-grid .gallery-card .card:hover,
 #character-recommendations .gallery-card .card:hover {
     border-color: var(--primary-color, #8240FF) !important;
     transform: translateY(-4px) !important;
     box-shadow: 0 8px 24px rgba(110, 32, 244, 0.2) !important;
 }
 
-.character-grid .gallery-card .card img,
+.onboarding-character-grid .gallery-card .card img,
 #character-recommendations .gallery-card .card img,
 #character-recommendations .gallery-card img.card-img-top {
     width: 100% !important;
-    height: 180px !important;
+    height: 100% !important;
     object-fit: cover !important;
-}
-
-.character-grid .gallery-card .card .card-body,
-#character-recommendations .gallery-card .card .card-body {
-    padding: 0.5rem !important;
-    text-align: center !important;
-    background: var(--bg-secondary, #2d2d2d) !important;
-}
-
-.character-grid .gallery-card .card .card-title,
-#character-recommendations .gallery-card .card .card-title,
-#character-recommendations .gallery-card .card-title {
-    font-size: 0.9rem !important;
-    font-weight: 600 !important;
-    color: var(--text-primary, #ffffff) !important;
-    margin: 0 !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
 }
 
 /* Character Selection Effect */

@@ -22,6 +22,11 @@
                         </div>
                     </div>
                     <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <select id="periodSelect" class="form-select d-inline-block w-auto me-2">
+                            <option value="last_7_days" selected>Last 7 Days</option>
+                            <option value="last_30_days">Last 30 Days</option>
+                            <option value="last_90_days">Last 90 Days</option>
+                        </select>
                         <a href="/admin/users" class="btn btn-outline-secondary me-2">
                             <i class="bi bi-arrow-left me-2"></i>Back to Users
                         </a>
@@ -170,7 +175,7 @@
                                         <p class="chart-card-subtitle mb-0">New user registrations over the last 7 days</p>
                                     </div>
                                     <div class="chart-badge">
-                                        <i class="bi bi-calendar-week me-1"></i>7 Days
+                                        <i class="bi bi-calendar-week me-1"></i><span id="growthPeriodBadge">7 Days</span>
                                     </div>
                                 </div>
                             </div>
@@ -221,12 +226,81 @@
                         <div class="chart-card card-shadow">
                             <div class="chart-card-header">
                                 <div>
-                                    <h5 class="chart-card-title mb-1">Content Generation Trends</h5>
-                                    <p class="chart-card-subtitle mb-0">Images and messages over time</p>
+                                    <h5 class="chart-card-title mb-1">Age Range</h5>
+                                    <p class="chart-card-subtitle mb-0">New users in selected period</p>
                                 </div>
                             </div>
                             <div class="chart-card-body">
-                                <canvas id="contentTrendsChart" height="80"></canvas>
+                                <canvas id="ageRangeChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Onboarding Preferences -->
+                <div class="section-header mb-3 mt-5">
+                    <h5 class="section-title">
+                        <i class="bi bi-person-badge me-2"></i>Onboarding Preferences
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-4 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Character Gender Preference</h5>
+                                    <p class="chart-card-subtitle mb-0">Preferred character gender</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="characterGenderChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Chat Language</h5>
+                                    <p class="chart-card-subtitle mb-0">Most selected language</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="languageChart" height="80"></canvas>
+                                <div class="preference-summary" id="topLanguageSummary"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Visual Style</h5>
+                                    <p class="chart-card-subtitle mb-0">Preferred generation style</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="visualStyleChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-12">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Top Character Interests</h5>
+                                    <p class="chart-card-subtitle mb-0">Most selected tags</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <div id="topTagsList" class="preference-list"></div>
+                                <div class="preference-summary" id="topTagSummary"></div>
                             </div>
                         </div>
                     </div>
@@ -346,6 +420,19 @@
                             </div>
                             <div class="chart-card-body p-0">
                                 <div id="chatStartSourcesList" class="source-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Content Generation Trends</h5>
+                                    <p class="chart-card-subtitle mb-0">Images and messages over time</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="contentTrendsChart" height="80"></canvas>
                             </div>
                         </div>
                     </div>

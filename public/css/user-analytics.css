@@ -198,6 +198,59 @@
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* Onboarding Preferences */
+.preference-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.preference-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.preference-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.preference-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 4px;
+}
+
+.preference-bar {
+    height: 6px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.preference-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    border-radius: 3px;
+    transition: width 0.5s ease;
+}
+
+.preference-count {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    min-width: 40px;
+    text-align: right;
+}
+
+.preference-summary {
+    margin-top: 12px;
+    font-size: 12px;
+    color: #6c757d;
+}
+
 .chart-card-header {
     padding: 1.75rem 2rem;
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);

@@ -215,12 +215,13 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
     try {
       const db = fastify.mongo.db;
       const forceRefresh = request.query.refresh === 'true';
+      const period = request.query.period || 'last_7_days';
       
       // Fetch analytics data from cache collection (unless force refresh)
       const analyticsCache = db.collection('analytics_cache');
       
       if (!forceRefresh) {
-        const cachedData = await analyticsCache.findOne({ type: 'dashboard' });
+        const cachedData = await analyticsCache.findOne({ type: `dashboard_${period}` });
         
         if (cachedData && cachedData.data) {
           return reply.send({
@@ -231,15 +232,16 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
         }
       }
       
-      console.log('[Dashboard Analytics] Calculating fresh data (forceRefresh:', forceRefresh, ')');
+      console.log('[Dashboard Analytics] Calculating fresh data (forceRefresh:', forceRefresh, ', period:', period, ')');
       
       // Calculate fresh data
-      const [stats, userGrowth, genderDist, nationalityDist, contentTrends] = await Promise.all([
-        calculateDashboardStats(db),
-        calculateUserGrowth(db),
-        calculateGenderDistribution(db),
-        calculateNationalityDistribution(db),
-        calculateContentTrends(db)
+      const [stats, userGrowth, genderDist, nationalityDist, contentTrends, onboardingPreferences] = await Promise.all([
+        calculateDashboardStats(db, period),
+        calculateUserGrowth(db, period),
+        calculateGenderDistribution(db, period),
+        calculateNationalityDistribution(db, period),
+        calculateContentTrends(db, period),
+        calculateOnboardingPreferences(db, period)
       ]);
       
       const responseData = {
@@ -249,15 +251,16 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
         genderDistribution: genderDist,
         nationalityDistribution: nationalityDist,
         contentTrends,
+        onboardingPreferences,
         lastUpdated: new Date().toISOString()
       };
       
       // Update cache with fresh data
       await analyticsCache.updateOne(
-        { type: 'dashboard' },
+        { type: `dashboard_${period}` },
         { 
           $set: { 
-            type: 'dashboard',
+            type: `dashboard_${period}`,
             data: responseData,
             updatedAt: new Date().toISOString()
           } 
@@ -277,15 +280,14 @@ fastify.get('/user/:userId/image-stats', async (request, reply) => {
 }
 
 // Helper functions for analytics calculations
-async function calculateDashboardStats(db) {
+async function calculateDashboardStats(db, period = 'last_7_days') {
   const usersCollection = db.collection('users');
   const subscriptionsCollection = db.collection('subscriptions');
   const imagesCollection = db.collection('images_generated');
   const userChatCollection = db.collection('userChat'); // Messages are in userChat, not a separate collection
   const likesCollection = db.collection('images_likes');
   
-  const now = new Date();
-  const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const { startDate } = getDateRange(period);
   
   console.log('Calculating dashboard stats...');
   
@@ -315,13 +317,13 @@ async function calculateDashboardStats(db) {
     usersWithImages
   ] = await Promise.all([
     usersCollection.countDocuments({ isTemporary: { $ne: true }, role: { $ne: 'admin' } }), // Exclude admins
-    usersCollection.countDocuments({ createdAt: { $gte: lastWeek }, isTemporary: { $ne: true }, role: { $ne: 'admin' } }), // Exclude admins
+    usersCollection.countDocuments({ createdAt: { $gte: startDate }, isTemporary: { $ne: true }, role: { $ne: 'admin' } }), // Exclude admins
     imagesCollection.aggregate([
       { $match: { userId: { $nin: adminUserIds } } }, // Exclude admin users
       { $group: { _id: null, total: { $sum: '$generationCount' } } }
     ]).toArray(),
     imagesCollection.aggregate([
-      { $match: { createdAt: { $gte: lastWeek }, userId: { $nin: adminUserIds } } }, // Exclude admin users
+      { $match: { createdAt: { $gte: startDate }, userId: { $nin: adminUserIds } } }, // Exclude admin users
       { $group: { _id: null, total: { $sum: '$generationCount' } } }
     ]).toArray(),
     subscriptionsCollection.countDocuments({ 
@@ -357,13 +359,16 @@ async function calculateDashboardStats(db) {
   };
 }
 
-async function calculateUserGrowth(db) {
+async function calculateUserGrowth(db, period = 'last_7_days') {
   const usersCollection = db.collection('users');
   const labels = [];
   const values = [];
+
+  const { endDate } = getDateRange(period);
+  const days = getPeriodDays(period);
   
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date();
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(endDate);
     date.setDate(date.getDate() - i);
     date.setHours(0, 0, 0, 0);
     
@@ -372,7 +377,8 @@ async function calculateUserGrowth(db) {
     
     const count = await usersCollection.countDocuments({
       createdAt: { $gte: date, $lt: nextDate },
-      isTemporary: { $ne: true }
+      isTemporary: { $ne: true },
+      role: { $ne: 'admin' }
     });
     
     labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
@@ -382,11 +388,12 @@ async function calculateUserGrowth(db) {
   return { labels, values };
 }
 
-async function calculateGenderDistribution(db) {
+async function calculateGenderDistribution(db, period = 'last_7_days') {
   const usersCollection = db.collection('users');
+  const { startDate, endDate } = getDateRange(period);
   
   const distribution = await usersCollection.aggregate([
-    { $match: { isTemporary: { $ne: true } } },
+    { $match: { isTemporary: { $ne: true }, role: { $ne: 'admin' }, createdAt: { $gte: startDate, $lte: endDate } } },
     { $group: { _id: '$gender', count: { $sum: 1 } } }
   ]).toArray();
   
@@ -401,12 +408,13 @@ async function calculateGenderDistribution(db) {
   return { labels, values };
 }
 
-async function calculateNationalityDistribution(db) {
+async function calculateNationalityDistribution(db, period = 'last_7_days') {
   const usersCollection = db.collection('users');
+  const { startDate, endDate } = getDateRange(period);
   
   const distribution = await usersCollection.aggregate([
-    { $match: { isTemporary: { $ne: true } } },
-    { $group: { _id: '$userSettings.preferredChatLanguage', count: { $sum: 1 } } },
+    { $match: { isTemporary: { $ne: true }, role: { $ne: 'admin' }, createdAt: { $gte: startDate, $lte: endDate } } },
+    { $group: { _id: '$preferredChatLanguage', count: { $sum: 1 } } },
     { $sort: { count: -1 } },
     { $limit: 10 }
   ]).toArray();
@@ -422,7 +430,7 @@ async function calculateNationalityDistribution(db) {
   return { labels, values };
 }
 
-async function calculateContentTrends(db) {
+async function calculateContentTrends(db, period = 'last_7_days') {
   const galleryCollection = db.collection('gallery');
   const userChatCollection = db.collection('userChat');
   const usersCollection = db.collection('users');
@@ -443,8 +451,11 @@ async function calculateContentTrends(db) {
     console.log('[calculateContentTrends] Sample message:', JSON.stringify(sampleChat.messages[sampleChat.messages.length - 1], null, 2));
   }
   
-  for (let i = 6; i >= 0; i--) {
-    const date = new Date();
+  const { endDate } = getDateRange(period);
+  const days = getPeriodDays(period);
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(endDate);
     date.setDate(date.getDate() - i);
     date.setHours(0, 0, 0, 0);
     
@@ -492,6 +503,95 @@ async function calculateContentTrends(db) {
   console.log('[calculateContentTrends] Final trend data:', { labels, images, messages });
   
   return { labels, images, messages };
+}
+
+function getPeriodDays(period) {
+  switch (period) {
+    case 'last_30_days':
+      return 30;
+    case 'last_90_days':
+      return 90;
+    case 'last_7_days':
+    default:
+      return 7;
+  }
+}
+
+function getDateRange(period) {
+  const now = new Date();
+  const endDate = new Date(now);
+  let startDate;
+
+  switch (period) {
+    case 'last_90_days':
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 90);
+      break;
+    case 'last_30_days':
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 30);
+      break;
+    case 'last_7_days':
+    default:
+      startDate = new Date(now);
+      startDate.setDate(startDate.getDate() - 7);
+      break;
+  }
+
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(23, 59, 59, 999);
+
+  return { startDate, endDate };
+}
+
+async function calculateOnboardingPreferences(db, period = 'last_7_days') {
+  const usersCollection = db.collection('users');
+  const { startDate, endDate } = getDateRange(period);
+
+  const matchUsers = {
+    isTemporary: { $ne: true },
+    role: { $ne: 'admin' },
+    createdAt: { $gte: startDate, $lte: endDate }
+  };
+
+  const [byAgeRange, byLanguage, byVisualStyle, byCharacterGender, byCharacterTags] = await Promise.all([
+    usersCollection.aggregate([
+      { $match: matchUsers },
+      { $group: { _id: { $ifNull: ['$ageRange', 'unknown'] }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]).toArray(),
+    usersCollection.aggregate([
+      { $match: matchUsers },
+      { $group: { _id: { $ifNull: ['$preferredChatLanguage', 'unknown'] }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]).toArray(),
+    usersCollection.aggregate([
+      { $match: matchUsers },
+      { $group: { _id: { $ifNull: ['$preferredImageStyle', 'unknown'] }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]).toArray(),
+    usersCollection.aggregate([
+      { $match: matchUsers },
+      { $group: { _id: { $ifNull: ['$preferredCharacterGender', 'unknown'] }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]).toArray(),
+    usersCollection.aggregate([
+      { $match: { ...matchUsers, preferredTags: { $exists: true, $ne: [] } } },
+      { $unwind: '$preferredTags' },
+      { $match: { preferredTags: { $nin: [null, ''] } } },
+      { $group: { _id: { $toLower: '$preferredTags' }, count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 20 }
+    ]).toArray()
+  ]);
+
+  return {
+    byAgeRange: byAgeRange.map(a => ({ range: a._id, count: a.count })),
+    byLanguage: byLanguage.map(l => ({ language: l._id, count: l.count })),
+    byVisualStyle: byVisualStyle.map(s => ({ style: s._id, count: s.count })),
+    byCharacterGender: byCharacterGender.map(g => ({ gender: g._id, count: g.count })),
+    byCharacterTags: byCharacterTags.map(t => ({ tag: t._id, count: t.count }))
+  };
 }
 
 module.exports = routes;

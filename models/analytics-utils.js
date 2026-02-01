@@ -661,6 +661,7 @@ async function getAudienceDemographics(db, creatorId) {
   };
 }
 
+
 /**
  * Get comprehensive creator analytics dashboard data
  * @param {Object} db - Database connection

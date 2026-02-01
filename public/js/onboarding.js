@@ -525,16 +525,16 @@ class OnboardingFunnel {
         // This avoids conflicts with displayChats which redirects to /character/ instead of /chat/
         characters.forEach(character => {
             const card = document.createElement('div');
-            card.className = 'gallery-card col-auto';
+            card.className = 'gallery-card onboarding-character-card';
             card.dataset.id = character._id;
             card.innerHTML = `
-                <div class="card h-100">
+                <div class="card onboarding-character-card-inner">
                     <img src="${character.chatImageUrl || '/images/default-avatar.png'}"
-                         class="card-img-top"
+                         class="onboarding-character-img"
                          alt="${character.name}"
                          onerror="this.src='/images/default-avatar.png'">
-                    <div class="card-body">
-                        <h6 class="card-title">${character.name}</h6>
+                    <div class="onboarding-character-overlay">
+                        <h6 class="onboarding-character-name">${character.name}</h6>
                     </div>
                 </div>
             `;

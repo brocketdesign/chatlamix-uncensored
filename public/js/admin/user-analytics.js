@@ -1,5 +1,7 @@
 let userGrowthChart, genderChart, nationalityChart, contentTrendsChart;
+let ageRangeChart, languageChart, visualStyleChart, characterGenderChart;
 let behaviorTrendsChart;
+let currentPeriod = 'last_7_days';
 
 // Initialize dashboard
 $(document).ready(function() {
@@ -13,6 +15,11 @@ $(document).ready(function() {
         $(this).html('<span class="spinner-border spinner-border-sm me-2"></span>Refreshing...');
         loadAnalyticsData(true); // Force refresh, bypass cache
         loadBehaviorTrackingData(true); // Force refresh
+    });
+
+    $('#periodSelect').on('change', function() {
+        currentPeriod = $(this).val();
+        loadAnalyticsData(true);
     });
 });
 
@@ -110,8 +117,8 @@ async function debugIPGeolocation() {
 async function loadAnalyticsData(forceRefresh = false) {
     try {
         const url = forceRefresh 
-            ? '/admin/api/analytics/dashboard?refresh=true' 
-            : '/admin/api/analytics/dashboard';
+            ? `/admin/api/analytics/dashboard?refresh=true&period=${currentPeriod}`
+            : `/admin/api/analytics/dashboard?period=${currentPeriod}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -119,6 +126,8 @@ async function loadAnalyticsData(forceRefresh = false) {
             updateStatCards(data.stats);
             renderCharts(data);
             updateAdditionalStats(data.stats);
+            renderOnboardingPreferences(data.onboardingPreferences);
+            updatePeriodBadge();
             
             $('#lastUpdated').text(new Date(data.lastUpdated).toLocaleString('ja-JP'));
             $('#loadingSpinner').hide();
@@ -128,6 +137,24 @@ async function loadAnalyticsData(forceRefresh = false) {
     } catch (error) {
         console.error('Error loading analytics:', error);
         $('#loadingSpinner').html('<div class="alert alert-danger">Failed to load analytics data</div>');
+    }
+}
+
+function updatePeriodBadge() {
+    const badge = document.getElementById('growthPeriodBadge');
+    if (!badge) return;
+    badge.textContent = formatPeriodLabel(currentPeriod);
+}
+
+function formatPeriodLabel(period) {
+    switch (period) {
+        case 'last_30_days':
+            return '30 Days';
+        case 'last_90_days':
+            return '90 Days';
+        case 'last_7_days':
+        default:
+            return '7 Days';
     }
 }
 
@@ -171,6 +198,17 @@ function renderCharts(data) {
     renderUserGrowthChart(data.userGrowth);
     renderGenderChart(data.genderDistribution);
     renderContentTrendsChart(data.contentTrends);
+}
+
+function renderOnboardingPreferences(onboarding) {
+    if (!onboarding) return;
+
+    renderAgeRangeChart(onboarding.byAgeRange || []);
+    renderLanguageChart(onboarding.byLanguage || []);
+    renderVisualStyleChart(onboarding.byVisualStyle || []);
+    renderCharacterGenderChart(onboarding.byCharacterGender || []);
+    renderTopTagsList(onboarding.byCharacterTags || []);
+    updatePreferenceSummaries(onboarding);
 }
 
 // User Growth Chart
@@ -412,6 +450,204 @@ function renderContentTrendsChart(trendsData) {
     });
 }
 
+function renderAgeRangeChart(data) {
+    const ctx = document.getElementById('ageRangeChart');
+    if (!ctx) return;
+
+    if (ageRangeChart) {
+        ageRangeChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    ageRangeChart = new Chart(ctx.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: data.map(d => formatPreferenceLabel(d.range)),
+            datasets: [{
+                label: 'Users',
+                data: data.map(d => d.count),
+                backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            indexAxis: 'x',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { precision: 0 } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+}
+
+function renderLanguageChart(data) {
+    const ctx = document.getElementById('languageChart');
+    if (!ctx) return;
+
+    if (languageChart) {
+        languageChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    languageChart = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => formatPreferenceLabel(d.language)),
+            datasets: [{
+                data: data.map(d => d.count),
+                backgroundColor: [
+                    'rgba(102, 126, 234, 0.8)',
+                    'rgba(79, 172, 254, 0.8)',
+                    'rgba(245, 87, 108, 0.8)',
+                    'rgba(255, 167, 38, 0.8)',
+                    'rgba(76, 175, 80, 0.8)',
+                    'rgba(156, 39, 176, 0.8)'
+                ],
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function renderVisualStyleChart(data) {
+    const ctx = document.getElementById('visualStyleChart');
+    if (!ctx) return;
+
+    if (visualStyleChart) {
+        visualStyleChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    visualStyleChart = new Chart(ctx.getContext('2d'), {
+        type: 'pie',
+        data: {
+            labels: data.map(d => formatPreferenceLabel(d.style)),
+            datasets: [{
+                data: data.map(d => d.count),
+                backgroundColor: [
+                    'rgba(156, 39, 176, 0.8)',
+                    'rgba(245, 87, 108, 0.8)',
+                    'rgba(255, 167, 38, 0.8)',
+                    'rgba(79, 172, 254, 0.8)',
+                    'rgba(76, 175, 80, 0.8)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function renderCharacterGenderChart(data) {
+    const ctx = document.getElementById('characterGenderChart');
+    if (!ctx) return;
+
+    if (characterGenderChart) {
+        characterGenderChart.destroy();
+    }
+
+    if (!data || data.length === 0) {
+        return;
+    }
+
+    const colorMap = {
+        male: 'rgba(79, 172, 254, 0.8)',
+        female: 'rgba(245, 87, 108, 0.8)',
+        both: 'rgba(76, 175, 80, 0.8)',
+        other: 'rgba(156, 39, 176, 0.8)',
+        unknown: 'rgba(158, 158, 158, 0.8)'
+    };
+
+    characterGenderChart = new Chart(ctx.getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: data.map(d => formatPreferenceLabel(d.gender)),
+            datasets: [{
+                data: data.map(d => d.count),
+                backgroundColor: data.map(d => colorMap[d.gender] || colorMap.unknown),
+                borderWidth: 0,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+}
+
+function renderTopTagsList(data) {
+    const container = document.getElementById('topTagsList');
+    if (!container) return;
+
+    if (!data || data.length === 0) {
+        container.innerHTML = '<div class="text-center text-muted py-3">No data available</div>';
+        return;
+    }
+
+    const maxCount = Math.max(...data.map(d => d.count));
+    container.innerHTML = data.map(item => `
+        <div class="preference-item">
+            <div class="preference-info">
+                <div class="preference-name">${formatPreferenceLabel(item.tag)}</div>
+                <div class="preference-bar">
+                    <div class="preference-bar-fill" style="width: ${(item.count / maxCount) * 100}%"></div>
+                </div>
+            </div>
+            <span class="preference-count">${item.count}</span>
+        </div>
+    `).join('');
+}
+
+function updatePreferenceSummaries(onboarding) {
+    const topLanguage = onboarding.byLanguage?.[0];
+    const topTag = onboarding.byCharacterTags?.[0];
+
+    const topLanguageEl = document.getElementById('topLanguageSummary');
+    if (topLanguageEl) {
+        topLanguageEl.textContent = topLanguage
+            ? `Top language: ${formatPreferenceLabel(topLanguage.language)} (${topLanguage.count})`
+            : 'No data available';
+    }
+
+    const topTagEl = document.getElementById('topTagSummary');
+    if (topTagEl) {
+        topTagEl.textContent = topTag
+            ? `Top tag: ${formatPreferenceLabel(topTag.tag)} (${topTag.count})`
+            : 'No data available';
+    }
+}
+
+function formatPreferenceLabel(value) {
+    if (!value || value === 'unknown') return 'Unknown';
+    return String(value).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
 // Update change indicator
 function updateChangeIndicator(elementId, changePercent) {
     const element = $(`#${elementId}`);
@@ -421,7 +657,7 @@ function updateChangeIndicator(elementId, changePercent) {
     
     element.html(`
         <i class="bi ${icon}"></i> 
-        <span>${Math.abs(changePercent).toFixed(1)}%</span> from last week
+        <span>${Math.abs(changePercent).toFixed(1)}%</span> from selected period
     `).addClass(color);
 }
 
