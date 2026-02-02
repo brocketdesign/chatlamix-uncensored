@@ -597,7 +597,7 @@ async function processRecurringSchedules(fastify) {
  */
 const createScheduledTasksProcessor = (fastify) => {
   return async () => {
-    console.log('[Scheduled Tasks] Running task processor...');
+    //console.log('[Scheduled Tasks] Running task processor...');
     
     try {
       // Process both pending and recurring schedules
@@ -606,7 +606,7 @@ const createScheduledTasksProcessor = (fastify) => {
         processRecurringSchedules(fastify)
       ]);
       
-      console.log('[Scheduled Tasks] Task processor completed');
+      //console.log('[Scheduled Tasks] Task processor completed');
     } catch (error) {
       console.error('[Scheduled Tasks] Task processor error:', error);
     }
