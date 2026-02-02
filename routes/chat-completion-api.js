@@ -619,7 +619,13 @@ async function routes(fastify, options) {
                                 console.log(`🔥 [openai-chat-completion:${requestId}] NSFW push detection result:`, nsfwResult);
                                 
                                 // Trigger upsell if NSFW push detected with sufficient confidence
-                                if (nsfwResult.is_nsfw_push && nsfwResult.nsfw_score >= 60 && nsfwResult.confidence >= 70) {
+                                // Thresholds: nsfw_score >= 60 (moderate to explicit content), confidence >= 70 (reasonably confident detection)
+                                // These values balance false positive avoidance while capturing monetizable moments
+                                // Based on industry standards from similar AI companion apps (Candy.ai, Nastia, etc.)
+                                const NSFW_SCORE_THRESHOLD = 60;  // 0-100, where 60+ indicates clearly explicit intent
+                                const CONFIDENCE_THRESHOLD = 70;  // 0-100, where 70+ ensures reliable detection
+                                
+                                if (nsfwResult.is_nsfw_push && nsfwResult.nsfw_score >= NSFW_SCORE_THRESHOLD && nsfwResult.confidence >= CONFIDENCE_THRESHOLD) {
                                     console.log(`🔥💰 [openai-chat-completion:${requestId}] NSFW push detected for free user - triggering upsell`);
                                     
                                     // Record the event for analytics

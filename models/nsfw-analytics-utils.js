@@ -1,5 +1,10 @@
 const { ObjectId } = require('mongodb');
 
+// Time constants for conversion tracking and rate limiting
+const CONVERSION_WINDOW_MS = 24 * 60 * 60 * 1000;  // 24 hours - window to attribute conversion to upsell
+const ONE_HOUR_MS = 60 * 60 * 1000;                 // 1 hour - for rate limiting upsell displays
+const THIRTY_MINUTES_MS = 30 * 60 * 1000;           // 30 minutes - cooldown after dismissal
+
 /**
  * Records an NSFW push detection event for analytics
  * @param {Object} db - MongoDB database instance
@@ -43,12 +48,13 @@ async function recordNsfwUpsellConversion(db, userId) {
     const collection = db.collection('nsfw_push_events');
     
     // Find the most recent upsell shown for this user and mark as converted
+    // Only attribute conversions within the conversion window
     await collection.updateMany(
       { 
         userId: new ObjectId(userId),
         upsellShown: true,
         convertedToPremium: false,
-        createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Within last 24 hours
+        createdAt: { $gte: new Date(Date.now() - CONVERSION_WINDOW_MS) }
       },
       { 
         $set: { 
