@@ -662,9 +662,9 @@ export const enUS: LocalizationResource = {
   userProfile: {
     billingPage: {
       start: {
-        headerTitle__invoices: 'Invoices',
-        headerTitle__paymentSources: 'Payment Sources',
         headerTitle__plans: 'Plans',
+        headerTitle__statements: 'Invoices',
+        headerTitle__subscriptions: 'Subscriptions',
       },
       title: 'Billing & Payments',
     },

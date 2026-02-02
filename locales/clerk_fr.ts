@@ -665,9 +665,9 @@ export const frFR: LocalizationResource = {
   userProfile: {
     billingPage: {
       start: {
-        headerTitle__invoices: undefined,
-        headerTitle__paymentSources: undefined,
         headerTitle__plans: undefined,
+        headerTitle__statements: undefined,
+        headerTitle__subscriptions: undefined,
       },
       title: undefined,
     },
