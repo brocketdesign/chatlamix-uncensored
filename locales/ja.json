@@ -684,7 +684,8 @@
     "connection_lost_message": "サーバーへの接続が失われました。インターネット接続を確認してください。",
     "connection_failed": "接続に失敗しました",
     "connection_failed_message": "サーバーへの接続に失敗しました。後でもう一度お試しください。",
-    "imageRequestDetectedPremiumRequired": "画像リクエストが検出されました！プレミアムにアップグレードすると、チャット中に自動的に画像を生成できます。"
+    "imageRequestDetectedPremiumRequired": "画像リクエストが検出されました！プレミアムにアップグレードすると、チャット中に自動的に画像を生成できます。",
+    "nsfwUpsellMessage": "制限なしの会話を楽しめるアンセンサードモードを解除しましょう！🔥"
   },
   "currency": "¥",
   "premium": " 💎 プレミアム",

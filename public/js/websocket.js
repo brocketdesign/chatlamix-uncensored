@@ -405,6 +405,24 @@ function initializeWebSocket(onConnectionResult = null) {
               }
               break;
           }
+          case 'nsfwUpsellTrigger': {
+              // NSFW push detected - show premium upsell for uncensored mode
+              const { message, nsfwCategory, nsfwScore, chatId: nsfwChatId, userChatId: nsfwUserChatId } = data.notification;
+              console.log('[WebSocket] NSFW push detected - triggering premium upsell', { nsfwCategory, nsfwScore });
+              
+              // Show the NSFW upsell modal
+              if (window.showNsfwPremiumUpsellModal) {
+                  window.showNsfwPremiumUpsellModal(nsfwCategory, nsfwScore);
+              } else {
+                  // Fallback to standard notification
+                  showNotification(message, 'info');
+                  // Try generic premium modal if available
+                  if (window.showPremiumUpsellModal) {
+                      window.showPremiumUpsellModal('nsfw_uncensored');
+                  }
+              }
+              break;
+          }
           default:
             // Removed console.log('[WebSocket] Unhandled notification type:', data.notification.type);
             break;

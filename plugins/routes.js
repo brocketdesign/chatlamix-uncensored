@@ -56,6 +56,7 @@ async function registerRoutes(fastify) {
   fastify.register(require('../routes/analytics-api'));
   fastify.register(require('../routes/marketing-api'));
   fastify.register(require('../routes/tracking'));
+  fastify.register(require('../routes/nsfw-upsell-api'));
 }
 
 module.exports = registerRoutes;
