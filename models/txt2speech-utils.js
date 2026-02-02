@@ -1,4 +1,4 @@
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const fetch = require('node-fetch');
 
 const MINIMAX_ENDPOINT = 'https://api.novita.ai/v3/minimax-speech-2.6-turbo';
 const DEFAULT_MINIMAX_VOICE_KEY = 'Wise_Woman';
