@@ -6,6 +6,9 @@
 (function() {
     'use strict';
     
+    // Track NSFW upsell trigger count (show modal only on second+ trigger)
+    let nsfwUpsellTriggerCount = 0;
+    
     // Create and inject the modal HTML
     function createNsfwUpsellModal() {
         const modalHtml = `
@@ -69,9 +72,9 @@
                         </div>
                         
                         <div class="upsell-cta text-center">
-                            <a href="/plan" class="btn btn-lg w-100 mb-3" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); color: white; border: none; border-radius: 12px; font-weight: 600;">
+                            <button type="button" class="btn btn-lg w-100 mb-3" id="nsfwUpsellUpgradeBtn" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%); color: white; border: none; border-radius: 12px; font-weight: 600;">
                                 <i class="bi bi-gem me-2"></i>Unlock Premium Now 🔥
-                            </a>
+                            </button>
                             <button type="button" class="btn btn-link text-white-50 w-100" data-bs-dismiss="modal" id="nsfwUpsellStaySfw">
                                 Maybe later, stay in safe mode
                             </button>
@@ -132,6 +135,24 @@
             });
         }
         
+        // Add event listener for upgrade button
+        const upgradeBtn = document.getElementById('nsfwUpsellUpgradeBtn');
+        if (upgradeBtn) {
+            upgradeBtn.addEventListener('click', function() {
+                // Close the NSFW upsell modal first
+                const nsfwModal = bootstrap.Modal.getInstance(document.getElementById('nsfwPremiumUpsellModal'));
+                if (nsfwModal) {
+                    nsfwModal.hide();
+                }
+                // Open the plan page using loadPlanPage function
+                if (typeof loadPlanPage === 'function') {
+                    loadPlanPage('nsfw_upsell_modal');
+                } else {
+                    console.warn('[NSFW Upsell] loadPlanPage function not available');
+                }
+            });
+        }
+        
         // Add event listener for modal dismiss
         const modal = document.getElementById('nsfwPremiumUpsellModal');
         if (modal) {
@@ -158,6 +179,16 @@
     
     // Show the NSFW upsell modal
     function showNsfwPremiumUpsellModal(nsfwCategory, nsfwScore) {
+        // Increment trigger count
+        nsfwUpsellTriggerCount++;
+        
+        // On first trigger, let user continue chatting without showing modal
+        if (nsfwUpsellTriggerCount === 1) {
+            console.log('[NSFW Upsell] First trigger - allowing user to continue');
+            return false; // Return false to indicate modal was not shown
+        }
+        
+        // On second+ trigger, show the modal
         // Create modal if it doesn't exist
         if (!document.getElementById('nsfwPremiumUpsellModal')) {
             createNsfwUpsellModal();
@@ -181,7 +212,9 @@
         if (modalElement && typeof bootstrap !== 'undefined') {
             const modal = new bootstrap.Modal(modalElement);
             modal.show();
+            return true; // Return true to indicate modal was shown
         }
+        return false;
     }
     
     // Generic premium upsell modal (fallback)
@@ -190,8 +223,12 @@
         if (reason === 'nsfw_uncensored' || reason === 'image_auto_generation') {
             showNsfwPremiumUpsellModal('default', 0);
         } else {
-            // Redirect to plan page
-            window.location.href = '/plan';
+            // Use loadPlanPage function if available
+            if (typeof loadPlanPage === 'function') {
+                loadPlanPage(reason || 'premium_upsell');
+            } else {
+                console.warn('[NSFW Upsell] loadPlanPage function not available');
+            }
         }
     }
     
