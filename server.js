@@ -29,8 +29,8 @@ fastify.register(require('@fastify/mongodb'), {
   database: process.env.MONGODB_NAME,
 }, (err) => {
   if (err) {
-    console.log('Failed to connect to database:', err);
-    process.exit(1); // Exit the process if the database connection fails
+    console.error('CRITICAL: Failed to connect to database:', err);
+    // In serverless environments, we should still fail, but let's log properly
   }
 });
 
@@ -42,13 +42,15 @@ fastify.register(require('@fastify/cookie'), {
 
 // Wait for the database connection to be established 
 fastify.ready(async () => { 
-  const awsimages = fastify.mongo.db.collection('awsimages');
-  awsimages.deleteMany({}, function(err, obj) {
-    if (err) throw err;
-    if(obj?.result){
-      console.log(obj.result.n + " document(s) deleted");
+  try {
+    const awsimages = fastify.mongo.db.collection('awsimages');
+    const result = await awsimages.deleteMany({});
+    if (result.deletedCount > 0) {
+      console.log(`[Database] ${result.deletedCount} document(s) deleted from awsimages`);
     }
-  });
+  } catch (err) {
+    console.error('[Database] Error clearing awsimages:', err);
+  }
   
   // Create indexes for better performance on slug queries
   try {
@@ -1778,8 +1780,8 @@ const start = async () => {
     const port = process.env.PORT || 3000;
     fastify.listen({ port, host: '0.0.0.0' }, (err, address) => {
       if (err) {
-        console.error(err);
-        process.exit(1);
+        console.error('SERVER_LISTEN_ERROR:', err);
+        // Do not process.exit(1) here for serverless environments
       }
       // Wait for cronjon logs to finish
       setTimeout(() => {
@@ -1787,8 +1789,7 @@ const start = async () => {
       }, 3000);
     });
   } catch (err) {
-    console.log(err);
-    process.exit(1);
+    console.error('START_ERROR:', err);
   }
 };
 

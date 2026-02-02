@@ -4,7 +4,7 @@
   "description": "A web-based quiz app that allows users to interact with a story-driven quiz and collects data on user interactions.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
