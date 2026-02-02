@@ -104,8 +104,6 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
 
         Generate 3 conversation suggestions in ${language}.`;
 
-        console.log('[generateChatSuggestions] System Prompt:', systemPrompt);
-
         // Create user prompt
         const userPrompt = `Generate 3 conversation suggestions based on the context above from the point of view of the user (${userDetails}). Include the character name in the suggestions if applicable.`;
 
