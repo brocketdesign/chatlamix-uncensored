@@ -920,6 +920,10 @@ html, body {
   font-size: 15px;
   font-weight: 600;
   margin-bottom: 2px;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: normal;
+  text-overflow: ellipsis;
 }
 
 .gen-model-item .model-desc {
