@@ -2,14 +2,6 @@ import type { LocalizationResource } from '@clerk/types';
 
 export const enUS: LocalizationResource = {
   locale: 'en-US',
-  __experimental_commerce: {
-    billedAnnually: 'Billed annually',
-    free: 'Free',
-    getStarted: 'Get started',
-    manageMembership: 'Manage membership',
-    month: 'Month',
-    switchPlan: 'Switch to this plan',
-  },
   backButton: 'Back',
   badge__currentPlan: 'Current Plan',
   badge__default: 'Default',
