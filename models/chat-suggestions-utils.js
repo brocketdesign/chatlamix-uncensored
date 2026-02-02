@@ -33,9 +33,10 @@ const chatSuggestionsSchema = {
  * @param {Array} userMessages - Array of recent user/assistant messages
  * @param {Object} userInfo - User information
  * @param {string} language - User's language preference
+ * @param {string} suggestionPreset - Preferred suggestion preset
  * @returns {Promise<Array>} Array of 3 suggestion strings
  */
-async function generateChatSuggestions(db, chatDocument, userMessages, userInfo, language) {
+async function generateChatSuggestions(db, chatDocument, userMessages, userInfo, language, suggestionPreset = 'neutral') {
     try {
         // Get user's chat settings including relationship type
         const userSettings = await getUserChatToolSettings(db, userInfo._id, chatDocument._id);
@@ -66,6 +67,18 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
             .map(msg => `${msg.role}: ${msg.content}`)
             .join('\n');
 
+        const preset = String(suggestionPreset || 'neutral').toLowerCase();
+        const suggestionStyleDirectives = {
+            flirty: 'Keep the suggestions playful, flirty, and slightly teasing with light emoji accents.',
+            romantic: 'Make the suggestions soft, affectionate, and romantic with gentle warmth.',
+            dominant: 'Use a confident, teasing, and slightly dominant tone with bold phrasing.',
+            innocent: 'Keep the suggestions shy, sweet, and a little timid with bashful wording.',
+            humorous: 'Make the suggestions witty, lighthearted, and playful with fun energy.',
+            nsfw: 'Make the suggestions explicitly hot and direct, focusing on adult intimacy.',
+            neutral: 'Keep the suggestions conversational, balanced, and low-pressure.'
+        };
+        const suggestionStyleInstruction = suggestionStyleDirectives[preset] || suggestionStyleDirectives.neutral;
+
         // Create system prompt for suggestion generation
         const systemPrompt = `You are a helpful assistant that generates natural conversation suggestions for users chatting with an AI character.
 
@@ -76,10 +89,11 @@ User Information:
 ${userDetails}
 
 Current Relationship Type: ${relationshipType}. ${relationshipDescription}
+Suggestion Style: ${preset}. ${suggestionStyleInstruction}
 
 Based on the recent conversation context, generate exactly 3 short, natural response suggestions that the user might want to send. Each suggestion should:
 1. Be contextually relevant to the conversation
-2. Match the relationship dynamic (${relationshipType})
+2. Match the relationship dynamic (${relationshipType}) and the suggestion style (${preset})
 3. Be appropriate for the character's personality
 4. Be conversational and engaging
 5. Be brief (max 15 words each)

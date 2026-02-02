@@ -273,6 +273,18 @@ class ChatToolSettings {
             });
         }
 
+        const suggestionPresetRadios = document.querySelectorAll('input[name="suggestion-preset"]');
+        if (suggestionPresetRadios.length > 0) {
+            suggestionPresetRadios.forEach((radio) => {
+                radio.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        this.settings.suggestionPreset = e.target.value;
+                        this.updateSuggestionPresetUI();
+                    }
+                });
+            });
+        }
+
         // Scenarios enable switch
         const scenariosEnableSwitch = document.getElementById('scenarios-enable-switch');
         if (scenariosEnableSwitch) {
@@ -562,7 +574,7 @@ class ChatToolSettings {
                 minImagesRange.style.opacity = '0.6';
                 
                 // Add premium indicator
-                const rangeContainer = document.querySelector('.settings-field');
+                const rangeContainer = minImagesRange.closest('.settings-field');
                 if (rangeContainer && !rangeContainer.querySelector('.premium-feature-indicator')) {
                     const premiumIndicator = document.createElement('small');
                     premiumIndicator.className = 'premium-feature-indicator text-muted d-block mt-1';
@@ -1219,6 +1231,11 @@ class ChatToolSettings {
                 this.settings = { ...this.settings, ...data.settings };
                 // Skip auto-correction when applying loaded settings to preserve user's choices
                 this.applySettingsToUI(true);
+                
+                // Dispatch event to notify other components that settings are loaded
+                document.dispatchEvent(new CustomEvent('chatToolSettingsLoaded', {
+                    detail: { settings: this.settings }
+                }));
             } else {
                 console.warn('Failed to load settings, using defaults');
             }
@@ -1292,6 +1309,11 @@ class ChatToolSettings {
                 this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
                 // Skip auto-correction when applying loaded settings to preserve user's choices
                 this.applySettingsToUI(true);
+                
+                // Dispatch event to notify other components that settings are loaded
+                document.dispatchEvent(new CustomEvent('chatToolSettingsLoaded', {
+                    detail: { settings: this.settings }
+                }));
             }
         } catch (error) {
             console.error('Error loading settings from localStorage:', error);
@@ -1478,6 +1500,8 @@ class ChatToolSettings {
             suggestionsEnableSwitch.checked = this.settings.suggestionsEnabled !== undefined ? this.settings.suggestionsEnabled : true;
         }
 
+        this.updateSuggestionPresetUI();
+
         // Update scenarios enable switch
         const scenariosEnableSwitch = document.getElementById('scenarios-enable-switch');
         if (scenariosEnableSwitch) {
@@ -1511,6 +1535,29 @@ class ChatToolSettings {
 
         // Update premium indicators
         this.setupPremiumIndicators(subscriptionStatus);
+    }
+
+    updateSuggestionPresetUI() {
+        const selectedPreset = this.settings.suggestionPreset || 'neutral';
+        document.querySelectorAll('input[name="suggestion-preset"]').forEach((radio) => {
+            radio.checked = radio.value === selectedPreset;
+        });
+
+        const nsfwPresetRadio = document.querySelector('input[name="suggestion-preset"][value="nsfw"]');
+        if (nsfwPresetRadio) {
+            nsfwPresetRadio.disabled = !window.showNSFW;
+            if (!window.showNSFW && selectedPreset === 'nsfw') {
+                this.settings.suggestionPreset = 'neutral';
+                nsfwPresetRadio.checked = false;
+                const neutralRadio = document.querySelector('input[name="suggestion-preset"][value="neutral"]');
+                if (neutralRadio) {
+                    neutralRadio.checked = true;
+                }
+                if (typeof window.showNotification === 'function') {
+                    window.showNotification(this.t('suggestionPresetNsfwBlocked', 'Enable NSFW in your account settings to use the Hot preset.'), 'warning');
+                }
+            }
+        }
     }
 
     applySettings() {

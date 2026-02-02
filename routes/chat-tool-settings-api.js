@@ -111,22 +111,23 @@ async function routes(fastify, options) {
             const requestedProvider = String(settings.voiceProvider || 'standard').toLowerCase();
             const normalizedProvider = ['premium', 'minimax', 'evenlab'].includes(requestedProvider) ? 'premium' : 'standard';
 
-            const validSettings = {
-                minImages: Number(settings.minImages) || 3,
-                videoPrompt: String(settings.videoPrompt || 'Generate a short, engaging video with smooth transitions and vibrant colors.'),
-                characterTone: String(settings.characterTone || 'casual'),
-                relationshipType: String(settings.relationshipType || 'companion'),
-                selectedVoice: String(settings.selectedVoice || 'nova'),
-                voiceProvider: normalizedProvider,
-                minimaxVoice: String(settings.minimaxVoice || settings.evenLabVoice || 'Wise_Woman'),
-                autoMergeFace: Boolean(settings.autoMergeFace !== undefined ? settings.autoMergeFace : true),
-                selectedModel: String(settings.selectedModel || 'openai'),
-                suggestionsEnabled: Boolean(settings.suggestionsEnabled !== undefined ? settings.suggestionsEnabled : true),
-                autoImageGeneration: isPremium ? Boolean(settings.autoImageGeneration !== undefined ? settings.autoImageGeneration : false) : false,
-                speechRecognitionEnabled: Boolean(settings.speechRecognitionEnabled !== undefined ? settings.speechRecognitionEnabled : true),
-                speechAutoSend: Boolean(settings.speechAutoSend !== undefined ? settings.speechAutoSend : false),
-                scenariosEnabled: Boolean(settings.scenariosEnabled !== undefined ? settings.scenariosEnabled : false),
-                customPromptEnabled: Boolean(settings.customPromptEnabled !== undefined ? settings.customPromptEnabled : true),
+                const validSettings = {
+                    minImages: Number(settings.minImages) || 3,
+                    videoPrompt: String(settings.videoPrompt || 'Generate a short, engaging video with smooth transitions and vibrant colors.'),
+                    characterTone: String(settings.characterTone || 'casual'),
+                    relationshipType: String(settings.relationshipType || 'companion'),
+                    selectedVoice: String(settings.selectedVoice || 'nova'),
+                    voiceProvider: normalizedProvider,
+                    minimaxVoice: String(settings.minimaxVoice || settings.evenLabVoice || 'Wise_Woman'),
+                    autoMergeFace: Boolean(settings.autoMergeFace !== undefined ? settings.autoMergeFace : true),
+                    selectedModel: String(settings.selectedModel || 'openai'),
+                    suggestionsEnabled: Boolean(settings.suggestionsEnabled !== undefined ? settings.suggestionsEnabled : true),
+                    suggestionPreset: String(settings.suggestionPreset || 'neutral'),
+                    autoImageGeneration: isPremium ? Boolean(settings.autoImageGeneration !== undefined ? settings.autoImageGeneration : false) : false,
+                    speechRecognitionEnabled: Boolean(settings.speechRecognitionEnabled !== undefined ? settings.speechRecognitionEnabled : true),
+                    speechAutoSend: Boolean(settings.speechAutoSend !== undefined ? settings.speechAutoSend : false),
+                    scenariosEnabled: Boolean(settings.scenariosEnabled !== undefined ? settings.scenariosEnabled : false),
+                    customPromptEnabled: Boolean(settings.customPromptEnabled !== undefined ? settings.customPromptEnabled : true),
                 defaultDescriptionEnabled: Boolean(settings.defaultDescriptionEnabled !== undefined ? settings.defaultDescriptionEnabled : false),
                 defaultDescription: String(settings.defaultDescription || ''),
                 preferredChatLanguage: String(settings.preferredChatLanguage || '')
@@ -194,6 +195,27 @@ async function routes(fastify, options) {
                 } catch (userChatError) {
                     console.error('Error updating userChat preferredChatLanguage:', userChatError);
                     // Don't fail the whole request if userChat update fails
+                }
+            }
+
+            // Persist suggestion preset to userChat when provided
+            if (userChatId && ObjectId.isValid(userChatId) && validSettings.suggestionPreset !== undefined) {
+                try {
+                    const userChatCollection = fastify.mongo.db.collection('userChat');
+                    await userChatCollection.updateOne(
+                        { 
+                            _id: new ObjectId(userChatId),
+                            userId: new ObjectId(userId)
+                        },
+                        { 
+                            $set: { 
+                                suggestionPreset: validSettings.suggestionPreset,
+                                updatedAt: now
+                            } 
+                        }
+                    );
+                } catch (userChatError) {
+                    console.error('Error updating userChat suggestionPreset:', userChatError);
                 }
             }
 
