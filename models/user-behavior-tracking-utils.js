@@ -951,7 +951,7 @@ async function getDailyTrackingTrends(db, days = 7) {
 
       // Get premium view trends from tracking collection (filtered by recent users)
       // Note: userId is stored as ObjectId in tracking collection
-    const premiumTrends = await trackingCollection.aggregate([
+      const premiumTrends = await trackingCollection.aggregate([
         { 
           $match: { 
             createdAt: { $gte: startDate },
@@ -966,23 +966,23 @@ async function getDailyTrackingTrends(db, days = 7) {
           }
         },
         { $sort: { '_id': 1 } }
-    ]).toArray();
+      ]).toArray();
 
       console.log(`[getDailyTrackingTrends] Premium trends from DB:`, premiumTrends);
 
-    premiumTrends.forEach(t => {
+      premiumTrends.forEach(t => {
         if (result[t._id]) {
           result[t._id].premiumView = t.count;
         } else {
-        result[t._id] = {
-          date: t._id,
-          startChat: result[t._id]?.startChat || 0,
-          messageSent: result[t._id]?.messageSent || 0,
-          premiumView: t.count,
-          earlyNsfwUpsell: 0
-        };
-      }
-    });
+          result[t._id] = {
+            date: t._id,
+            startChat: result[t._id]?.startChat || 0,
+            messageSent: result[t._id]?.messageSent || 0,
+            premiumView: t.count,
+            earlyNsfwUpsell: 0
+          };
+        }
+      });
 
     const earlyNsfwUpsellTrendMatch = {
       eventType: TrackingEventTypes.EARLY_NSFW_UPSELL,
