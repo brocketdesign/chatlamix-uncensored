@@ -1,5 +1,22 @@
-const fastify = require('fastify')({ logger: false });
 require('dotenv').config();
+
+// Prevent FUNCTION_INVOCATION_FAILED: ensure unhandled rejections/exceptions are logged
+// instead of crashing the Node process (critical for Vercel/serverless).
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('UNHANDLED_REJECTION:', reason);
+  console.error('Promise:', promise);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT_EXCEPTION:', err);
+});
+
+// Log missing required env early so Vercel/serverless logs show the cause (do not process.exit)
+if (!process.env.MONGODB_URI) {
+  console.warn('MONGODB_URI is not set; database connection will fail.');
+}
+
+const fastify = require('fastify')({ logger: false });
 const cron = require('node-cron');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -43,6 +60,11 @@ fastify.register(require('@fastify/cookie'), {
 // Wait for the database connection to be established 
 fastify.ready(async () => { 
   try {
+    // Guard: avoid crashing if MongoDB is not connected (e.g. missing MONGODB_URI on Vercel)
+    if (!fastify.mongo || !fastify.mongo.db) {
+      console.warn('[Database] MongoDB not connected; skipping startup DB tasks.');
+      return;
+    }
     const awsimages = fastify.mongo.db.collection('awsimages');
     const result = await awsimages.deleteMany({});
     if (result.deletedCount > 0) {
@@ -1340,7 +1362,7 @@ fastify.get('/search', async (request, reply) => {
 });
 fastify.get('/about', async (request, reply) => {
   const db = fastify.mongo.db;
-  let { user } = request;
+  const { translations, user } = request;
   
   const collectionChats = db.collection('chats');
   const chats = await collectionChats
@@ -1349,18 +1371,16 @@ fastify.get('/about', async (request, reply) => {
     .limit(10)
     .toArray();
 
+  const seo = translations?.seo || {};
   return reply.renderWithGtm('chat.hbs', {
-    title: translations.seo.title,
-   
-    
-    
+    title: seo.title || 'About',
     chats,
     isTemporaryOrGuest: !user || user.isTemporary,
     seo: [
-      { name: 'description', content: translations.seo.description },
-      { name: 'keywords', content: translations.seo.keywords },
-      { property: 'og:title', content: translations.seo.title },
-      { property: 'og:description', content: translations.seo.description },
+      { name: 'description', content: seo.description || '' },
+      { name: 'keywords', content: seo.keywords || '' },
+      { property: 'og:title', content: seo.title || 'About' },
+      { property: 'og:description', content: seo.description || '' },
       { property: 'og:image', content: '/img/share.png' },
       { property: 'og:url', content: 'https://chatlamix/' },
     ],
