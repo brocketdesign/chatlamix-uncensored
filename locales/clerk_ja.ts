@@ -657,7 +657,7 @@ export const jaJP: LocalizationResource = {
     action__signOutAll: '全てのアカウントからサインアウト',
   },
   userProfile: {
-    __experimental_billingPage: {
+    billingPage: {
       start: {
         headerTitle__invoices: undefined,
         headerTitle__paymentSources: undefined,

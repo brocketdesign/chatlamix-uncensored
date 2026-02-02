@@ -660,7 +660,7 @@ export const enUS: LocalizationResource = {
     action__signOutAll: 'Sign out of all accounts',
   },
   userProfile: {
-    __experimental_billingPage: {
+    billingPage: {
       start: {
         headerTitle__invoices: 'Invoices',
         headerTitle__paymentSources: 'Payment Sources',

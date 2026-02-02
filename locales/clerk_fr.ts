@@ -663,7 +663,7 @@ export const frFR: LocalizationResource = {
     action__signOutAll: 'Se déconnecter de tous les comptes',
   },
   userProfile: {
-    __experimental_billingPage: {
+    billingPage: {
       start: {
         headerTitle__invoices: undefined,
         headerTitle__paymentSources: undefined,
