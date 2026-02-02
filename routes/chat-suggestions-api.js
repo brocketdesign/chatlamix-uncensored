@@ -24,7 +24,7 @@ async function routes(fastify, options) {
      */
     fastify.post('/api/chat-suggestions', async (request, reply) => {
         try {
-            const { userId, chatId, userChatId } = request.body;
+            const { userId, chatId, userChatId, suggestionPreset } = request.body;
 
             // Validate required parameters
             if (!userId || !chatId || !userChatId) {
@@ -103,14 +103,16 @@ async function routes(fastify, options) {
                 chatDocument,
                 userChatData.messages,
                 userInfo,
-                language
+                language,
+                suggestionPreset || userChatData.suggestionPreset || userSettings?.suggestionPreset || 'neutral'
             );
 
             return reply.send({
                 success: true,
                 showSuggestions: true,
                 suggestions: suggestions,
-                relationshipType: userSettings?.relationshipType || 'companion'
+                relationshipType: userSettings?.relationshipType || 'companion',
+                suggestionPreset: suggestionPreset || userChatData.suggestionPreset || userSettings?.suggestionPreset || 'neutral'
             });
 
         } catch (error) {

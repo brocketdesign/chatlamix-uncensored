@@ -687,6 +687,56 @@
     margin-bottom: 0;
 }
 
+.suggestion-preset-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.suggestion-preset-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.suggestion-preset-option input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.suggestion-preset-option .preset-pill {
+    border: 1px solid rgba(181, 138, 254, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary, #ffffff);
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.suggestion-preset-option input:checked + .preset-pill {
+    background: linear-gradient(135deg, #b58afe, #a855f7);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(181, 138, 254, 0.3);
+}
+
+.suggestion-preset-option input:disabled + .preset-pill {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.suggestion-preset-option .preset-gate {
+    margin-left: 6px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffb347;
+}
+
 .settings-field-header {
     display: flex;
     align-items: center;

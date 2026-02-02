@@ -8,6 +8,7 @@ class ChatSuggestionsManager {
         this.currentSuggestions = [];
         this.isVisible = false;
         this.isEnabled = true; // Default enabled state
+        this.selectedPreset = 'neutral';
         this.suggestionCountPerChat = new Map(); // Track usage per chat
         this.init();
     }
@@ -35,6 +36,7 @@ class ChatSuggestionsManager {
                         <i class="bi bi-x"></i>
                     </button>
                 </div>
+                <div class="suggestions-presets" id="chat-suggestions-presets"></div>
                 <div class="suggestions-list" id="chat-suggestions-list">
                     <!-- Suggestions will be populated here -->
                 </div>
@@ -63,6 +65,14 @@ class ChatSuggestionsManager {
             }
         });
 
+        // Preset tag handler
+        $(document).on('click', '.suggestion-preset-tag', (e) => {
+            const preset = $(e.currentTarget).data('preset');
+            if (preset) {
+                this.handlePresetSelection(preset);
+            }
+        });
+
         // Hide suggestions when user starts typing
         $('#userMessage').on('input', () => {
             if (this.isVisible && $('#userMessage').val().trim().length > 0) {
@@ -80,9 +90,23 @@ class ChatSuggestionsManager {
             this.setEnabled(e.target.checked);
         });
 
+        // Settings preset handler
+        $(document).on('change', 'input[name="suggestion-preset"]', (e) => {
+            if (e.target.checked) {
+                this.handlePresetSelection(e.target.value, { refreshSuggestions: false, persistChatSetting: true });
+            }
+        });
+
         // Load settings when settings modal opens
         $(document).on('settings:loaded', (e, settings) => {
             this.loadSettings(settings);
+        });
+
+        document.addEventListener('chatSettingsUpdated', (e) => {
+            if (e.detail?.suggestionPreset) {
+                this.selectedPreset = e.detail.suggestionPreset;
+                this.displayPresetTags();
+            }
         });
     }
 
@@ -114,6 +138,13 @@ class ChatSuggestionsManager {
                 return;
             }
 
+            if (window.chatToolSettings?.settings?.suggestionPreset) {
+                this.selectedPreset = window.chatToolSettings.settings.suggestionPreset;
+            }
+            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
+                this.selectedPreset = 'neutral';
+            }
+
             // Request suggestions from API
             const response = await $.ajax({
                 url: `${API_URL}/api/chat-suggestions`,
@@ -122,11 +153,15 @@ class ChatSuggestionsManager {
                 data: JSON.stringify({
                     userId: userId,
                     chatId: chatId,
-                    userChatId: userChatId
+                    userChatId: userChatId,
+                    suggestionPreset: this.selectedPreset
                 })
             });
 
             if (response.success && response.showSuggestions && response.suggestions?.length > 0) {
+                if (response.suggestionPreset) {
+                    this.selectedPreset = response.suggestionPreset;
+                }
                 this.currentSuggestions = response.suggestions;
                 this.displaySuggestions(response.suggestions);
                 this.show();
@@ -158,6 +193,47 @@ class ChatSuggestionsManager {
     }
 
     /**
+     * Display suggestion preset tags
+     */
+    displayPresetTags() {
+        if (!this.suggestionsContainer || this.suggestionsContainer.length === 0) {
+            return;
+        }
+
+        const presets = [
+            { key: 'flirty', label: window.chatSuggestionsTranslations?.preset_flirty || 'Flirty', emoji: '😏' },
+            { key: 'romantic', label: window.chatSuggestionsTranslations?.preset_romantic || 'Romantic', emoji: '💕' },
+            { key: 'dominant', label: window.chatSuggestionsTranslations?.preset_dominant || 'Dominant', emoji: '😈' },
+            { key: 'innocent', label: window.chatSuggestionsTranslations?.preset_innocent || 'Innocent', emoji: '😳' },
+            { key: 'humorous', label: window.chatSuggestionsTranslations?.preset_humorous || 'Humorous', emoji: '😂' },
+            { key: 'nsfw', label: window.chatSuggestionsTranslations?.preset_nsfw || 'Hot', emoji: '🔥', gated: true },
+            { key: 'neutral', label: window.chatSuggestionsTranslations?.preset_neutral || 'Neutral', emoji: '💬' }
+        ];
+
+        const showNsfw = window.showNSFW === true;
+        const presetTagsHtml = presets.map((preset) => {
+            const isActive = preset.key === this.selectedPreset;
+            const isDisabled = preset.gated && !showNsfw;
+            const classes = [
+                'suggestion-preset-tag',
+                isActive ? 'active' : '',
+                isDisabled ? 'disabled' : ''
+            ].filter(Boolean).join(' ');
+            const label = `${preset.emoji} ${preset.label}`;
+            const ariaDisabled = isDisabled ? 'true' : 'false';
+            const ariaPressed = isActive ? 'true' : 'false';
+            return `
+                <button type="button" class="${classes}" data-preset="${preset.key}" ${isDisabled ? 'disabled' : ''} aria-pressed="${ariaPressed}" aria-disabled="${ariaDisabled}">
+                    <span class="preset-label">${label}</span>
+                    ${isDisabled ? `<span class="preset-gated">${window.chatSuggestionsTranslations?.preset_nsfw_gate || '18+'}</span>` : ''}
+                </button>
+            `;
+        }).join('');
+
+        $('#chat-suggestions-presets').html(presetTagsHtml);
+    }
+
+    /**
      * Show the suggestions container
      */
     show() {
@@ -166,6 +242,8 @@ class ChatSuggestionsManager {
             if (!this.suggestionsContainer || this.suggestionsContainer.length === 0) {
                 this.createSuggestionsContainer();
             }
+
+            this.displayPresetTags();
             
             this.suggestionsContainer.fadeIn(200);
             this.isVisible = true;
@@ -186,6 +264,61 @@ class ChatSuggestionsManager {
             this.isVisible = false;
             this.currentSuggestions = [];
         }
+    }
+
+    /**
+     * Handle preset selection from tags or settings.
+     */
+    async handlePresetSelection(preset, options = {}) {
+        const { refreshSuggestions = true, persistChatSetting = true } = options;
+        const normalizedPreset = String(preset || 'neutral').toLowerCase();
+        if (normalizedPreset === this.selectedPreset) {
+            return;
+        }
+
+        if (normalizedPreset === 'nsfw' && !window.showNSFW) {
+            if (typeof window.showNotification === 'function') {
+                window.showNotification(window.chatSuggestionsTranslations?.preset_nsfw_gate_notice || 'Enable NSFW in your account settings to use the Hot preset.', 'warning');
+            }
+            return;
+        }
+
+        this.selectedPreset = normalizedPreset;
+        this.displayPresetTags();
+
+        if (persistChatSetting) {
+            await this.updatePresetPreference(normalizedPreset);
+        }
+
+        if (refreshSuggestions && this.isEnabled) {
+            await this.refreshSuggestions();
+        }
+    }
+
+    async updatePresetPreference(preset) {
+        try {
+            if (!window.chatToolSettings || typeof window.chatToolSettings.saveSettings !== 'function') {
+                return;
+            }
+            window.chatToolSettings.settings = window.chatToolSettings.settings || {};
+            window.chatToolSettings.settings.suggestionPreset = preset;
+            await window.chatToolSettings.saveSettings();
+        } catch (error) {
+            console.error('[ChatSuggestions] Error updating preset preference:', error);
+        }
+    }
+
+    async refreshSuggestions() {
+        const currentUserId = window.userId || user?._id;
+        const currentChatId = sessionStorage.getItem('chatId') || window.chatId;
+        const currentUserChatId = sessionStorage.getItem('userChatId') || window.userChatId;
+
+        if (!currentUserId || !currentChatId || !currentUserChatId) {
+            return;
+        }
+
+        this.hide();
+        await this.showSuggestions(currentUserId, currentChatId, currentUserChatId);
     }
 
     /**
@@ -316,6 +449,10 @@ class ChatSuggestionsManager {
         if (settings && typeof settings.disableSuggestions === 'boolean') {
             this.isEnabled = !settings.disableSuggestions;
             $('#suggestions-enable-switch').prop('checked', this.isEnabled);
+        }
+
+        if (settings?.suggestionPreset) {
+            this.selectedPreset = settings.suggestionPreset;
         }
     }
 

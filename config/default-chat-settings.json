@@ -9,6 +9,7 @@
     "autoMergeFace": true,
     "selectedModel": "deepseek-v3-turbo",
     "suggestionsEnabled": true,
+    "suggestionPreset": "neutral",
     "speechRecognitionEnabled": true,
     "speechAutoSend": true,
     "scenariosEnabled": false,

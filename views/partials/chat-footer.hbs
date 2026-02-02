@@ -924,6 +924,44 @@
                     {{chatToolSettingsTranslations.suggestionsSettingsDescription}}
                 </div>
                 
+                <div class="settings-field">
+                    <label class="settings-label fw-semibold mb-2">{{chatToolSettingsTranslations.suggestionPresetLabel}}</label>
+                    <div class="suggestion-preset-grid">
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="flirty">
+                            <span class="preset-pill">😏 {{chatToolSettingsTranslations.suggestionPresetFlirty}}</span>
+                        </label>
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="romantic">
+                            <span class="preset-pill">💕 {{chatToolSettingsTranslations.suggestionPresetRomantic}}</span>
+                        </label>
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="dominant">
+                            <span class="preset-pill">😈 {{chatToolSettingsTranslations.suggestionPresetDominant}}</span>
+                        </label>
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="innocent">
+                            <span class="preset-pill">😳 {{chatToolSettingsTranslations.suggestionPresetInnocent}}</span>
+                        </label>
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="humorous">
+                            <span class="preset-pill">😂 {{chatToolSettingsTranslations.suggestionPresetHumorous}}</span>
+                        </label>
+                        <label class="suggestion-preset-option nsfw-preset">
+                            <input type="radio" name="suggestion-preset" value="nsfw" {{#unless showNSFW}}disabled{{/unless}}>
+                            <span class="preset-pill">🔥 {{chatToolSettingsTranslations.suggestionPresetNsfw}}</span>
+                            <span class="preset-gate">{{chatToolSettingsTranslations.suggestionPresetNsfwGate}}</span>
+                        </label>
+                        <label class="suggestion-preset-option">
+                            <input type="radio" name="suggestion-preset" value="neutral">
+                            <span class="preset-pill">💬 {{chatToolSettingsTranslations.suggestionPresetNeutral}}</span>
+                        </label>
+                    </div>
+                    <div class="settings-description text-muted small mt-2">
+                        {{chatToolSettingsTranslations.suggestionPresetDescription}}
+                    </div>
+                </div>
+
                 <!-- Enable Suggestions Switch -->
                 <div class="settings-field">
                     <div class="settings-field-header">
