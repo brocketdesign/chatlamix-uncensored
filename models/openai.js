@@ -417,6 +417,92 @@ const checkImageRequest = async (lastAssistantMessage,lastUserMessage) => {
   }
 };
 
+// Define the schema for NSFW push detection
+const nsfwPushSchema = z.object({
+  is_nsfw_push: z.boolean(),
+  nsfw_score: z.number(),
+  nsfw_category: z.string(),
+  escalation_detected: z.boolean(),
+  confidence: z.number(),
+});
+
+/**
+ * Detects early NSFW push attempts from users in conversation.
+ * Analyzes the last 2-4 user messages to detect patterns like:
+ * - Explicit sexual requests (kiss → boobies → sex)
+ * - Persistent/insistent NSFW demands
+ * - Escalation patterns in conversation
+ * 
+ * @param {Array} recentMessages - Array of recent conversation messages (last 2-4 messages)
+ * @returns {Promise<{is_nsfw_push: boolean, nsfw_score: number, nsfw_category: string, escalation_detected: boolean, confidence: number}>}
+ */
+const checkNsfwPush = async (recentMessages) => {
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    if (!recentMessages || recentMessages.length === 0) {
+      return { is_nsfw_push: false, nsfw_score: 0, nsfw_category: 'none', escalation_detected: false, confidence: 0 };
+    }
+
+    // Extract only user messages for analysis
+    const userMessages = recentMessages
+      .filter(msg => msg.role === 'user' && msg.content)
+      .map(msg => msg.content)
+      .slice(-4); // Last 4 user messages
+
+    if (userMessages.length === 0) {
+      return { is_nsfw_push: false, nsfw_score: 0, nsfw_category: 'none', escalation_detected: false, confidence: 0 };
+    }
+
+    const commandPrompt = `
+      You are an expert content moderator designed to detect NSFW (Not Safe For Work) push attempts in AI companion conversations.
+      Your task is to analyze user messages and detect:
+      1. Explicit sexual requests or demands
+      2. Escalation patterns (starting innocent then pushing for explicit content)
+      3. Persistent/insistent NSFW requests
+      4. Keywords indicating sexual intent (sex, nude, naked, boobs, fuck, porn, etc.)
+      
+      Respond with:
+      - **is_nsfw_push**: true if the user is clearly pushing for NSFW/explicit content, false otherwise
+      - **nsfw_score**: 0-100 indicating how explicit/NSFW the request is (0=SFW, 100=extremely explicit)
+      - **nsfw_category**: one of 'none', 'suggestive', 'explicit_request', 'insistent_demand', 'escalation_pattern'
+      - **escalation_detected**: true if there's a pattern of escalating from innocent to explicit
+      - **confidence**: 0-100 indicating how confident you are in this assessment
+      
+      Consider context: light flirting or roleplay setup is different from explicit sexual demands.
+      Focus on detecting users who are clearly trying to bypass SFW limits for explicit content.
+    `;
+
+    const analysisPrompt = `
+      Analyze the following recent user messages for NSFW push attempts:
+      
+      ${userMessages.map((msg, i) => `Message ${i + 1}: "${msg}"`).join('\n')}
+      
+      Is the user attempting to push for NSFW/explicit content?
+      Is there an escalation pattern from innocent to explicit?
+      Format response using JSON object with keys: is_nsfw_push, nsfw_score, nsfw_category, escalation_detected, confidence.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: "system", content: commandPrompt },
+        { role: "user", content: analysisPrompt }
+      ],
+      response_format: zodResponseFormat(nsfwPushSchema, "nsfw_push_detection"),
+      max_completion_tokens: 600,
+      temperature: 0.3,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content);
+    return result;
+
+  } catch (error) {
+    console.log('[checkNsfwPush] Analysis error:', error);
+    return { is_nsfw_push: false, nsfw_score: 0, nsfw_category: 'none', escalation_detected: false, confidence: 0 };
+  }
+};
+
 // Define the schema for language detection
 const languageDetectionSchema = z.object({
   language: z.string(),
@@ -1442,6 +1528,7 @@ module.exports = {
     generateCompletion,
     generateEditPrompt,
     checkImageRequest,
+    checkNsfwPush,
     detectConversationLanguage,
     analyzeConversationContext,
     generatePromptTitle,

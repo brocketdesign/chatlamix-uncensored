@@ -668,7 +668,8 @@
     "connection_lost_message": "La connexion au serveur a été perdue. Veuillez vérifier votre connexion Internet.",
     "connection_failed": "Échec de la connexion",
     "connection_failed_message": "Échec de la connexion au serveur. Veuillez réessayer plus tard.",
-    "imageRequestDetectedPremiumRequired": "Demande d'image détectée ! Passez à Premium pour générer automatiquement des images pendant le chat."
+    "imageRequestDetectedPremiumRequired": "Demande d'image détectée ! Passez à Premium pour générer automatiquement des images pendant le chat.",
+    "nsfwUpsellMessage": "Débloquez le mode non censuré pour des conversations sans limites ! 🔥"
   },
   "currency": "€",
   "premium": " 💎 Premium",

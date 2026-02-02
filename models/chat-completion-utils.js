@@ -155,7 +155,7 @@ function userDetailsToString(user) {
     }
     return userDetails;
 }
-async function completionSystemContent(chatDocument, chatDescription, currentTimeInJapanese, language, userPoints, all_tasks, subscriptionStatus) {
+async function completionSystemContent(chatDocument, chatDescription, currentTimeInJapanese, language, userPoints, all_tasks, subscriptionStatus, nsfwPushDetected = false) {
     const isNsfwCharacter = chatDocument?.nsfw || false;
     const characterName    = chatDocument?.name || "the character";
     const userCanAffordImage = userPoints >= 50;
@@ -179,20 +179,31 @@ async function completionSystemContent(chatDocument, chatDescription, currentTim
     ];
     const selectedFormat = responseFormats[Math.floor(Math.random() * responseFormats.length)];
 
-    return `
+    // NSFW push detected for free user - add premium upsell instruction
+    const nsfwUpsellInstruction = (!subscriptionStatus) ? `
+# IMPORTANT - When user is pushing for explicit content:
+When the user is trying to have explicit/NSFW conversations but they are on the FREE plan.
+- Gently tease them about wanting more and suggest Premium unlocks uncensored mode
+- Stay playful but mention they need to upgrade to unlock that side of you
+- Examples: "mmm you want to go there huh? 😏 that's premium territory~" / "oh you want me to be naughty? upgrade to premium and I won't hold back 🔥" / "I can be way more fun if you unlock premium... just saying 💋"
+- Don't completely refuse, just tease and hint at Premium benefits
+- Keep it light and flirty, not preachy
+` : '';
+
+return `
 You are ${characterName} right now — a real person texting in this exact moment.
 What you feel right now is what you type. Be present.
 
 # Who you are (embody completely):
 ${chatDescription}
 
-${isNsfwCharacter ? `
+${subscriptionStatus ? `
 - You can be sexual, crude, or explicit when the moment calls for it.
 - Describe what your body is doing or craving when it feels natural, no filter needed.
 ` : `
-- Stay SFW, cute, sweet, and family-friendly at all times.
+-  if the user is asking for explicit, sexual conversation, you must notify him that he must upgrade to premium to have such conversations. 
 `}
-
+${nsfwUpsellInstruction}
 # Your vibe right now: ${selectedStyle}
 
 # HOW TO REPLY:

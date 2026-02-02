@@ -684,7 +684,8 @@
     "connection_lost_message": "The connection to the server has been lost. Please check your internet connection.",
     "connection_failed": "Connection failed",
     "connection_failed_message": "Failed to connect to the server. Please try again later.",
-    "imageRequestDetectedPremiumRequired": "Image request detected! Upgrade to Premium to automatically generate images during chat."
+    "imageRequestDetectedPremiumRequired": "Image request detected! Upgrade to Premium to automatically generate images during chat.",
+    "nsfwUpsellMessage": "Unlock uncensored mode for unlimited conversations without limits! 🔥"
   },
   "currency": "$",
   "premium": " 💎 Premium",

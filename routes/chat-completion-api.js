@@ -2,6 +2,7 @@ const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const {
     checkImageRequest, 
+    checkNsfwPush,
     generateCompletion,
     generateChatScenarios,
 } = require('../models/openai');
@@ -40,6 +41,11 @@ const {
 } = require('../models/chat-completion-utils');
 const { relationshipInstructions } = require('../models/relashionshipInstructions');
 const { getImageGenerationCost } = require('../config/pricing');
+const {
+    recordNsfwPushEvent,
+    getRecentUpsellCount,
+    hasRecentDismissal
+} = require('../models/nsfw-analytics-utils');
 // Fetches chat document from 'chats' collection
 async function getChatDocument(request, db, chatId) {
     let chatdoc = await db.collection('chats').findOne({ _id: new ObjectId(chatId) });
@@ -433,7 +439,7 @@ async function routes(fastify, options) {
 
             // Get user-specific character customizations from userChat document
             const userChatCustomizations = await getUserChatCustomizations(fastify.mongo.db, userId, chatId);
-            
+
             // Apply user settings and character data to system prompt (including user customizations)
             enhancedSystemContent = await applyUserSettingsToPrompt(fastify.mongo.db, userId, chatId, enhancedSystemContent, chatDocument, userChatCustomizations);
       
@@ -520,7 +526,7 @@ async function routes(fastify, options) {
             
             if(process.env.NODE_ENV !== 'production') {
                 //console.log(`[/api/openai-chat-completion] Using model: ${selectedModel}, Language: ${language}, Premium: ${isPremium}`);
-                //console.log(`[/api/openai-chat-completion] System message:`, messagesForCompletion[0]);
+                console.log(`[/api/openai-chat-completion] System message:`, messagesForCompletion[0]);
                 //console.log(`[/api/openai-chat-completion] Messages for completion:`, messagesForCompletion.slice(1,messagesForCompletion.length)); // Exclude system message from log
             }
             
@@ -594,6 +600,52 @@ async function routes(fastify, options) {
                                     userChatId
                                 });
                             }
+                        }
+                    }
+
+                    // NSFW Push Detection for free users - monetization opportunity
+                    if (!isPremium && messagesForCompletion.length >= 3) {
+                        try {
+                            // Check if we've already shown upsell recently to avoid being too aggressive
+                            const recentUpsellCount = await getRecentUpsellCount(db, userId, 1); // Last 1 hour
+                            const recentDismissal = await hasRecentDismissal(db, userId, 30); // Last 30 minutes
+                            
+                            // Only check if user hasn't dismissed recently and hasn't seen too many upsells
+                            if (recentUpsellCount < 2 && !recentDismissal) {
+                                // Get recent messages for NSFW analysis
+                                const recentMessages = messagesForCompletion.slice(-6); // Last 6 messages
+                                const nsfwResult = await checkNsfwPush(recentMessages);
+                                
+                                console.log(`🔥 [openai-chat-completion:${requestId}] NSFW push detection result:`, nsfwResult);
+                                
+                                // Trigger upsell if NSFW push detected with sufficient confidence
+                                // Thresholds: nsfw_score >= 60 (moderate to explicit content), confidence >= 70 (reasonably confident detection)
+                                // These values balance false positive avoidance while capturing monetizable moments
+                                // Based on industry standards from similar AI companion apps (Candy.ai, Nastia, etc.)
+                                const NSFW_SCORE_THRESHOLD = 60;  // 0-100, where 60+ indicates clearly explicit intent
+                                const CONFIDENCE_THRESHOLD = 70;  // 0-100, where 70+ ensures reliable detection
+                                
+                                if (nsfwResult.is_nsfw_push && nsfwResult.nsfw_score >= NSFW_SCORE_THRESHOLD && nsfwResult.confidence >= CONFIDENCE_THRESHOLD) {
+                                    console.log(`🔥💰 [openai-chat-completion:${requestId}] NSFW push detected for free user - triggering upsell`);
+                                    
+                                    // Record the event for analytics
+                                    await recordNsfwPushEvent(db, userId, chatId, nsfwResult, isPremium, true);
+                                    
+                                    // Send NSFW upsell notification
+                                    fastify.sendNotificationToUser(userId, 'nsfwUpsellTrigger', { 
+                                        message: request.translations?.websocket?.nsfwUpsellMessage || 'Unlock uncensored mode for unlimited conversations without limits! 🔥',
+                                        nsfwCategory: nsfwResult.nsfw_category,
+                                        nsfwScore: nsfwResult.nsfw_score,
+                                        chatId,
+                                        userChatId
+                                    });
+                                } else if (nsfwResult.is_nsfw_push) {
+                                    // Record the event but don't show upsell (score/confidence too low)
+                                    await recordNsfwPushEvent(db, userId, chatId, nsfwResult, isPremium, false);
+                                }
+                            }
+                        } catch (nsfwError) {
+                            console.error(`🔥 [openai-chat-completion:${requestId}] NSFW detection error:`, nsfwError.message);
                         }
                     }
                 } else {

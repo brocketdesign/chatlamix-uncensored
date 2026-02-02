@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+    {{> dashboard-header}}
+    <link rel="stylesheet" href="/css/user-analytics.css">
+<body class="bg-light">
+    {{> dashboard-nav}}
+    
+    <div class="analytics-wrapper">
+        <div class="container-fluid px-4 py-4">
+            <!-- Header Section -->
+            <div class="dashboard-header-section mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-title-wrapper">
+                            <div class="icon-wrapper" style="background: rgba(255, 107, 107, 0.1);">
+                                <i class="bi bi-fire" style="color: #ff6b6b;"></i>
+                            </div>
+                            <div>
+                                <h1 class="dashboard-title mb-1">NSFW Monetization Analytics</h1>
+                                <p class="text-muted mb-0">Track NSFW push detection and premium conversion rates</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <select id="periodSelect" class="form-select d-inline-block w-auto me-2">
+                            <option value="last_7_days" selected>Last 7 Days</option>
+                            <option value="last_30_days">Last 30 Days</option>
+                            <option value="last_90_days">Last 90 Days</option>
+                        </select>
+                        <a href="/admin/users/analytics" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Analytics
+                        </a>
+                        <button id="refreshData" class="btn btn-primary btn-shadow">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-container">
+                <div class="loading-card">
+                    <div class="spinner-border text-danger mb-3" style="width: 3.5rem; height: 3.5rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="text-muted">Loading NSFW analytics data...</h5>
+                    <p class="text-muted small mb-0">Please wait while we gather the insights</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardContent" style="display: none;">
+                <!-- Key Metrics -->
+                <div class="section-header mb-3">
+                    <h5 class="section-title">
+                        <i class="bi bi-speedometer2 me-2"></i>Key Monetization Metrics
+                    </h5>
+                </div>
+                
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label" style="color: rgba(255,255,255,0.9);">NSFW Push Events</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2 text-white" id="totalEvents">0</h2>
+                                        <p class="stat-change mb-0" style="color: rgba(255,255,255,0.7);">
+                                            <i class="bi bi-fire me-1"></i>
+                                            <span class="change-period">Total detected</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                                            <i class="bi bi-exclamation-triangle-fill text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #ffa726 0%, #fb8c00 100%);">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label" style="color: rgba(255,255,255,0.9);">Unique Users</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2 text-white" id="uniqueUsers">0</h2>
+                                        <p class="stat-change mb-0" style="color: rgba(255,255,255,0.7);">
+                                            <i class="bi bi-people me-1"></i>
+                                            <span class="change-period">Pushed NSFW content</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                                            <i class="bi bi-people-fill text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label" style="color: rgba(255,255,255,0.9);">Upsells Shown</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2 text-white" id="upsellShown">0</h2>
+                                        <p class="stat-change mb-0" style="color: rgba(255,255,255,0.7);">
+                                            <i class="bi bi-window-stack me-1"></i>
+                                            <span class="change-period">Premium modals displayed</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                                            <i class="bi bi-gem text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card" style="background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label" style="color: rgba(255,255,255,0.9);">Conversion Rate</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2 text-white" id="conversionRate">0%</h2>
+                                        <p class="stat-change mb-0" style="color: rgba(255,255,255,0.7);">
+                                            <i class="bi bi-arrow-up me-1"></i>
+                                            <span id="conversions">0</span> conversions
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon" style="background: rgba(255,255,255,0.2);">
+                                            <i class="bi bi-graph-up-arrow text-white"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="section-header mb-3 mt-5">
+                    <h5 class="section-title">
+                        <i class="bi bi-bar-chart-line me-2"></i>Trends & Distribution
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="chart-card-title mb-1">NSFW Detection Trends</h5>
+                                        <p class="chart-card-subtitle mb-0">Daily NSFW push events and conversions</p>
+                                    </div>
+                                    <div class="chart-badge" style="background: rgba(255, 107, 107, 0.1); color: #ff6b6b;">
+                                        <i class="bi bi-calendar-week me-1"></i><span id="trendPeriodBadge">7 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="nsfwTrendsChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">NSFW Categories</h5>
+                                    <p class="chart-card-subtitle mb-0">Breakdown by detection type</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="categoryChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Free vs Premium Users</h5>
+                                    <p class="chart-card-subtitle mb-0">NSFW push by subscription status</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="premiumVsFreeChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Average NSFW Score</h5>
+                                    <p class="chart-card-subtitle mb-0">Content intensity metrics</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body d-flex align-items-center justify-content-center" style="min-height: 200px;">
+                                <div class="text-center">
+                                    <div class="score-circle mx-auto mb-3" id="avgScoreCircle">
+                                        <span class="score-value" id="avgScore">0</span>
+                                        <span class="score-label">/ 100</span>
+                                    </div>
+                                    <p class="text-muted mb-0">Average NSFW intensity score</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Top Users Section -->
+                <div class="section-header mb-3 mt-5">
+                    <h5 class="section-title">
+                        <i class="bi bi-trophy me-2"></i>Top NSFW Push Users
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-12">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Users with Most NSFW Push Attempts</h5>
+                                    <p class="chart-card-subtitle mb-0">Potential high-value conversion targets</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="px-4 py-3">User</th>
+                                                <th class="text-center">Push Count</th>
+                                                <th class="text-center">Avg Score</th>
+                                                <th class="text-center">Upsells Shown</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-center">Converted</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topUsersTable">
+                                            <tr>
+                                                <td colspan="6" class="text-center text-muted py-4">Loading...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Last Updated Footer -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="update-card card-shadow">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="update-icon me-3">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block mb-1">Last Updated</small>
+                                        <strong id="lastUpdated" class="text-dark">Never</strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="auto-refresh-badge">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <span>Data refreshes on demand</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .sticky-bottom, #footer-toolbar {display:none;}
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            line-height: 1;
+        }
+        .score-label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+        }
+    </style>
+    {{> dashboard-footer}}
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="/js/admin/nsfw-analytics.js"></script>
+</body>
+</html>
