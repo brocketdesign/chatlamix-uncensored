@@ -574,7 +574,7 @@ class ChatToolSettings {
                 minImagesRange.style.opacity = '0.6';
                 
                 // Add premium indicator
-                const rangeContainer = document.querySelector('.settings-field');
+                const rangeContainer = minImagesRange.closest('.settings-field');
                 if (rangeContainer && !rangeContainer.querySelector('.premium-feature-indicator')) {
                     const premiumIndicator = document.createElement('small');
                     premiumIndicator.className = 'premium-feature-indicator text-muted d-block mt-1';
@@ -1231,6 +1231,11 @@ class ChatToolSettings {
                 this.settings = { ...this.settings, ...data.settings };
                 // Skip auto-correction when applying loaded settings to preserve user's choices
                 this.applySettingsToUI(true);
+                
+                // Dispatch event to notify other components that settings are loaded
+                document.dispatchEvent(new CustomEvent('chatToolSettingsLoaded', {
+                    detail: { settings: this.settings }
+                }));
             } else {
                 console.warn('Failed to load settings, using defaults');
             }
@@ -1304,6 +1309,11 @@ class ChatToolSettings {
                 this.settings = { ...this.settings, ...JSON.parse(savedSettings) };
                 // Skip auto-correction when applying loaded settings to preserve user's choices
                 this.applySettingsToUI(true);
+                
+                // Dispatch event to notify other components that settings are loaded
+                document.dispatchEvent(new CustomEvent('chatToolSettingsLoaded', {
+                    detail: { settings: this.settings }
+                }));
             }
         } catch (error) {
             console.error('Error loading settings from localStorage:', error);

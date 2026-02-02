@@ -18,6 +18,21 @@ class ChatSuggestionsManager {
      */
     init() {
         this.attachEventListeners();
+        this.loadInitialPreset();
+    }
+
+    /**
+     * Load initial preset from chatToolSettings if available
+     */
+    loadInitialPreset() {
+        // Try to load preset from chatToolSettings
+        if (window.chatToolSettings?.settings?.suggestionPreset) {
+            this.selectedPreset = window.chatToolSettings.settings.suggestionPreset;
+            // Validate NSFW preset
+            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
+                this.selectedPreset = 'neutral';
+            }
+        }
     }
 
     /**
@@ -108,6 +123,16 @@ class ChatSuggestionsManager {
                 this.displayPresetTags();
             }
         });
+
+        // Listen for chatToolSettings being loaded/initialized
+        document.addEventListener('chatToolSettingsLoaded', () => {
+            this.loadInitialPreset();
+        });
+
+        // Also listen for chat changes to reload the preset
+        $(document).on('chat:loaded chat:changed', () => {
+            this.loadInitialPreset();
+        });
     }
 
     /**
@@ -165,10 +190,19 @@ class ChatSuggestionsManager {
                 this.currentSuggestions = response.suggestions;
                 this.displaySuggestions(response.suggestions);
                 this.show();
+            } else {
+                // Hide if no suggestions were found or if they are disabled
+                if (this.isVisible) {
+                    this.hide();
+                }
             }
 
         } catch (error) {
             console.error('[ChatSuggestions] Error fetching suggestions:', error);
+            // Hide on error if currently visible
+            if (this.isVisible) {
+                this.hide();
+            }
         }
     }
 
@@ -308,6 +342,33 @@ class ChatSuggestionsManager {
         }
     }
 
+    /**
+     * Show loading state in suggestions list
+     * @param {boolean} isLoading - Whether suggestions are loading
+     */
+    setLoading(isLoading) {
+        if (isLoading) {
+            if (!this.suggestionsContainer || this.suggestionsContainer.length === 0) {
+                this.createSuggestionsContainer();
+            }
+
+            this.displayPresetTags();
+            
+            $('#chat-suggestions-list').html(`
+                <div class="suggestion-loading-container d-flex justify-content-center align-items-center" style="min-height: 100px; width: 100%;">
+                    <div class="spinner-border text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+
+            if (!this.isVisible) {
+                this.suggestionsContainer.fadeIn(200);
+                this.isVisible = true;
+            }
+        }
+    }
+
     async refreshSuggestions() {
         const currentUserId = window.userId || user?._id;
         const currentChatId = sessionStorage.getItem('chatId') || window.chatId;
@@ -317,7 +378,7 @@ class ChatSuggestionsManager {
             return;
         }
 
-        this.hide();
+        this.setLoading(true);
         await this.showSuggestions(currentUserId, currentChatId, currentUserChatId);
     }
 
@@ -453,6 +514,15 @@ class ChatSuggestionsManager {
 
         if (settings?.suggestionPreset) {
             this.selectedPreset = settings.suggestionPreset;
+            // Validate NSFW preset
+            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
+                this.selectedPreset = 'neutral';
+            }
+        }
+
+        // Update UI if container is visible
+        if (this.isVisible) {
+            this.displayPresetTags();
         }
     }
 
