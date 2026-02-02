@@ -839,6 +839,7 @@
     "system_prompts": "Prompts système",
     "users": "Utilisateurs",
     "user_analytics": "Analytique utilisateur",
+    "nsfw_analytics": "Analytique NSFW",
     "prompts": "Invites",
     "notifications": "Notifications",
     "models": "Modèles d'Image SD",

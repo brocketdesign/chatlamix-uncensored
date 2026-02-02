@@ -893,6 +893,7 @@
     "system_prompts": "システムプロンプト",
     "users": "ユーザー",
     "user_analytics": "ユーザー分析",
+    "nsfw_analytics": "NSFW分析",
     "prompts": "プロンプト",
     "notifications": "通知",
     "models": "SD画像モデル",

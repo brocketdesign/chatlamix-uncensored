@@ -895,6 +895,7 @@
     "system_prompts": "System Prompts",
     "users": "Users",
     "user_analytics": "User Analytics",
+    "nsfw_analytics": "NSFW Analytics",
     "prompts": "Prompts",
     "notifications": "Notifications",
     "models": "SD Image Models",

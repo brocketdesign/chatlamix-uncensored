@@ -360,6 +360,14 @@ class ChatToolSettings {
 
         // Update settings
         this.settings.preferredChatLanguage = lang;
+        
+        // Save to localStorage for immediate access by other components (e.g., NSFW upsell modal)
+        localStorage.setItem('preferredChatLanguage', lang);
+        
+        // Clear NSFW upsell modal translation cache so it reloads with the new language
+        if (typeof window.clearNsfwUpsellTranslationCache === 'function') {
+            window.clearNsfwUpsellTranslationCache();
+        }
     }
 
     toggleSpeechButton() {
@@ -1531,6 +1539,13 @@ class ChatToolSettings {
             document.querySelectorAll('#chat-language-grid .language-option').forEach(opt => {
                 opt.classList.toggle('selected', opt.dataset.lang === selectedLang);
             });
+            // Sync to localStorage for immediate access by other components
+            localStorage.setItem('preferredChatLanguage', selectedLang);
+            
+            // Clear NSFW upsell modal translation cache
+            if (typeof window.clearNsfwUpsellTranslationCache === 'function') {
+                window.clearNsfwUpsellTranslationCache();
+            }
         }
 
         // Update premium indicators

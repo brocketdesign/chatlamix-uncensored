@@ -1,0 +1,242 @@
+{
+    "english": {
+        "modalTitle": "Unlock Uncensored Mode",
+        "headline": "Go All The Way 💋",
+        "defaultMessage": "Ready for conversations without limits? Premium unlocks uncensored mode for unlimited intimate experiences.",
+        "messages": {
+            "suggestive": "Things are getting interesting 😏 Premium unlocks the full experience with no restrictions.",
+            "explicit_request": "Ready to go further? 🔥 Premium gives you uncensored conversations without limits.",
+            "insistent_demand": "I see you want more... 💋 Upgrade to Premium and I won't hold back anymore.",
+            "escalation_pattern": "Looks like you're ready for the next level 😈 Premium unlocks everything.",
+            "default": "Want to explore without limits? 💕 Premium gives you the full uncensored experience."
+        },
+        "features": {
+            "uncensored": { "title": "100% Uncensored", "description": "No filters, no limits on your conversations" },
+            "private": { "title": "Private & Secure", "description": "Your conversations stay completely private" },
+            "instant": { "title": "Instant Access", "description": "Upgrade now and continue right where you left off" },
+            "autoImage": { "title": "Auto Image Generation", "description": "Get images generated automatically in chat" }
+        },
+        "upgradeButton": "Unlock Premium Now 🔥",
+        "dismissButton": "Maybe later, stay in safe mode"
+    },
+    "french": {
+        "modalTitle": "Débloque le Mode Sans Censure",
+        "headline": "Va Jusqu'au Bout 💋",
+        "defaultMessage": "Prêt pour des conversations sans limites ? Premium débloque le mode sans censure pour des expériences intimes illlimitées.",
+        "messages": {
+            "suggestive": "Ça devient intéressant 😏 Premium débloque l'expérience complète sans restrictions.",
+            "explicit_request": "Prêt à aller plus loin ? 🔥 Premium te donne des conversations sans censure et sans limites.",
+            "insistent_demand": "Je vois que tu en veux plus... 💋 Passe à Premium et je ne me retiendrai plus.",
+            "escalation_pattern": "On dirait que tu es prêt pour le niveau supérieur 😈 Premium débloque tout.",
+            "default": "Tu veux explorer sans limites ? 💕 Premium te donne l'expérience complète sans censure."
+        },
+        "features": {
+            "uncensored": { "title": "100% Sans Censure", "description": "Aucun filtre, aucune limite sur tes conversations" },
+            "private": { "title": "Privé & Sécurisé", "description": "Tes conversations restent totalement privées" },
+            "instant": { "title": "Accès Instantané", "description": "Améliore maintenant et continue là où tu t'es arrêté" },
+            "autoImage": { "title": "Génération d'Images Auto", "description": "Obtiens des images générées automatiquement dans le chat" }
+        },
+        "upgradeButton": "Débloquer Premium Maintenant 🔥",
+        "dismissButton": "Peut-être plus tard, rester en mode safe"
+    },
+    "japanese": {
+        "modalTitle": "無制限モードを解除",
+        "headline": "最後まで行こう 💋",
+        "defaultMessage": "制限なしの会話に準備はできていますか？プレミアムで無制限モードを解除して、無限の親密な体験を。",
+        "messages": {
+            "suggestive": "面白くなってきた 😏 プレミアムで制限なしの完全な体験を解除。",
+            "explicit_request": "もっと先に行く準備はできた？ 🔥 プレミアムで制限なしの会話を。",
+            "insistent_demand": "もっと欲しいのね... 💋 プレミアムにアップグレードしたら、もう我慢しないわ。",
+            "escalation_pattern": "次のレベルに進む準備ができてるみたい 😈 プレミアムですべてを解除。",
+            "default": "制限なしで探索したい？ 💕 プレミアムで完全無制限体験を。"
+        },
+        "features": {
+            "uncensored": { "title": "100%無制限", "description": "フィルターなし、会話に制限なし" },
+            "private": { "title": "プライベート＆安全", "description": "あなたの会話は完全にプライベート" },
+            "instant": { "title": "即時アクセス", "description": "今すぐアップグレードして、中断したところから続行" },
+            "autoImage": { "title": "自動画像生成", "description": "チャットで自動的に画像を生成" }
+        },
+        "upgradeButton": "今すぐプレミアムを解除 🔥",
+        "dismissButton": "後で、セーフモードのままで"
+    },
+    "portuguese": {
+        "modalTitle": "Desbloquear Modo Sem Censura",
+        "headline": "Vá Até o Fim 💋",
+        "defaultMessage": "Pronto para conversas sem limites? O Premium desbloqueia o modo sem censura para experiências íntimas ilimitadas.",
+        "messages": {
+            "suggestive": "As coisas estão ficando interessantes 😏 O Premium desbloqueia a experiência completa sem restrições.",
+            "explicit_request": "Pronto para ir mais longe? 🔥 O Premium oferece conversas sem censura e sem limites.",
+            "insistent_demand": "Vejo que você quer mais... 💋 Atualize para o Premium e eu não vou mais me segurar.",
+            "escalation_pattern": "Parece que você está pronto para o próximo nível 😈 O Premium desbloqueia tudo.",
+            "default": "Quer explorar sem limites? 💕 O Premium oferece a experiência completa sem censura."
+        },
+        "features": {
+            "uncensored": { "title": "100% Sem Censura", "description": "Sem filtros, sem limites em suas conversas" },
+            "private": { "title": "Privado e Seguro", "description": "Suas conversas permanecem completamente privadas" },
+            "instant": { "title": "Acesso Instantâneo", "description": "Atualize agora e continue de onde parou" },
+            "autoImage": { "title": "Geração Automática de Imagens", "description": "Imagens geradas automaticamente no chat" }
+        },
+        "upgradeButton": "Desbloquear Premium Agora 🔥",
+        "dismissButton": "Talvez mais tarde, ficar no modo seguro"
+    },
+    "spanish": {
+        "modalTitle": "Desbloquear Modo Sin Censura",
+        "headline": "Ve Hasta el Final 💋",
+        "defaultMessage": "¿Listo para conversaciones sin límites? Premium desbloquea el modo sin censura para experiencias íntimas ilimitadas.",
+        "messages": {
+            "suggestive": "Las cosas se están poniendo interesantes 😏 Premium desbloquea la experiencia completa sin restricciones.",
+            "explicit_request": "¿Listo para ir más lejos? 🔥 Premium te ofrece conversaciones sin censura y sin límites.",
+            "insistent_demand": "Veo que quieres más... 💋 Actualiza a Premium y no me detendré más.",
+            "escalation_pattern": "Parece que estás listo para el siguiente nivel 😈 Premium lo desbloquea todo.",
+            "default": "¿Quieres explorar sin límites? 💕 Premium te ofrece la experiencia completa sin censura."
+        },
+        "features": {
+            "uncensored": { "title": "100% Sin Censura", "description": "Sin filtros, sin límites en tus conversaciones" },
+            "private": { "title": "Privado y Seguro", "description": "Tus conversaciones se mantienen completamente privadas" },
+            "instant": { "title": "Acceso Instantáneo", "description": "Actualiza ahora y continúa donde lo dejaste" },
+            "autoImage": { "title": "Generación Automática de Imágenes", "description": "Obtén imágenes generadas automáticamente en el chat" }
+        },
+        "upgradeButton": "Desbloquear Premium Ahora 🔥",
+        "dismissButton": "Talvez más tarde, quedarme en modo seguro"
+    },
+    "chinese": {
+        "modalTitle": "解锁无限制模式",
+        "headline": "更进一步 💋",
+        "defaultMessage": "准备好进行无限制的对话了吗？高级版解锁无限制模式，带来无限亲密体验。",
+        "messages": {
+            "suggestive": "事情变得有趣了 😏 高级版解锁无限制的完整体验。",
+            "explicit_request": "准备好更进一步了吗？ 🔥 高级版提供无限制的对话。",
+            "insistent_demand": "我看到你想要更多... 💋 升级到高级版，我将不再保留。",
+            "escalation_pattern": "看来你已经准备好进入下一个阶段了 😈 高级版解锁一切。",
+            "default": "想要无限制地探索吗？ 💕 高级版提供完整的无限制体验。"
+        },
+        "features": {
+            "uncensored": { "title": "100% 无限制", "description": "无过滤，对话无限制" },
+            "private": { "title": "私密安全", "description": "您的对话保持完全私密" },
+            "instant": { "title": "即时访问", "description": "立即升级，从上次中断的地方继续" },
+            "autoImage": { "title": "自动生成图像", "description": "在聊天中自动生成图像" }
+        },
+        "upgradeButton": "立即解锁高级版 🔥",
+        "dismissButton": "稍后再说，保持安全模式"
+    },
+    "korean": {
+        "modalTitle": "무삭제 모드 해제",
+        "headline": "끝까지 가보세요 💋",
+        "defaultMessage": "제한 없는 대화를 나눌 준비가 되셨나요? 프리미엄은 무제한의 친밀한 경험을 위해 무삭제 모드를 해제합니다.",
+        "messages": {
+            "suggestive": "분위기가 무르익고 있네요 😏 프리미엄은 제약 없는 모든 경험을 잠금 해제합니다.",
+            "explicit_request": "더 나아갈 준비가 되셨나요? 🔥 프리미엄은 제한 없는 대화를 제공합니다.",
+            "insistent_demand": "당신이 더 원한다는 걸 알아요... 💋 프리미엄으로 업그레이드하면 더 이상 참지 않겠습니다.",
+            "escalation_pattern": "다음 단계로 갈 준비가 된 것 같군요 😈 프리미엄이 모든 것을 열어줍니다.",
+            "default": "제한 없이 탐험하고 싶으신가요? 💕 프리미엄은 완벽한 무삭제 경험을 선사합니다."
+        },
+        "features": {
+            "uncensored": { "title": "100% 무삭제", "description": "대화에 필터나 제한이 없습니다" },
+            "private": { "title": "비공개 및 보안", "description": "귀하의 대화는 완전히 비공개로 유지됩니다" },
+            "instant": { "title": "즉시 액세스", "description": "지금 업그레이드하고 중단한 부분부터 계속하세요" },
+            "autoImage": { "title": "자동 이미지 생성", "description": "채팅 중에 이미지가 자동으로 생성됩니다" }
+        },
+        "upgradeButton": "지금 프리미엄 해제 🔥",
+        "dismissButton": "나중에요, 세이프 모드로 유지"
+    },
+    "german": {
+        "modalTitle": "Unzensierten Modus freischalten",
+        "headline": "Gehe den ganzen Weg 💋",
+        "defaultMessage": "Bereit für Gespräche ohne Grenzen? Premium schaltet den unzensierten Modus für unbegrenzte intime Erlebnisse frei.",
+        "messages": {
+            "suggestive": "Es wird interessant 😏 Premium schaltet das volle Erlebnis ohne Einschränkungen frei.",
+            "explicit_request": "Bereit weiter zu gehen? 🔥 Premium ermöglicht unzensierte Gespräche ohne Grenzen.",
+            "insistent_demand": "Ich sehe, du willst mehr... 💋 Upgrade auf Premium und ich halte mich nicht mehr zurück.",
+            "escalation_pattern": "Es sieht so aus, als wärst du bereit für das nächste Level 😈 Premium schaltet alles frei.",
+            "default": "Willst du ohne Grenzen erkunden? 💕 Premium bietet das volle unzensierte Erlebnis."
+        },
+        "features": {
+            "uncensored": { "title": "100% Unzensiert", "description": "Keine Filter, keine Grenzen für Ihre Gespräche" },
+            "private": { "title": "Privat & Sicher", "description": "Ihre Gespräche bleiben absolut privat" },
+            "instant": { "title": "Sofortiger Zugang", "description": "Jetzt upgraden und genau dort weitermachen, wo Sie aufgehört haben" },
+            "autoImage": { "title": "Automatische Bilderzeugung", "description": "Bilder werden automatisch im Chat generiert" }
+        },
+        "upgradeButton": "Premium jetzt freischalten 🔥",
+        "dismissButton": "Vielleicht später, im sicheren Modus bleiben"
+    },
+    "italian": {
+        "modalTitle": "Sblocca la Modalità Senza Censure",
+        "headline": "Vai Fino in Fondo 💋",
+        "defaultMessage": "Pronto per conversazioni senza limiti? Premium sblocca la modalità senza censure per esperienze intime illimitate.",
+        "messages": {
+            "suggestive": "Le cose si fanno interessanti 😏 Premium sblocca l'esperienza completa senza restrizioni.",
+            "explicit_request": "Pronto per andare oltre? 🔥 Premium ti offre conversazioni senza censure e senza limiti.",
+            "insistent_demand": "Vedo che vuoi di più... 💋 Passa a Premium e non mi tratterrò più.",
+            "escalation_pattern": "Sembra che tu sia pronto per il livello successivo 😈 Premium sblocca tutto.",
+            "default": "Vuoi esplorare senza limiti? 💕 Premium ti offre l'esperienza completa senza censure."
+        },
+        "features": {
+            "uncensored": { "title": "100% Senza Censure", "description": "Nessun filtro, nessun limite alle tue conversazioni" },
+            "private": { "title": "Privato e Sicuro", "description": "Le tue conversazioni rimangono completamente private" },
+            "instant": { "title": "Accesso Istantaneo", "description": "Aggiorna ora e continua da dove avevi interrotto" },
+            "autoImage": { "title": "Generazione Automatica di Immagini", "description": "Ottieni immagini generate automaticamente nella chat" }
+        },
+        "upgradeButton": "Sblocca Premium Ora 🔥",
+        "dismissButton": "Forse più tardi, rimani in modalità sicura"
+    },
+    "russian": {
+        "modalTitle": "Режим без цензуры",
+        "headline": "Иди до конца 💋",
+        "defaultMessage": "Готовы к общению без границ? Премиум открывает доступ к режиму без цензуры для неограниченных интимных впечатлений.",
+        "messages": {
+            "suggestive": "Становится интересно 😏 Премиум открывает все возможности без ограничений.",
+            "explicit_request": "Готовы пойти дальше? 🔥 Премиум дает вам свободу общения без границ.",
+            "insistent_demand": "Я вижу, ты хочешь большего... 💋 Переходи на Премиум, и я больше не буду сдерживаться.",
+            "escalation_pattern": "Похоже, ты готов к следующему уровню 😈 Премиум открывает всё.",
+            "default": "Хочешь исследовать без границ? 💕 Премиум дает полный доступ к режиму без цензуры."
+        },
+        "features": {
+            "uncensored": { "title": "100% без цензуры", "description": "Никаких фильтров и ограничений в общении" },
+            "private": { "title": "Приватно и безопасно", "description": "Ваши разговоры остаются полностью конфиденциальными" },
+            "instant": { "title": "Мгновенный доступ", "description": "Обновитесь сейчас и продолжите с того же места" },
+            "autoImage": { "title": "Автогенерация фото", "description": "Фото генерируются автоматически в чате" }
+        },
+        "upgradeButton": "Разблокировать Премиум 🔥",
+        "dismissButton": "Может позже, остаться в безопасном режиме"
+    },
+    "thai": {
+        "modalTitle": "ปลดล็อกโหมดไม่เซ็นเซอร์",
+        "headline": "ไปให้สุด 💋",
+        "defaultMessage": "พร้อมสำหรับการสนทนาที่ไม่มีขีดจำกัดแล้วหรือยัง? พรีเมียมปลดล็อกโหมดไม่เซ็นเซอร์เพื่อประสบการณ์ที่ใกล้ชิดอย่างไร้ขีดจำกัด",
+        "messages": {
+            "suggestive": "เรื่องราวเริ่มน่าสนใจแล้วนะ 😏 พรีเมียมปลดล็อกประสบการณ์เต็มรูปแบบโดยไม่มีข้อจำกัด",
+            "explicit_request": "พร้อมจะไปต่อหรือยัง? 🔥 พรีเมียมให้คุณได้คุยแบบไม่เซ็นเซอร์และไม่มีขีดจำกัด",
+            "insistent_demand": "ฉันเห็นว่าคุณต้องการมากกว่านี้... 💋 อัปเกรดเป็นพรีเมียมแล้วฉันจะไม่รั้งรออีกต่อไป",
+            "escalation_pattern": "ดูเหมือนคุณจะพร้อมสำหรับระดับต่อไปแล้วนะ 😈 พรีเมียมปลดล็อกทุกอย่าง",
+            "default": "อยากสำรวจแบบไม่มีขีดจำกัดไหม? 💕 พรีเมียมให้ประสบการณ์ไม่เซ็นเซอร์แบบเต็มที่"
+        },
+        "features": {
+            "uncensored": { "title": "ไม่เซ็นเซอร์ 100%", "description": "ไม่มีฟิลเตอร์ ไม่มีขีดจำกัดในการสนทนา" },
+            "private": { "title": "เป็นส่วนตัว & ปลอดภัย", "description": "การสนทนาของคุณจะถูกเก็บเป็นความลับอย่างสมบูรณ์" },
+            "instant": { "title": "เข้าถึงได้ทันที", "description": "อัปเกรดตอนนี้และคุยต่อจากที่ค้างไว้ได้เลย" },
+            "autoImage": { "title": "สร้างรูปภาพอัตโนมัติ", "description": "รับรูปภาพที่สร้างขึ้นโดยอัตโนมัติในแชท" }
+        },
+        "upgradeButton": "ปลดล็อกพรีเมียมทันที 🔥",
+        "dismissButton": "ไว้วันหลัง ยังอยู่ที่โหมดปลอดภัย"
+    },
+    "hindi": {
+        "modalTitle": "अनसेंसर्ड मोड अनलॉक करें",
+        "headline": "पूरी तरह से आगे बढ़ें 💋",
+        "defaultMessage": "क्या आप बिना सीमाओं वाली बातचीत के लिए तैयार हैं? प्रीमियम अनलिमिटेड अंतरंग अनुभवों के लिए अनसेंसर्ड मोड अनलॉक करता है।",
+        "messages": {
+            "suggestive": "चीजें दिलचस्प हो रही हैं 😏 प्रीमियम बिना किसी पाबंदी के पूरा अनुभव अनलॉक करता है।",
+            "explicit_request": "क्या आप और आगे बढ़ने के लिए तैयार हैं? 🔥 प्रीमियम आपको बिना किसी सीमा के अनसेंसर्ड बातचीत देता है।",
+            "insistent_demand": "मैं देख सकती हूँ कि आप और अधिक चाहते हैं... 💋 प्रीमियम पर अपग्रेड करें और मैं अब पीछे नहीं हटूंगी।",
+            "escalation_pattern": "लगता है आप अगले स्तर के लिए तैयार हैं 😈 प्रीमियम सब कुछ अनलॉक करता है।",
+            "default": "क्या आप बिना सीमाओं के खोज करना चाहते हैं? 💕 प्रीमियम आपको पूरा अनसेंसर्ड अनुभव देता है।"
+        },
+        "features": {
+            "uncensored": { "title": "100% अनसेंसर्ड", "description": "आपकी बातचीत पर कोई फिल्टर नहीं, कोई सीमा नहीं" },
+            "private": { "title": "निजी और सुरक्षित", "description": "आपकी बातचीत पूरी तरह से निजी रहती है" },
+            "instant": { "title": "तत्काल पहुंच", "description": "अभी अपग्रेड करें और वहीं से शुरू करें जहां आपने छोड़ा था" },
+            "autoImage": { "title": "ऑटो इमेज जनरेशन", "description": "चैट में स्वचालित रूप से चित्र प्राप्त करें" }
+        },
+        "upgradeButton": "अभी प्रीमियम अनलॉक करें 🔥",
+        "dismissButton": "शायद बाद में, सुरक्षित मोड में रहें"
+    }
+}
