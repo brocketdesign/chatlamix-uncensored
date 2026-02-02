@@ -2,6 +2,7 @@ const { ObjectId } = require('mongodb');
 const axios = require('axios');
 const {
     checkImageRequest, 
+    checkEarlyNsfwUpsell,
     generateCompletion,
     generateChatScenarios,
 } = require('../models/openai');
@@ -420,6 +421,64 @@ async function routes(fastify, options) {
             const userPoints = await getUserPoints(fastify.mongo.db, userId);
             const all_tasks = await getTasks(db, null, userId);
 
+            const detectedUpsellEvents = userData?.upsellEvents || [];
+            const cutoffTime = Date.now() - (24 * 60 * 60 * 1000);
+            const hasRecentUpsell = detectedUpsellEvents.some(event => {
+                const eventTime = new Date(event.triggeredAt || 0);
+                if (Number.isNaN(eventTime.getTime())) {
+                    return false;
+                }
+                return eventTime.getTime() >= cutoffTime;
+            });
+            let upsellPrompt = '';
+            let shouldTriggerEarlyNsfwUpsell = false;
+
+            if (!subscriptionStatus && !hasRecentUpsell) {
+                const recentMessages = userData.messages
+                    .filter(m => m.content && !m.content.startsWith('[Image]') && m.role !== 'system' && m.name !== 'context')
+                    .slice(-6)
+                    .map(m => ({ role: m.role, content: m.content }));
+
+                if (recentMessages.length >= 2) {
+                    const upsellResult = await checkEarlyNsfwUpsell(recentMessages, {
+                        isNsfwCharacter: nsfw,
+                        conversationLength: userData.messages.length
+                    });
+                    shouldTriggerEarlyNsfwUpsell = upsellResult?.trigger && (upsellResult.confidence ?? 0) >= 0.6;
+                    if (shouldTriggerEarlyNsfwUpsell) {
+                        const upsellEvent = {
+                            type: 'early_nsfw_push',
+                            severity: upsellResult.severity || 'none',
+                            confidence: upsellResult.confidence ?? 0,
+                            reason: upsellResult.reason || null,
+                            userIntent: upsellResult.user_intent || null,
+                            triggeredAt: new Date(),
+                            chatId,
+                            userChatId
+                        };
+                        userData.upsellEvents = [...detectedUpsellEvents, upsellEvent];
+                        await fastify.mongo.db.collection('userChat').updateOne(
+                            { _id: new ObjectId(userChatId) },
+                            { $set: { upsellEvents: userData.upsellEvents } }
+                        );
+
+                        fastify.sendNotificationToUser(userId, 'earlyNsfwUpsellDetected', {
+                            chatId,
+                            userChatId,
+                            severity: upsellEvent.severity,
+                            confidence: upsellEvent.confidence,
+                            reason: upsellEvent.reason,
+                            userIntent: upsellEvent.userIntent
+                        });
+
+                        const translations = request.translations?.upsell || {};
+                        upsellPrompt = translations.character_prompt
+                            || "Ask the user to upgrade to Premium to unlock uncensored chat and continue this vibe.";
+
+                    }
+                }
+            }
+
             // Generate system content
             let enhancedSystemContent = await completionSystemContent(
                 chatDocument,
@@ -428,7 +487,8 @@ async function routes(fastify, options) {
                 language,
                 userPoints,
                 all_tasks,
-                subscriptionStatus
+                subscriptionStatus,
+                { upsellPrompt }
             );
 
             // Get user-specific character customizations from userChat document
@@ -527,6 +587,12 @@ async function routes(fastify, options) {
             generateCompletion(messagesForCompletion, 600, selectedModel, language, selectedModel, isPremium)
             .then(async (completion) => {
                 if (completion) {
+                    if (shouldTriggerEarlyNsfwUpsell) {
+                        const normalizedCompletion = completion ? completion.toLowerCase() : '';
+                        if (!normalizedCompletion.includes('premium')) {
+                            completion = `${completion}\n\n${request.translations?.upsell?.character_followup || 'Want more? Unlock Premium for uncensored chat.'}`;
+                        }
+                    }
                     fastify.sendNotificationToUser(userId, 'displayCompletionMessage', { message: completion, uniqueId });
                     
                     const newAssistantMessage = { 

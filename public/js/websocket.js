@@ -405,6 +405,29 @@ function initializeWebSocket(onConnectionResult = null) {
               }
               break;
           }
+          case 'earlyNsfwUpsellDetected': {
+              const { message, chatId: notifChatId, userChatId: notifUserChatId, severity, confidence, reason, userIntent } = data.notification;
+              const notificationMessage = message || window.translations?.websocket?.earlyNsfwUpsellDetected || 'Premium unlock required to continue this conversation.';
+              console.log('[WebSocket] Early NSFW upsell detected');
+
+              showNotification(notificationMessage, 'warning');
+
+              if (typeof UserTracking !== 'undefined' && UserTracking.trackEarlyNsfwUpsell) {
+                  UserTracking.trackEarlyNsfwUpsell({
+                      chatId: notifChatId,
+                      userChatId: notifUserChatId,
+                      severity,
+                      confidence,
+                      reason,
+                      userIntent
+                  });
+              }
+
+              if (typeof loadPlanPage === 'function') {
+                  loadPlanPage(typeof UserTracking !== 'undefined' ? UserTracking.PremiumViewSources.EARLY_NSFW_UPSELL : 'early_nsfw_upsell');
+              }
+              break;
+          }
           default:
             // Removed console.log('[WebSocket] Unhandled notification type:', data.notification.type);
             break;

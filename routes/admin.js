@@ -127,6 +127,18 @@ async function routes(fastify, options) {
     return reply.view('/admin/users-analytics', { analytics: analyticsData });
   });
 
+  fastify.get('/admin/upsell-analytics', async (request, reply) => {
+    const user = request.user;
+    const isAdmin = await checkUserAdmin(fastify, user._id);
+    if (!isAdmin) return reply.status(403).send({ error: 'Access denied' });
+
+    return reply.view('/admin/upsell-analytics', {
+      user: request.user,
+      translations: request.translations,
+      title: request.translations?.admin?.upsell_analytics || 'Upsell Analytics'
+    });
+  });
+
   fastify.put('/admin/users/:userId/subscription', async (request, reply) => {
     try {
       const isAdmin = await checkUserAdmin(fastify, request.user._id);

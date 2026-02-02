@@ -3,6 +3,7 @@ const {
   trackStartChat,
   trackMessageSent,
   trackPremiumView,
+  trackEarlyNsfwUpsell,
   saveUserLocation,
   saveUserLocationDirect,
   getUserLocation,
@@ -137,6 +138,39 @@ async function trackingRoutes(fastify, options) {
       return reply.send(result);
     } catch (error) {
       console.error('Error in /api/tracking/premium-view:', error);
+      return reply.status(500).send({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * Track an "Early NSFW Upsell" event (when early NSFW push is detected)
+   * POST /api/tracking/early-nsfw-upsell
+   */
+  fastify.post('/api/tracking/early-nsfw-upsell', async (request, reply) => {
+    try {
+      const user = request.user;
+      if (!user || !user._id) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
+      if (user.role === 'admin') {
+        return reply.send({ success: true, skipped: true, reason: 'admin_user' });
+      }
+
+      const { chatId, userChatId, severity, confidence, reason, userIntent } = request.body || {};
+
+      const result = await trackEarlyNsfwUpsell(db, user._id.toString(), {
+        chatId,
+        userChatId,
+        severity,
+        confidence,
+        reason,
+        userIntent
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      console.error('Error in /api/tracking/early-nsfw-upsell:', error);
       return reply.status(500).send({ error: 'Internal server error' });
     }
   });

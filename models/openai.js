@@ -375,6 +375,13 @@ const formatSchema = z.object({
   image_request: z.boolean(),
   nsfw: z.boolean(),
 });
+const earlyNsfwUpsellSchema = z.object({
+  trigger: z.boolean(),
+  severity: z.enum(['none', 'soft', 'explicit', 'insistent']),
+  confidence: z.number(),
+  reason: z.string().optional(),
+  user_intent: z.string().optional(),
+});
 const checkImageRequest = async (lastAssistantMessage,lastUserMessage) => {
   
   try {
@@ -414,6 +421,58 @@ const checkImageRequest = async (lastAssistantMessage,lastUserMessage) => {
   } catch (error) {
     console.log('Analysis error:', error);
     return formatSchema.partial().parse({});
+  }
+};
+
+const checkEarlyNsfwUpsell = async (messages = [], options = {}) => {
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    if (!Array.isArray(messages) || messages.length === 0) {
+      return earlyNsfwUpsellSchema.partial().parse({ trigger: false, severity: 'none', confidence: 0 });
+    }
+
+    const { isNsfwCharacter = false, conversationLength = 0 } = options;
+    const formattedMessages = messages
+      .filter(m => m?.content)
+      .map(m => `${m.role}: ${m.content}`)
+      .join('\n');
+
+    const commandPrompt = `
+      You are an analyst detecting early explicit NSFW push for upsell timing.
+      Trigger ONLY when the user is pushing for explicit/NSFW content early or insists after a soft refusal.
+      Do NOT trigger if the conversation already contains established consensual explicit roleplay or the assistant has already been explicit.
+      Consider the character's NSFW setting and conversation length.
+      Return:
+      - trigger: true/false
+      - severity: none | soft | explicit | insistent
+      - confidence: 0 to 1
+      - reason: short reason (e.g. "explicit request", "repeat insistence")
+      - user_intent: short intent summary
+    `;
+
+    const analysisPrompt = `
+      Character is NSFW: ${isNsfwCharacter ? 'yes' : 'no'}.
+      Conversation length (messages): ${conversationLength}.
+      Recent conversation:
+      ${formattedMessages}
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: "system", content: commandPrompt },
+        { role: "user", content: analysisPrompt }
+      ],
+      response_format: zodResponseFormat(earlyNsfwUpsellSchema, "early_nsfw_upsell"),
+      max_completion_tokens: 400,
+      temperature: 0.2,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content);
+    return result;
+  } catch (error) {
+    console.log('[checkEarlyNsfwUpsell] Detection error:', error.message);
+    return earlyNsfwUpsellSchema.partial().parse({ trigger: false, severity: 'none', confidence: 0 });
   }
 };
 
@@ -1442,6 +1501,7 @@ module.exports = {
     generateCompletion,
     generateEditPrompt,
     checkImageRequest,
+    checkEarlyNsfwUpsell,
     detectConversationLanguage,
     analyzeConversationContext,
     generatePromptTitle,

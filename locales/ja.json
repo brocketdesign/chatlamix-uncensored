@@ -684,7 +684,12 @@
     "connection_lost_message": "サーバーへの接続が失われました。インターネット接続を確認してください。",
     "connection_failed": "接続に失敗しました",
     "connection_failed_message": "サーバーへの接続に失敗しました。後でもう一度お試しください。",
-    "imageRequestDetectedPremiumRequired": "画像リクエストが検出されました！プレミアムにアップグレードすると、チャット中に自動的に画像を生成できます。"
+    "imageRequestDetectedPremiumRequired": "画像リクエストが検出されました！プレミアムにアップグレードすると、チャット中に自動的に画像を生成できます。",
+    "earlyNsfwUpsellDetected": "もう少しだよ😏 プレミアムで制限なしのチャットを解放しよう。"
+  },
+  "upsell": {
+    "character_prompt": "短くフレンドリーに、プレミアムで無制限/ノーフィルター会話ができると伝えてアップグレードを促して。",
+    "character_followup": "続けたい？プレミアムで無制限チャットを解放しよう。"
   },
   "currency": "¥",
   "premium": " 💎 プレミアム",
@@ -892,6 +897,7 @@
     "system_prompts": "システムプロンプト",
     "users": "ユーザー",
     "user_analytics": "ユーザー分析",
+    "upsell_analytics": "アップセル分析",
     "prompts": "プロンプト",
     "notifications": "通知",
     "models": "SD画像モデル",

@@ -728,6 +728,11 @@ function updateBehaviorStats(data) {
     // Premium Modal Views
     $('#totalPremiumViews').text(data.events.premiumView?.count?.toLocaleString() || '0');
     $('#uniquePremiumViewUsers').text((data.events.premiumView?.uniqueUsers || 0) + ' users');
+
+    // Early NSFW Upsell
+    $('#earlyNsfwUpsellCount').text(data.events.earlyNsfwUpsell?.count?.toLocaleString() || '0');
+    $('#earlyNsfwUpsellUsers').text((data.events.earlyNsfwUpsell?.uniqueUsers || 0) + ' users');
+    $('#earlyNsfwUpsellTopSeverity').text(formatSourceLabel(data.earlyNsfwUpsell?.bySeverity?.[0]?.severity) || 'Unknown');
 }
 
 // Chat Start Sources List
@@ -798,6 +803,7 @@ function renderBehaviorTrendsChart(trendsData) {
     const startChatData = trendsData.map(t => t.startChat);
     const messageSentData = trendsData.map(t => t.messageSent);
     const premiumViewData = trendsData.map(t => t.premiumView);
+    const earlyNsfwUpsellData = trendsData.map(t => t.earlyNsfwUpsell || 0);
     
     behaviorTrendsChart = new Chart(ctx.getContext('2d'), {
         type: 'line',
@@ -836,6 +842,17 @@ function renderBehaviorTrendsChart(trendsData) {
                     tension: 0.4,
                     pointRadius: 4,
                     pointBackgroundColor: 'rgba(156, 39, 176, 1)'
+                },
+                {
+                    label: 'Early NSFW Upsell',
+                    data: earlyNsfwUpsellData,
+                    borderColor: 'rgba(245, 87, 108, 1)',
+                    backgroundColor: 'rgba(245, 87, 108, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: 'rgba(245, 87, 108, 1)'
                 }
             ]
         },

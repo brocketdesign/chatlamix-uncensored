@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ja">
+    {{> dashboard-header}}
+    <link rel="stylesheet" href="/css/user-analytics.css">
+<body class="bg-light">
+    {{> dashboard-nav}}
+    
+    <div class="analytics-wrapper">
+        <div class="container-fluid px-4 py-4">
+            <!-- Header Section -->
+            <div class="dashboard-header-section mb-4">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="page-title-wrapper">
+                            <div class="icon-wrapper">
+                                <i class="bi bi-graph-up-arrow"></i>
+                            </div>
+                            <div>
+                                <h1 class="dashboard-title mb-1">{{#if translations.admin.upsell_analytics}}{{translations.admin.upsell_analytics}}{{else}}Upsell Analytics{{/if}}</h1>
+                                <p class="text-muted mb-0">Early NSFW upsell performance & premium conversions</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                        <a href="/admin/users" class="btn btn-outline-secondary me-2">
+                            <i class="bi bi-arrow-left me-2"></i>Back to Users
+                        </a>
+                        <button id="refreshData" class="btn btn-primary btn-shadow">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Refresh Data
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="loading-container">
+                <div class="loading-card">
+                    <div class="spinner-border text-primary mb-3" style="width: 3.5rem; height: 3.5rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 class="text-muted">Loading upsell analytics...</h5>
+                    <p class="text-muted small mb-0">Please wait while we gather the insights</p>
+                </div>
+            </div>
+
+            <!-- Dashboard Content -->
+            <div id="dashboardContent" style="display: none;">
+                <!-- Stats Cards Section -->
+                <div class="section-header mb-3">
+                    <h5 class="section-title">
+                        <i class="bi bi-speedometer2 me-2"></i>Upsell Performance
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card stat-card-primary">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label">Early NSFW Upsells</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2" id="totalUpsellTriggers">0</h2>
+                                        <p class="stat-change mb-0" id="upsellTriggerChange">
+                                            <i class="bi bi-arrow-up me-1"></i>
+                                            <span class="change-value">0%</span>
+                                            <span class="change-period">last 7 days</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon">
+                                            <i class="bi bi-fire"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card stat-card-success">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label">Premium Modal Views</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2" id="premiumViews">0</h2>
+                                        <p class="stat-change mb-0" id="premiumViewChange">
+                                            <i class="bi bi-arrow-up me-1"></i>
+                                            <span class="change-value">0%</span>
+                                            <span class="change-period">last 7 days</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon">
+                                            <i class="bi bi-gem"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card stat-card-warning">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label">Upsell Users</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2" id="upsellUniqueUsers">0</h2>
+                                        <p class="stat-change mb-0 text-white-50">
+                                            <i class="bi bi-people-fill me-1"></i>
+                                            <span class="change-period">Unique users triggered</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon">
+                                            <i class="bi bi-person-badge"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-3 col-lg-6 col-md-6">
+                        <div class="stat-card stat-card-info">
+                            <div class="stat-card-body">
+                                <div class="stat-card-content">
+                                    <div class="stat-info">
+                                        <div class="stat-label-wrapper">
+                                            <span class="stat-label">Top Severity</span>
+                                        </div>
+                                        <h2 class="stat-value mb-2" id="topUpsellSeverity">--</h2>
+                                        <p class="stat-change mb-0 text-white-50">
+                                            <i class="bi bi-graph-up-arrow me-1"></i>
+                                            <span class="change-period">Most frequent trigger</span>
+                                        </p>
+                                    </div>
+                                    <div class="stat-icon-wrapper">
+                                        <div class="stat-icon">
+                                            <i class="bi bi-exclamation-triangle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="section-header mb-3 mt-5">
+                    <h5 class="section-title">
+                        <i class="bi bi-bar-chart-line me-2"></i>Upsell Trends
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-8 col-lg-7">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="chart-card-title mb-1">Upsell Triggers Over Time</h5>
+                                        <p class="chart-card-subtitle mb-0">Daily early NSFW upsell events</p>
+                                    </div>
+                                    <div class="chart-badge">
+                                        <i class="bi bi-calendar-week me-1"></i><span>7 Days</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="upsellTrendChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-xl-4 col-lg-5">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Severity Breakdown</h5>
+                                    <p class="chart-card-subtitle mb-0">Distribution of triggers</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="upsellSeverityChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detail Section -->
+                <div class="section-header mb-3 mt-5">
+                    <h5 class="section-title">
+                        <i class="bi bi-clipboard-data me-2"></i>Upsell Highlights
+                    </h5>
+                </div>
+
+                <div class="row g-3 g-lg-4 mb-4">
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Top Upsell Source</h5>
+                                    <p class="chart-card-subtitle mb-0">Where paywall views happen most</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <div id="upsellSourceList" class="source-list"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xl-6 col-lg-6">
+                        <div class="chart-card card-shadow">
+                            <div class="chart-card-header">
+                                <div>
+                                    <h5 class="chart-card-title mb-1">Premium Views vs Upsells</h5>
+                                    <p class="chart-card-subtitle mb-0">Comparison to all premium triggers</p>
+                                </div>
+                            </div>
+                            <div class="chart-card-body">
+                                <canvas id="upsellVsPremiumChart" height="80"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Last Updated Footer -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="update-card card-shadow">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="update-icon me-3">
+                                        <i class="bi bi-clock-history"></i>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted d-block mb-1">Last Updated</small>
+                                        <strong id="lastUpdated" class="text-dark">Never</strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <div class="auto-refresh-badge">
+                                        <i class="bi bi-arrow-repeat me-2"></i>
+                                        <span>Auto-refresh every hour</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .sticky-bottom, #footer-toolbar {display:none;}
+        .source-list .list-group-item {
+            border-left: none;
+            border-right: none;
+            border-radius: 0;
+            transition: background-color 0.15s ease;
+        }
+        .source-list .list-group-item:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+        .source-list .list-group-item:first-child {
+            border-top: none;
+        }
+    </style>
+    {{> dashboard-footer}}
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="/js/admin/upsell-analytics.js"></script>
+</body>
+</html>

@@ -668,7 +668,12 @@
     "connection_lost_message": "La connexion au serveur a été perdue. Veuillez vérifier votre connexion Internet.",
     "connection_failed": "Échec de la connexion",
     "connection_failed_message": "Échec de la connexion au serveur. Veuillez réessayer plus tard.",
-    "imageRequestDetectedPremiumRequired": "Demande d'image détectée ! Passez à Premium pour générer automatiquement des images pendant le chat."
+    "imageRequestDetectedPremiumRequired": "Demande d'image détectée ! Passez à Premium pour générer automatiquement des images pendant le chat.",
+    "earlyNsfwUpsellDetected": "Tu es presque au niveau supérieur 😏 Débloque Premium pour continuer sans limites."
+  },
+  "upsell": {
+    "character_prompt": "Reste court et flirty : dis que Premium débloque le chat uncensored et demande s'il veut upgrader maintenant.",
+    "character_followup": "Tu veux continuer ? Débloque Premium pour un chat sans limites."
   },
   "currency": "€",
   "premium": " 💎 Premium",
@@ -838,6 +843,7 @@
     "system_prompts": "Prompts système",
     "users": "Utilisateurs",
     "user_analytics": "Analytique utilisateur",
+    "upsell_analytics": "Analytique Upsell",
     "prompts": "Invites",
     "notifications": "Notifications",
     "models": "Modèles d'Image SD",

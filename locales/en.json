@@ -684,7 +684,12 @@
     "connection_lost_message": "The connection to the server has been lost. Please check your internet connection.",
     "connection_failed": "Connection failed",
     "connection_failed_message": "Failed to connect to the server. Please try again later.",
-    "imageRequestDetectedPremiumRequired": "Image request detected! Upgrade to Premium to automatically generate images during chat."
+    "imageRequestDetectedPremiumRequired": "Image request detected! Upgrade to Premium to automatically generate images during chat.",
+    "earlyNsfwUpsellDetected": "You're almost there 😏 Unlock Premium to continue without limits."
+  },
+  "upsell": {
+    "character_prompt": "Keep it short and flirty: tell the user Premium unlocks uncensored chat and ask if they want to upgrade now.",
+    "character_followup": "Want more? Unlock Premium for uncensored chat."
   },
   "currency": "$",
   "premium": " 💎 Premium",
@@ -894,6 +899,7 @@
     "system_prompts": "System Prompts",
     "users": "Users",
     "user_analytics": "User Analytics",
+    "upsell_analytics": "Upsell Analytics",
     "prompts": "Prompts",
     "notifications": "Notifications",
     "models": "SD Image Models",

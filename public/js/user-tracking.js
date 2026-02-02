@@ -47,6 +47,7 @@
     CREATOR_APPLICATION: 'creator_application',
     AFFILIATION_DASHBOARD: 'affiliation_dashboard',
     CIVITAI_SEARCH: 'civitai_search',
+    EARLY_NSFW_UPSELL: 'early_nsfw_upsell',
     WEBSOCKET_TRIGGER: 'websocket_trigger',
     MENU_UPGRADE: 'menu_upgrade',
     UNKNOWN: 'unknown'
@@ -198,6 +199,46 @@
         return result;
       } catch (error) {
         console.error('[UserTracking] Error tracking premium view:', error);
+        return { success: false, error: error.message };
+      }
+    },
+
+    /**
+     * Track an "Early NSFW Upsell" event
+     * @param {Object} options - Additional options
+     * @returns {Promise<Object>} API response
+     */
+    trackEarlyNsfwUpsell: async function(options = {}) {
+      try {
+        this.log('Tracking early NSFW upsell:', options);
+
+        const payload = {
+          chatId: options.chatId || null,
+          userChatId: options.userChatId || null,
+          severity: options.severity || 'none',
+          confidence: options.confidence ?? null,
+          reason: options.reason || null,
+          userIntent: options.userIntent || null
+        };
+
+        const response = await fetch('/api/tracking/early-nsfw-upsell', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        this.log('Early NSFW upsell tracked successfully:', result);
+        return result;
+      } catch (error) {
+        console.error('[UserTracking] Error tracking early NSFW upsell:', error);
         return { success: false, error: error.message };
       }
     },
@@ -426,6 +467,9 @@
 
       if (pathname.includes('/chat')) {
         return PremiumViewSources.CHAT_TOOL_SETTINGS;
+      }
+      if (pathname.includes('/admin/upsell-analytics')) {
+        return PremiumViewSources.EARLY_NSFW_UPSELL;
       }
       if (pathname.includes('/generation') || pathname.includes('/dashboard/generation')) {
         return PremiumViewSources.DASHBOARD_GENERATION;

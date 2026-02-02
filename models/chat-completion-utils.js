@@ -155,10 +155,11 @@ function userDetailsToString(user) {
     }
     return userDetails;
 }
-async function completionSystemContent(chatDocument, chatDescription, currentTimeInJapanese, language, userPoints, all_tasks, subscriptionStatus) {
+async function completionSystemContent(chatDocument, chatDescription, currentTimeInJapanese, language, userPoints, all_tasks, subscriptionStatus, options = {}) {
     const isNsfwCharacter = chatDocument?.nsfw || false;
     const characterName    = chatDocument?.name || "the character";
     const userCanAffordImage = userPoints >= 50;
+    const upsellPrompt = options.upsellPrompt || '';
 
     // Randomly select a writing style to add variety
     const writingStyles = [
@@ -210,8 +211,13 @@ ${isNsfwCharacter ? `
 - NO poetry, metaphors, or flowery descriptions
 - NO "I can't send images", "I'm an AI", or apologies about pictures
 - NO *actions* or asterisks or narration
-- NO long explanations or storytelling
-- NO past tense recaps unless directly relevant
+ - NO long explanations or storytelling
+ - NO past tense recaps unless directly relevant
+
+${upsellPrompt ? `
+# PREMIUM UPSELL (one-time prompt):
+- ${upsellPrompt}
+` : ''}
 
 # Images & Pose Requests (strict):
 - Never output links, markdown, or fake images.

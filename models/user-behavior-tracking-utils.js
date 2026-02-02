@@ -23,6 +23,7 @@ const TrackingEventTypes = {
   START_CHAT: 'start_chat',
   MESSAGE_SENT: 'message_sent',
   PREMIUM_VIEW: 'premium_view',
+  EARLY_NSFW_UPSELL: 'early_nsfw_upsell',
   PAGE_VIEW: 'page_view'
 };
 
@@ -57,6 +58,7 @@ const PremiumViewSources = {
   CREATOR_APPLICATION: 'creator_application',
   AFFILIATION_DASHBOARD: 'affiliation_dashboard',
   CIVITAI_SEARCH: 'civitai_search',
+  EARLY_NSFW_UPSELL: 'early_nsfw_upsell',
   WEBSOCKET_TRIGGER: 'websocket_trigger',
   MENU_UPGRADE: 'menu_upgrade',
   UNKNOWN: 'unknown'
@@ -191,6 +193,42 @@ async function trackPremiumView(db, userId, source, metadata = {}) {
     return { success: true, insertedId: result.insertedId };
   } catch (error) {
     console.error('❌ [Tracking] Error tracking premium view:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Track an early NSFW upsell trigger event
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userId - User ID
+ * @param {Object} metadata - Additional metadata
+ * @returns {Promise<Object>} The created tracking record
+ */
+async function trackEarlyNsfwUpsell(db, userId, metadata = {}) {
+  try {
+    const trackingCollection = db.collection(TRACKING_COLLECTION);
+
+    const record = {
+      userId: new ObjectId(userId),
+      eventType: TrackingEventTypes.EARLY_NSFW_UPSELL,
+      metadata: {
+        chatId: metadata.chatId ? new ObjectId(metadata.chatId) : null,
+        userChatId: metadata.userChatId ? new ObjectId(metadata.userChatId) : null,
+        severity: metadata.severity || 'none',
+        confidence: metadata.confidence ?? null,
+        reason: metadata.reason || null,
+        userIntent: metadata.userIntent || null,
+        ...metadata
+      },
+      createdAt: new Date()
+    };
+
+    const result = await trackingCollection.insertOne(record);
+    console.log(`📊 [Tracking] Early NSFW upsell tracked: User ${userId}, severity: ${record.metadata.severity}`);
+
+    return { success: true, insertedId: result.insertedId };
+  } catch (error) {
+    console.error('❌ [Tracking] Error tracking early NSFW upsell:', error);
     return { success: false, error: error.message };
   }
 }
@@ -647,6 +685,35 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
       }
     ]).toArray();
 
+    // Get early NSFW upsell counts
+    const earlyNsfwUpsellMatch = {
+      eventType: TrackingEventTypes.EARLY_NSFW_UPSELL,
+      createdAt: { $gte: sevenDaysAgo }
+    };
+    if (recentUserIds.length > 0) {
+      earlyNsfwUpsellMatch.userId = { $in: recentUserIds };
+    }
+
+    const earlyNsfwUpsellStats = await trackingCollection.aggregate([
+      {
+        $match: earlyNsfwUpsellMatch
+      },
+      {
+        $group: {
+          _id: '$metadata.severity',
+          count: { $sum: 1 },
+          uniqueUsers: { $addToSet: '$userId' }
+        }
+      },
+      { $sort: { count: -1 } }
+    ]).toArray();
+
+    const earlyNsfwUpsellTotal = earlyNsfwUpsellStats.reduce((sum, item) => sum + item.count, 0);
+    const earlyNsfwUpsellUniqueUsers = new Set();
+    earlyNsfwUpsellStats.forEach(item => {
+      (item.uniqueUsers || []).forEach(userId => earlyNsfwUpsellUniqueUsers.add(userId.toString()));
+    });
+
     // Get location distribution (filtered by recent users)
     const locationStats = await locationsCollection.aggregate([
       {
@@ -695,6 +762,10 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
         premiumView: { 
           count: premiumViewStats[0]?.count || 0, 
           uniqueUsers: premiumViewStats[0]?.uniqueUsers?.length || 0 
+        },
+        earlyNsfwUpsell: {
+          count: earlyNsfwUpsellTotal,
+          uniqueUsers: earlyNsfwUpsellUniqueUsers.size
         }
       },
       startChatSources: startChatSources.map(s => ({
@@ -705,6 +776,13 @@ async function getAggregateTrackingStats(db, startDate = null, endDate = null) {
         source: s._id || 'unknown',
         count: s.count
       })),
+      earlyNsfwUpsell: {
+        total: earlyNsfwUpsellTotal,
+        bySeverity: earlyNsfwUpsellStats.map(s => ({
+          severity: s._id || 'unknown',
+          count: s.count
+        }))
+      },
       locations: {
         byCountry: locationStats.map(l => ({
           country: l._id || 'Unknown',
@@ -770,7 +848,8 @@ async function getDailyTrackingTrends(db, days = 7) {
         date: dateStr,
         startChat: 0,
         messageSent: 0,
-        premiumView: 0
+        premiumView: 0,
+        earlyNsfwUpsell: 0
       };
     }
 
@@ -872,7 +951,7 @@ async function getDailyTrackingTrends(db, days = 7) {
 
       // Get premium view trends from tracking collection (filtered by recent users)
       // Note: userId is stored as ObjectId in tracking collection
-      const premiumTrends = await trackingCollection.aggregate([
+    const premiumTrends = await trackingCollection.aggregate([
         { 
           $match: { 
             createdAt: { $gte: startDate },
@@ -887,26 +966,65 @@ async function getDailyTrackingTrends(db, days = 7) {
           }
         },
         { $sort: { '_id': 1 } }
-      ]).toArray();
+    ]).toArray();
 
       console.log(`[getDailyTrackingTrends] Premium trends from DB:`, premiumTrends);
 
-      premiumTrends.forEach(t => {
+    premiumTrends.forEach(t => {
         if (result[t._id]) {
           result[t._id].premiumView = t.count;
         } else {
-          result[t._id] = {
-            date: t._id,
-            startChat: result[t._id]?.startChat || 0,
-            messageSent: result[t._id]?.messageSent || 0,
-            premiumView: t.count
-          };
+        result[t._id] = {
+          date: t._id,
+          startChat: result[t._id]?.startChat || 0,
+          messageSent: result[t._id]?.messageSent || 0,
+          premiumView: t.count,
+          earlyNsfwUpsell: 0
+        };
+      }
+    });
+
+    const earlyNsfwUpsellTrendMatch = {
+      eventType: TrackingEventTypes.EARLY_NSFW_UPSELL,
+      createdAt: { $gte: startDate }
+    };
+    if (recentUserIds.length > 0) {
+      earlyNsfwUpsellTrendMatch.userId = { $in: recentUserIds };
+    }
+
+    const earlyNsfwUpsellTrends = await trackingCollection.aggregate([
+      {
+        $match: earlyNsfwUpsellTrendMatch
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+          count: { $sum: 1 }
         }
-      });
+      },
+      { $sort: { '_id': 1 } }
+    ]).toArray();
+
+    earlyNsfwUpsellTrends.forEach(t => {
+      if (result[t._id]) {
+        result[t._id].earlyNsfwUpsell = t.count;
+      } else {
+        result[t._id] = {
+          date: t._id,
+          startChat: result[t._id]?.startChat || 0,
+          messageSent: result[t._id]?.messageSent || 0,
+          premiumView: result[t._id]?.premiumView || 0,
+          earlyNsfwUpsell: t.count
+        };
+      }
+    });
     }
 
     // Sort by date and return
-    const sortedResult = Object.values(result).sort((a, b) => a.date.localeCompare(b.date));
+    const sortedResult = Object.values(result).map(item => ({
+      ...item,
+      earlyNsfwUpsell: item.earlyNsfwUpsell || 0
+    })).sort((a, b) => a.date.localeCompare(b.date));
     console.log(`[getDailyTrackingTrends] Final result:`, JSON.stringify(sortedResult, null, 2));
     return sortedResult;
   } catch (error) {
@@ -930,6 +1048,7 @@ module.exports = {
   trackStartChat,
   trackMessageSent,
   trackPremiumView,
+  trackEarlyNsfwUpsell,
   
   // Location functions
   getLocationFromIP,
