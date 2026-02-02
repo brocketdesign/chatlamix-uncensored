@@ -526,7 +526,7 @@ async function routes(fastify, options) {
             
             if(process.env.NODE_ENV !== 'production') {
                 //console.log(`[/api/openai-chat-completion] Using model: ${selectedModel}, Language: ${language}, Premium: ${isPremium}`);
-                console.log(`[/api/openai-chat-completion] System message:`, messagesForCompletion[0]);
+                //console.log(`[/api/openai-chat-completion] System message:`, messagesForCompletion[0]);
                 //console.log(`[/api/openai-chat-completion] Messages for completion:`, messagesForCompletion.slice(1,messagesForCompletion.length)); // Exclude system message from log
             }
             

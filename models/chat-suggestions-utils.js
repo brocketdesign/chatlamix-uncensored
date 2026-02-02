@@ -74,7 +74,7 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
             dominant: 'Use a confident, teasing, and slightly dominant tone with bold phrasing.',
             innocent: 'Keep the suggestions shy, sweet, and a little timid with bashful wording.',
             humorous: 'Make the suggestions witty, lighthearted, and playful with fun energy.',
-            nsfw: 'Make the suggestions explicitly hot and direct, focusing on adult intimacy.',
+            nsfw: 'Make the suggestions explicitly hot and direct, sexual, focusing on adult intimacy. Use bold and provocative language.',
             neutral: 'Keep the suggestions conversational, balanced, and low-pressure.'
         };
         const suggestionStyleInstruction = suggestionStyleDirectives[preset] || suggestionStyleDirectives.neutral;
@@ -82,28 +82,31 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
         // Create system prompt for suggestion generation
         const systemPrompt = `You are a helpful assistant that generates natural conversation suggestions for users chatting with an AI character.
 
-Character Information:
-${characterDescription}
+        Character Information:
+        ${characterDescription}
 
-User Information:
-${userDetails}
+        User Information:
+        ${userDetails}
 
-Current Relationship Type: ${relationshipType}. ${relationshipDescription}
-Suggestion Style: ${preset}. ${suggestionStyleInstruction}
+        Suggestion Style: ${preset}. ${suggestionStyleInstruction}
 
-Based on the recent conversation context, generate exactly 3 short, natural response suggestions that the user might want to send. Each suggestion should:
-1. Be contextually relevant to the conversation
-2. Match the relationship dynamic (${relationshipType}) and the suggestion style (${preset})
-3. Be appropriate for the character's personality
-4. Be conversational and engaging
-5. Be brief (max 15 words each)
-6. Feel natural and human-like
+        Based on the recent conversation context, generate exactly 3 short, natural response suggestions that the user might want to send. Each suggestion should:
+        1. Be contextually relevant to the conversation
+        2. Match the relationship dynamic (${relationshipType}) and the suggestion style (${preset})
+        3. Be appropriate for the character's personality
+        4. Be conversational and engaging
+        5. Be brief (max 15 words each)
+        6. Feel natural and human-like
+        7. Avoid generric and boring responses; focus on being specific and interesting.
 
-Recent conversation:
-${conversationContext}
+        Recent conversation:
+        ${conversationContext}
 
-Generate 3 conversation suggestions in ${language}.`;
+        Generate 3 conversation suggestions in ${language}.`;
 
+        console.log('[generateChatSuggestions] System Prompt:', systemPrompt);
+
+        // Create user prompt
         const userPrompt = `Generate 3 conversation suggestions based on the context above from the point of view of the user (${userDetails}). Include the character name in the suggestions if applicable.`;
 
         // Use OpenAI with structured output

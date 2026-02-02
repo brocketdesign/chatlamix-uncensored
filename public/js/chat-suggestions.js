@@ -28,10 +28,6 @@ class ChatSuggestionsManager {
         // Try to load preset from chatToolSettings
         if (window.chatToolSettings?.settings?.suggestionPreset) {
             this.selectedPreset = window.chatToolSettings.settings.suggestionPreset;
-            // Validate NSFW preset
-            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
-                this.selectedPreset = 'neutral';
-            }
         }
     }
 
@@ -166,9 +162,6 @@ class ChatSuggestionsManager {
             if (window.chatToolSettings?.settings?.suggestionPreset) {
                 this.selectedPreset = window.chatToolSettings.settings.suggestionPreset;
             }
-            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
-                this.selectedPreset = 'neutral';
-            }
 
             // Request suggestions from API
             const response = await $.ajax({
@@ -240,26 +233,21 @@ class ChatSuggestionsManager {
             { key: 'dominant', label: window.chatSuggestionsTranslations?.preset_dominant || 'Dominant', emoji: '😈' },
             { key: 'innocent', label: window.chatSuggestionsTranslations?.preset_innocent || 'Innocent', emoji: '😳' },
             { key: 'humorous', label: window.chatSuggestionsTranslations?.preset_humorous || 'Humorous', emoji: '😂' },
-            { key: 'nsfw', label: window.chatSuggestionsTranslations?.preset_nsfw || 'Hot', emoji: '🔥', gated: true },
+            { key: 'nsfw', label: window.chatSuggestionsTranslations?.preset_nsfw || 'Hot', emoji: '🔥' },
             { key: 'neutral', label: window.chatSuggestionsTranslations?.preset_neutral || 'Neutral', emoji: '💬' }
         ];
 
-        const showNsfw = window.showNSFW === true;
         const presetTagsHtml = presets.map((preset) => {
             const isActive = preset.key === this.selectedPreset;
-            const isDisabled = preset.gated && !showNsfw;
             const classes = [
                 'suggestion-preset-tag',
-                isActive ? 'active' : '',
-                isDisabled ? 'disabled' : ''
+                isActive ? 'active' : ''
             ].filter(Boolean).join(' ');
             const label = `${preset.emoji} ${preset.label}`;
-            const ariaDisabled = isDisabled ? 'true' : 'false';
             const ariaPressed = isActive ? 'true' : 'false';
             return `
-                <button type="button" class="${classes}" data-preset="${preset.key}" ${isDisabled ? 'disabled' : ''} aria-pressed="${ariaPressed}" aria-disabled="${ariaDisabled}">
+                <button type="button" class="${classes}" data-preset="${preset.key}" aria-pressed="${ariaPressed}">
                     <span class="preset-label">${label}</span>
-                    ${isDisabled ? `<span class="preset-gated">${window.chatSuggestionsTranslations?.preset_nsfw_gate || '18+'}</span>` : ''}
                 </button>
             `;
         }).join('');
@@ -307,13 +295,6 @@ class ChatSuggestionsManager {
         const { refreshSuggestions = true, persistChatSetting = true } = options;
         const normalizedPreset = String(preset || 'neutral').toLowerCase();
         if (normalizedPreset === this.selectedPreset) {
-            return;
-        }
-
-        if (normalizedPreset === 'nsfw' && !window.showNSFW) {
-            if (typeof window.showNotification === 'function') {
-                window.showNotification(window.chatSuggestionsTranslations?.preset_nsfw_gate_notice || 'Enable NSFW in your account settings to use the Hot preset.', 'warning');
-            }
             return;
         }
 
@@ -514,10 +495,6 @@ class ChatSuggestionsManager {
 
         if (settings?.suggestionPreset) {
             this.selectedPreset = settings.suggestionPreset;
-            // Validate NSFW preset
-            if (this.selectedPreset === 'nsfw' && !window.showNSFW) {
-                this.selectedPreset = 'neutral';
-            }
         }
 
         // Update UI if container is visible
