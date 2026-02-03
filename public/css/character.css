@@ -1821,6 +1821,52 @@ body:has(.ig-profile-header) .dropdown-toggle:hover {
     border-bottom: 1px solid var(--ig-border);
 }
 
+/* Toggle Switch (match profile/posts) */
+.ig-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.ig-toggle input {
+    display: none;
+}
+
+.ig-toggle-slider {
+    width: 36px;
+    height: 20px;
+    background: var(--ig-border);
+    border-radius: 20px;
+    position: relative;
+    transition: background 0.2s ease;
+}
+
+.ig-toggle-slider::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.ig-toggle input:checked + .ig-toggle-slider {
+    background: var(--ig-purple);
+}
+
+.ig-toggle input:checked + .ig-toggle-slider::after {
+    transform: translateX(16px);
+}
+
+.ig-toggle-label {
+    font-size: 0.85rem;
+    color: var(--ig-text-secondary);
+}
+
 .content-type-btn {
     display: flex;
     align-items: center;

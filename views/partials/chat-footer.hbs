@@ -31,19 +31,15 @@
                             <i class="bi bi-image"></i>
                             <span class="tool-label">{{translations.toolbar.image}}</span>
                         </button>
-                        <button type="button" class="toolbar-btn" id="suggestions-toggle">
-                            <i class="bi bi-lightbulb"></i>
-                            <span class="tool-label">{{translations.toolbar.ideas}}</span>
-                        </button>
-
-                        <!-- 4. Expression & fun -->
-                        <button type="button" class="toolbar-btn" id="emoji-tone-btn">
-                            <i class="bi bi-emoji-smile"></i>
-                            <span class="tool-label">{{translations.toolbar.emojis}}</span>
-                        </button>
                         <button type="button" class="toolbar-btn" id="gifts-toggle">
                             <i class="bi bi-gift"></i>
                             <span class="tool-label">{{translations.toolbar.gifts}}</span>
+                        </button>
+
+                        <!-- 4. Expression & fun -->
+                        <button type="button" class="toolbar-btn" id="suggestions-toggle">
+                            <i class="bi bi-lightbulb"></i>
+                            <span class="tool-label">{{translations.toolbar.ideas}}</span>
                         </button>
 
                         <!-- 5. Conversation style & context -->
@@ -55,21 +51,11 @@
                             <i class="bi bi-trophy"></i>
                             <span class="tool-label">{{translations.toolbar.goals}}</span>
                         </button>
-                        <button type="button" class="toolbar-btn" id="translation-toggle">
-                            <i class="bi bi-translate"></i>
-                            <span class="tool-label">{{translations.toolbar.translate}}</span>
-                        </button>
 
                         <!-- 6. NSFW Toggle -->
                         <button type="button" class="toolbar-btn toggle-nsfw-btn-chat" id="toggle-nsfw-btn-chat">
                             <i class="bi bi-toggle-off mx-2"></i><i class="bi bi-toggle-on mx-2"></i>
                             <span class="tool-label">{{#if translations.toggle_nsfw}}{{translations.toggle_nsfw}}{{else}}NSFW{{/if}}</span>
-                        </button>
-
-                        <!-- 7. Session management -->
-                        <button type="button" class="toolbar-btn reset-chat" id="reset-chat-btn" onclick="handleChatReset(this)">
-                            <i class="bi bi-plus-square"></i>
-                            <span class="tool-label">{{translations.toolbar.reset}}</span>
                         </button>
 
                         <!-- 8. Settings (always last) -->
@@ -119,22 +105,6 @@
                         <div class="toolbar-title">{{translations.toolbar.ideas}}</div>
                         <div class="suggestions-scroll-container mx-2">
                             <!-- Suggestions will be dynamically added here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Translation view -->
-                    <div id="toolbar-translation" class="toolbar-content-view animate__animated" style="display: none;">
-                        <button type="button" class="toolbar-back-btn">
-                            <i class="bi bi-arrow-left"></i>
-                        </button>
-                        <div class="toolbar-title">{{translations.translate}}</div>
-                        <div class="translation-scroll-container mx-2">
-                            <button class="translation-btn" data-lang="en">{{translations.english}}</button>
-                            <button class="translation-btn" data-lang="ja">{{translations.japanese}}</button>
-                            <button class="translation-btn" data-lang="ko">{{translations.korean}}</button>
-                            <button class="translation-btn" data-lang="zh">{{translations.chinese}}</button>
-                            <button class="translation-btn" data-lang="fr">{{translations.french}}</button>
-                            <button class="translation-btn" data-lang="de">{{translations.german}}</button>
                         </div>
                     </div>
                     

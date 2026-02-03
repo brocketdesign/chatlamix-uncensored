@@ -198,16 +198,6 @@ $(document).ready(function() {
             `);
         }
         
-        // Toggle translation view
-        $('#translation-toggle').on('click', function() {
-            const subscriptionStatus = user.subscriptionStatus == 'active'
-            if(!subscriptionStatus) {
-                loadPlanPage();
-                return;
-            }
-            showToolContentView('toolbar-translation');
-        });
-        
         // Toggle text input view
         $('#text-input-toggle').on('click', function() {
             showToolContentView('toolbar-text-input');
@@ -223,35 +213,6 @@ $(document).ready(function() {
             const tone = $(this).data('tone');
             const emoji = $(this).text();
             sendMessage(emoji);
-        });
-        
-        // Handle translation button click
-        $('.translation-btn').on('click', function() {
-            $(this).addClass('active').siblings().removeClass('active');
-            const translation_lang = $(this).data('lang');
-            // Use translations.doTranslate for dynamic translation text
-            switch (translation_lang) {
-                case 'en':
-                    sendMessage(translations.translateTo + ' ' + translations.english);
-                    break;
-                case 'ja':
-                    sendMessage(translations.translateTo + ' ' + translations.japanese);
-                    break;
-                case 'ko':
-                    sendMessage(translations.translateTo + ' ' + translations.korean);
-                    break;
-                case 'zh':
-                    sendMessage(translations.translateTo + ' ' + translations.chinese);
-                    break;
-                case 'fr':
-                    sendMessage(translations.translateTo + ' ' + translations.french);
-                    break;
-                case 'de':
-                    sendMessage(translations.translateTo + ' ' + translations.german);
-                    break;
-                default:
-                    console.log('Language not supported');
-            }
         });
         
         // Function to show a specific tool content view

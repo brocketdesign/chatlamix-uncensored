@@ -43,17 +43,6 @@
     animation: processing-spin 1s linear infinite;
 }
 
-#voice-input-toggle.processing::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    border-top-color: #8b5cf6;
-    animation: spinner 0.8s linear infinite;
-    pointer-events: none;
-}
-
 /* Animations */
 @keyframes recording-pulse {
     0%, 100% {

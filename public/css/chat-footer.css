@@ -195,23 +195,6 @@
                 display: none;
             }
             
-            .translation-btn {
-                flex: 0 0 auto;
-                padding: 8px 15px;
-                background: var(--bg-tertiary, rgba(255, 255, 255, 0.1));
-                border: none;
-                border-radius: 50px;
-                font-size: 14px;
-                transition: all 0.2s;
-                white-space: nowrap;
-                color: var(--text-primary, #ffffff);
-            }
-            
-            .translation-btn:hover, .translation-btn.active {
-                background: rgba(130, 64, 255, 0.3);
-                color: var(--primary-light, #D2B8FF);
-            }
-            
             /* Suggestions styles */
             .suggestions-scroll-container {
                 display: flex;

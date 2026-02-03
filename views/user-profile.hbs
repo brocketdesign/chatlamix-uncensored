@@ -215,21 +215,26 @@
             {{#if isMyProfile}}
             <!-- Likes Tab -->
             <div id="images-tab" class="tab-pane active">
-                <!-- Description -->
-                <div class="ig-section-card ig-info-card my-1" style="font-size: 12px;">
-                    <i class="bi bi-info-circle-fill"></i>  
-                    <span class="text-muted">{{translations.profile.likesTabInfo}}</span>
-                </div>
-                <!-- SFW/NSFW Toggle -->
-                <div class="content-type-toggle" id="userContentTypeToggle">
-                    <button class="content-type-btn active" data-type="SFW">
-                        <i class="bi bi-shield-check"></i>
-                        <span>SFW</span>
-                    </button>
-                    <button class="content-type-btn" data-type="NSFW">
-                        <i class="bi bi-eye-slash"></i>
-                        <span>NSFW</span>
-                    </button>
+                <!-- Description + SFW/NSFW Toggle -->
+                <div class="ig-section-card ig-info-card likes-toggle-row my-1">
+                    <div class="likes-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <span class="text-muted likes-info-text">{{translations.profile.likesTabInfo}}</span>
+                        <span class="text-muted likes-info-text-short">
+                            {{#if translations.profile.likesTabInfoShort}}
+                                {{translations.profile.likesTabInfoShort}}
+                            {{else}}
+                                Only you can see your liked posts.
+                            {{/if}}
+                        </span>
+                    </div>
+                    <div class="likes-toggle" id="userContentTypeToggle">
+                        <label class="ig-toggle">
+                            <input type="checkbox" id="showNsfwLikes">
+                            <span class="ig-toggle-slider"></span>
+                            <span class="ig-toggle-label">Show NSFW</span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="media-grid" id="user-images-gallery">
@@ -869,60 +874,51 @@
             }
 
             // Initialize content type toggle for user liked images
-            const userContentToggle = document.getElementById('userContentTypeToggle');
-            if (userContentToggle) {
-                const toggleButtons = userContentToggle.querySelectorAll('.content-type-btn');
+            const showNsfwLikes = document.getElementById('showNsfwLikes');
+            if (showNsfwLikes) {
+                // Set initial state based on current content type
+                showNsfwLikes.checked = window.userProfile.contentType === 'NSFW';
 
-                toggleButtons.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        const selectedType = this.dataset.type; // 'SFW' or 'NSFW'
+                showNsfwLikes.addEventListener('change', function() {
+                    const selectedType = this.checked ? 'NSFW' : 'SFW';
 
-                        // If already selected, provide visual feedback without reloading
-                        if (selectedType === window.userProfile.contentType) {
-                            this.style.transform = 'scale(0.95)';
-                            setTimeout(() => {
-                                this.style.transform = 'scale(1)';
-                            }, 150);
-                            return;
-                        }
+                    // If already selected, do nothing
+                    if (selectedType === window.userProfile.contentType) {
+                        return;
+                    }
 
-                        // Update active state
-                        toggleButtons.forEach(b => b.classList.remove('active'));
-                        this.classList.add('active');
+                    // Update user profile content type
+                    window.userProfile.contentType = selectedType;
 
-                        // Update user profile content type
-                        window.userProfile.contentType = selectedType;
+                    // Clear the loadedImages array to prevent gallery mixing
+                    window.loadedImages = [];
 
-                        // Clear the loadedImages array to prevent gallery mixing
-                        window.loadedImages = [];
+                    // Clear ALL user image caches (old cache + SFW + NSFW)
+                    // This prevents loading mixed content from old caches
+                    if (typeof clearAllUserImageCaches === 'function') {
+                        clearAllUserImageCaches(userId);
+                        console.log(`[DEBUG] Switched to ${selectedType} - all caches cleared`);
+                    }
 
-                        // Clear ALL user image caches (old cache + SFW + NSFW)
-                        // This prevents loading mixed content from old caches
-                        if (typeof clearAllUserImageCaches === 'function') {
-                            clearAllUserImageCaches(userId);
-                            console.log(`[DEBUG] Switched to ${selectedType} - all caches cleared`);
-                        }
+                    // Clear the images grid and show loading state
+                    const imagesGrid = document.getElementById('user-images-gallery');
+                    if (imagesGrid) {
+                        imagesGrid.innerHTML = `
+                            <div class="loading-grid">
+                                <div class="loading-item"></div>
+                                <div class="loading-item"></div>
+                                <div class="loading-item"></div>
+                                <div class="loading-item"></div>
+                                <div class="loading-item"></div>
+                                <div class="loading-item"></div>
+                            </div>
+                        `;
+                    }
 
-                        // Clear the images grid and show loading state
-                        const imagesGrid = document.getElementById('user-images-gallery');
-                        if (imagesGrid) {
-                            imagesGrid.innerHTML = `
-                                <div class="loading-grid">
-                                    <div class="loading-item"></div>
-                                    <div class="loading-item"></div>
-                                    <div class="loading-item"></div>
-                                    <div class="loading-item"></div>
-                                    <div class="loading-item"></div>
-                                    <div class="loading-item"></div>
-                                </div>
-                            `;
-                        }
-
-                        // Load images for the selected content type
-                        if (userId) {
-                            loadUserImages(userId, 1, true, false, selectedType);
-                        }
-                    });
+                    // Load images for the selected content type
+                    if (userId) {
+                        loadUserImages(userId, 1, true, false, selectedType);
+                    }
                 });
             }
 
@@ -1032,6 +1028,48 @@
         .debug-content-badge.nsfw {
             background: #ef4444;
             color: white;
+        }
+
+        /* Likes Tab Inline Toggle Row */
+        .likes-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 12px;
+        }
+
+        .likes-info {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            flex: 1;
+            white-space: nowrap;
+        }
+
+        .likes-info-text,
+        .likes-info-text-short {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .likes-info-text-short {
+            display: none;
+        }
+
+        .likes-toggle {
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 520px) {
+            .likes-info-text {
+                display: none;
+            }
+
+            .likes-info-text-short {
+                display: inline;
+            }
         }
 
         footer{display: inline !important;}

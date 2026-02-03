@@ -652,11 +652,12 @@ function openChatActionsModal() {
             : window.translations.favorite.addFavorite;
         
         const actionItems = `
-            <div class="chat-action-item" onclick="closeChatActionsModal(); ${!isOwner ? `loadCharacterCreationPage('${chat._id}')` : `loadCharacterUpdatePage('${chat._id}')`}">
-                <div class="action-icon primary">
-                    <i class="bi bi-pencil"></i>
+            
+            <div class="chat-action-item" onclick="closeChatActionsModal(); handleChatReset(this)" data-id="${chat._id}">
+                <div class="action-icon success">
+                    <i class="bi bi-plus-square"></i>
                 </div>
-                <span class="action-text">${!isOwner ? window.translations.edit : window.translations.update}</span>
+                <span class="action-text">${window.translations.newChat}</span>
                 <i class="bi bi-chevron-right action-arrow"></i>
             </div>
             
@@ -676,20 +677,22 @@ function openChatActionsModal() {
                 <i class="bi bi-chevron-right action-arrow"></i>
             </div>
             
-            <div class="chat-action-item" onclick="closeChatActionsModal(); handleChatReset(this)" data-id="${chat._id}">
-                <div class="action-icon success">
-                    <i class="bi bi-plus-square"></i>
-                </div>
-                <span class="action-text">${window.translations.newChat}</span>
-                <i class="bi bi-chevron-right action-arrow"></i>
-            </div>
-            
             ${window.isAdmin ? `
+
             <div class="action-divider"></div>
             <div class="admin-section-header">
                 <i class="bi bi-shield-lock-fill"></i>
                 <span>Admin Settings</span>
             </div>
+
+            <div class="chat-action-item" onclick="closeChatActionsModal(); loadCharacterUpdatePage('${chat._id}')">
+                <div class="action-icon primary">
+                    <i class="bi bi-pencil"></i>
+                </div>
+                <span class="action-text">${!isOwner ? window.translations.edit : window.translations.update}</span>
+                <i class="bi bi-chevron-right action-arrow"></i>
+            </div>
+
             <div class="chat-action-item" onclick="closeChatActionsModal(); logFullConversation('${chat._id}')">
                 <div class="action-icon purple">
                     <i class="bi bi-terminal"></i>

@@ -42,51 +42,47 @@ function initializeContentTypeToggle() {
         return;
     }
     
-    const buttons = toggleContainer.querySelectorAll('.content-type-btn');
-    
-    buttons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const selectedType = this.dataset.type; // 'SFW' or 'NSFW'
-            
-            // If already selected, provide visual feedback without reloading
-            if (selectedType === window.characterProfile.contentType) {
-                // Add brief pulse animation for feedback
-                this.style.transform = 'scale(0.95)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 150);
-                return;
-            }
-            
-            // Update active state
-            buttons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Update character profile content type
-            window.characterProfile.contentType = selectedType;
-            
-            // Clear the images grid and show loading state
-            const imagesGrid = document.getElementById('imagesGrid');
-            if (imagesGrid) {
-                imagesGrid.innerHTML = `
-                    <div class="loading-grid">
-                        <div class="loading-item"></div>
-                        <div class="loading-item"></div>
-                        <div class="loading-item"></div>
-                        <div class="loading-item"></div>
-                        <div class="loading-item"></div>
-                        <div class="loading-item"></div>
-                    </div>
-                `;
-            }
-            
-            // Load images for the selected content type
-            const chatId = window.characterProfile.currentChatId;
-            if (chatId) {
-                loadCharacterImages(chatId, selectedType);
-                fetchCharacterImageCount(chatId, selectedType);
-            }
-        });
+    const showNsfwCheckbox = document.getElementById('showNsfwCharacterImages');
+    if (!showNsfwCheckbox) {
+        console.log('[initializeContentTypeToggle] Checkbox not found');
+        return;
+    }
+
+    // Set initial state based on current content type
+    showNsfwCheckbox.checked = window.characterProfile.contentType === 'NSFW';
+
+    showNsfwCheckbox.addEventListener('change', function() {
+        const selectedType = this.checked ? 'NSFW' : 'SFW';
+
+        // If already selected, do nothing
+        if (selectedType === window.characterProfile.contentType) {
+            return;
+        }
+
+        // Update character profile content type
+        window.characterProfile.contentType = selectedType;
+
+        // Clear the images grid and show loading state
+        const imagesGrid = document.getElementById('imagesGrid');
+        if (imagesGrid) {
+            imagesGrid.innerHTML = `
+                <div class="loading-grid">
+                    <div class="loading-item"></div>
+                    <div class="loading-item"></div>
+                    <div class="loading-item"></div>
+                    <div class="loading-item"></div>
+                    <div class="loading-item"></div>
+                    <div class="loading-item"></div>
+                </div>
+            `;
+        }
+
+        // Load images for the selected content type
+        const chatId = window.characterProfile.currentChatId;
+        if (chatId) {
+            loadCharacterImages(chatId, selectedType);
+            fetchCharacterImageCount(chatId, selectedType);
+        }
     });
 }
 

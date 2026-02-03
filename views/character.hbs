@@ -121,15 +121,12 @@
             <!-- Images Tab -->
             <div id="images-tab" class="tab-pane active">
                 <!-- SFW/NSFW Toggle -->
-                <div class="content-type-toggle" id="contentTypeToggle">
-                    <button class="content-type-btn active" data-type="SFW">
-                        <i class="bi bi-shield-check"></i>
-                        <span>SFW</span>
-                    </button>
-                    <button class="content-type-btn" data-type="NSFW">
-                        <i class="bi bi-eye-slash"></i>
-                        <span>NSFW</span>
-                    </button>
+                <div class="content-type-toggle justify-content-start" id="contentTypeToggle">
+                    <label class="ig-toggle">
+                        <input type="checkbox" id="showNsfwCharacterImages">
+                        <span class="ig-toggle-slider"></span>
+                        <span class="ig-toggle-label">Show NSFW</span>
+                    </label>
                 </div>
                 
                 <div class="media-grid" id="imagesGrid">
