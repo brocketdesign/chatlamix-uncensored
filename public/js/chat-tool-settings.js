@@ -1557,22 +1557,6 @@ class ChatToolSettings {
         document.querySelectorAll('input[name="suggestion-preset"]').forEach((radio) => {
             radio.checked = radio.value === selectedPreset;
         });
-
-        const nsfwPresetRadio = document.querySelector('input[name="suggestion-preset"][value="nsfw"]');
-        if (nsfwPresetRadio) {
-            nsfwPresetRadio.disabled = !window.showNSFW;
-            if (!window.showNSFW && selectedPreset === 'nsfw') {
-                this.settings.suggestionPreset = 'neutral';
-                nsfwPresetRadio.checked = false;
-                const neutralRadio = document.querySelector('input[name="suggestion-preset"][value="neutral"]');
-                if (neutralRadio) {
-                    neutralRadio.checked = true;
-                }
-                if (typeof window.showNotification === 'function') {
-                    window.showNotification(this.t('suggestionPresetNsfwBlocked', 'Enable NSFW in your account settings to use the Hot preset.'), 'warning');
-                }
-            }
-        }
     }
 
     applySettings() {

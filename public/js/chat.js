@@ -660,13 +660,8 @@ function setupChatInterface(chat, character, userChat, isNew) {
     }
 }
     
-    function determineChatGender(chat) {
-        let gender = chat.gender || 'female';
-        if (chat.character && chat.character.prompt) {
-            gender = chat.character.prompt.toLowerCase();
-            gender = /\bmale\b/.test(gender) ? "male" : "female";
-        }
-        return gender;
+function determineChatGender(chat) {
+    return chat?.character?.gender || chat?.gender || 'unknown';
     }
     
     function displayExistingChat(userChat,character) {
