@@ -83,9 +83,12 @@ async function routes(fastify, options) {
 
             // Get user's default language preference from chat settings (falls back to user profile)
             const preferredChatLanguage = await getPreferredChatLanguage(db, userId, chatId);
-            const normalizedPreferredLanguage = preferredChatLanguage
-                ? getLanguageName(preferredChatLanguage) || preferredChatLanguage
-                : '';
+            const sanitizedPreferredLanguage = typeof preferredChatLanguage === 'string'
+                ? preferredChatLanguage.trim()
+                : null;
+            const normalizedPreferredLanguage = sanitizedPreferredLanguage
+                ? getLanguageName(sanitizedPreferredLanguage)
+                : null;
             const defaultLanguage = normalizedPreferredLanguage || getLanguageName(userInfo.lang) || 'japanese';
             
             // Detect actual conversation language only when no preferred language is set
