@@ -55,6 +55,7 @@ fastify.ready(async () => {
   try {
     const chatsCollection = fastify.mongo.db.collection('chats');
     const galleryCollection = fastify.mongo.db.collection('gallery');
+    const scenarioTranslationsCollection = fastify.mongo.db.collection('scenarioTranslations');
     
     // Index on slug field for fast character lookups
     await chatsCollection.createIndex({ slug: 1 }, { unique: true, sparse: true }).catch(() => {
@@ -71,6 +72,11 @@ fastify.ready(async () => {
     // Compound index for chat lookup with slug
     await chatsCollection.createIndex({ slug: 1, chatImageUrl: 1 }, { sparse: true }).catch(() => {
       console.log('[Database] Compound slug index may already exist on chats collection');
+    });
+    
+    // Compound index for scenario translations cache (unique scenarioId + language)
+    await scenarioTranslationsCollection.createIndex({ scenarioId: 1, language: 1 }, { unique: true }).catch(() => {
+      console.log('[Database] Compound index may already exist on scenarioTranslations collection');
     });
     
     console.log('[Database] Slug indexes initialized');

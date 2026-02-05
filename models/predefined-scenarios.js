@@ -7,6 +7,213 @@
  */
 
 const { ObjectId } = require('mongodb');
+const { OpenAI } = require("openai");
+const { z } = require("zod");
+const { zodResponseFormat } = require("openai/helpers/zod");
+
+// Schema for translated scenario fields
+const translatedScenarioSchema = z.object({
+    title: z.string(),
+    description: z.string(),
+    initialSituation: z.string(),
+    goal: z.string(),
+    finalQuote: z.string(),
+    emotionalTone: z.string(),
+    conversationDirection: z.string(),
+    thresholds: z.array(z.object({
+        name: z.string(),
+        description: z.string()
+    }))
+});
+
+// Database reference (set via setDatabase)
+let _db = null;
+
+/**
+ * Set database reference for caching translations
+ * @param {Object} db - MongoDB database instance
+ */
+function setDatabase(db) {
+    _db = db;
+}
+
+/**
+ * Get cached translation from database
+ * @param {string} scenarioId - Scenario ID
+ * @param {string} language - Target language
+ * @returns {Promise<Object|null>} Cached translation or null
+ */
+async function getCachedTranslation(scenarioId, language) {
+    if (!_db) return null;
+    
+    try {
+        const collection = _db.collection('scenarioTranslations');
+        const cached = await collection.findOne({ 
+            scenarioId, 
+            language: language.toLowerCase() 
+        });
+        return cached?.translatedScenario || null;
+    } catch (error) {
+        console.error('[getCachedTranslation] Error:', error.message);
+        return null;
+    }
+}
+
+/**
+ * Save translation to database cache
+ * @param {string} scenarioId - Scenario ID
+ * @param {string} language - Target language
+ * @param {Object} translatedScenario - The translated scenario
+ */
+async function cacheTranslation(scenarioId, language, translatedScenario) {
+    if (!_db) return;
+    
+    try {
+        const collection = _db.collection('scenarioTranslations');
+        await collection.updateOne(
+            { scenarioId, language: language.toLowerCase() },
+            { 
+                $set: { 
+                    translatedScenario,
+                    updatedAt: new Date()
+                },
+                $setOnInsert: {
+                    createdAt: new Date()
+                }
+            },
+            { upsert: true }
+        );
+        console.log(`🌐 [cacheTranslation] Cached translation for scenario "${scenarioId}" in ${language}`);
+    } catch (error) {
+        console.error('[cacheTranslation] Error:', error.message);
+    }
+}
+
+/**
+ * Translate a scenario to the target language using AI (with caching)
+ * @param {Object} scenario - The scenario to translate
+ * @param {string} targetLanguage - Target language (e.g., 'french', 'japanese')
+ * @returns {Promise<Object>} Translated scenario
+ */
+async function translateScenario(scenario, targetLanguage) {
+    // Skip translation for English
+    if (!targetLanguage || targetLanguage.toLowerCase() === 'english') {
+        return scenario;
+    }
+
+    // Check cache first
+    const cached = await getCachedTranslation(scenario.id, targetLanguage);
+    if (cached) {
+        console.log(`🌐 [translateScenario] Using cached translation for "${scenario.id}" in ${targetLanguage}`);
+        // Merge cached translation with original scenario (to preserve any non-translated fields)
+        return { ...scenario, ...cached };
+    }
+
+    const languageNativeNames = {
+        'french': 'français',
+        'japanese': '日本語',
+        'spanish': 'español',
+        'portuguese': 'português',
+        'german': 'Deutsch',
+        'italian': 'italiano',
+        'chinese': '中文',
+        'korean': '한국어',
+        'thai': 'ไทย',
+        'russian': 'русский',
+        'hindi': 'हिन्दी'
+    };
+    const nativeName = languageNativeNames[targetLanguage.toLowerCase()] || targetLanguage;
+
+    try {
+        console.log(`🌐 [translateScenario] Translating "${scenario.id}" to ${targetLanguage} (not cached)`);
+        
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const fieldsToTranslate = {
+            title: scenario.title,
+            description: scenario.description,
+            initialSituation: scenario.initialSituation,
+            goal: scenario.goal,
+            finalQuote: scenario.finalQuote,
+            emotionalTone: scenario.emotionalTone,
+            conversationDirection: scenario.conversationDirection,
+            thresholds: scenario.thresholds.map(t => ({ name: t.name, description: t.description }))
+        };
+
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                { 
+                    role: "system", 
+                    content: `You are a translator. Translate ALL fields to ${nativeName}. Keep emoji icons unchanged.` 
+                },
+                { 
+                    role: "user", 
+                    content: JSON.stringify(fieldsToTranslate)
+                }
+            ],
+            response_format: zodResponseFormat(translatedScenarioSchema, "translated_scenario"),
+            max_completion_tokens: 1000,
+            temperature: 0.3,
+        });
+
+        const translated = JSON.parse(response.choices[0].message.content);
+        
+        // Merge translated fields back into scenario
+        const translatedScenario = {
+            ...scenario,
+            title: translated.title || scenario.title,
+            description: translated.description || scenario.description,
+            initialSituation: translated.initialSituation || scenario.initialSituation,
+            goal: translated.goal || scenario.goal,
+            finalQuote: translated.finalQuote || scenario.finalQuote,
+            emotionalTone: translated.emotionalTone || scenario.emotionalTone,
+            conversationDirection: translated.conversationDirection || scenario.conversationDirection,
+            thresholds: scenario.thresholds.map((t, i) => ({
+                ...t,
+                name: translated.thresholds?.[i]?.name || t.name,
+                description: translated.thresholds?.[i]?.description || t.description
+            }))
+        };
+        
+        // Cache the translation for future use
+        await cacheTranslation(scenario.id, targetLanguage, translatedScenario);
+        
+        return translatedScenario;
+    } catch (error) {
+        console.error(`[translateScenario] Translation failed for ${targetLanguage}:`, error.message);
+        return scenario; // Return original on error
+    }
+}
+
+/**
+ * Translate multiple scenarios to the target language (with caching)
+ * @param {Array} scenarios - Array of scenarios to translate
+ * @param {string} targetLanguage - Target language
+ * @param {Object} db - MongoDB database instance (optional, uses cached db if not provided)
+ * @returns {Promise<Array>} Translated scenarios
+ */
+async function translateScenarios(scenarios, targetLanguage, db = null) {
+    // Set db if provided
+    if (db) {
+        setDatabase(db);
+    }
+    
+    if (!targetLanguage || targetLanguage.toLowerCase() === 'english') {
+        return scenarios;
+    }
+    
+    console.log(`🌐 [translateScenarios] Translating ${scenarios.length} scenarios to ${targetLanguage}`);
+    
+    // Translate all scenarios in parallel for speed
+    const translatedScenarios = await Promise.all(
+        scenarios.map(scenario => translateScenario(scenario, targetLanguage))
+    );
+    
+    return translatedScenarios;
+}
 
 /**
  * Scenario categories
@@ -401,5 +608,7 @@ module.exports = {
     getAlertScenarios,
     personalizeScenario,
     getPreparedScenarios,
-    getScenarioById
+    getScenarioById,
+    translateScenario,
+    translateScenarios
 };

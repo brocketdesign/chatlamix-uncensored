@@ -11,7 +11,7 @@ const {
     getScenarioProgress
 } = require('../models/chat-scenario-utils');
 const { chatDataToString } = require('../models/chat-completion-utils');
-const { getPreparedScenarios, getScenarioById } = require('../models/predefined-scenarios');
+const { getPreparedScenarios, getScenarioById, translateScenarios } = require('../models/predefined-scenarios');
 const { getPreferredChatLanguage } = require('../models/chat-tool-settings-utils');
 
 async function routes(fastify, options) {
@@ -131,14 +131,17 @@ async function routes(fastify, options) {
                     language
                 );
             } else {
-                // Fast: Use predefined guided scenarios
-                // Note: Predefined scenarios are in English only - they don't support translation yet
-                console.log(`   ⚠️ Using PREDEFINED scenarios (English only, language param "${language}" ignored)`);
-                scenarios = getPreparedScenarios(
+                // Fast: Use predefined guided scenarios, then translate to user's language
+                console.log(`🌐 [chat-scenarios/generate] Using PREDEFINED scenarios, will translate to "${language}"`);
+                let predefinedScenarios = getPreparedScenarios(
                     { name: chatDoc.name },
                     isPremium,
                     3 // Return 3 scenarios
                 );
+                
+                // Translate scenarios to user's preferred language (if not English)
+                // Pass db to enable caching of translations
+                scenarios = await translateScenarios(predefinedScenarios, language, fastify.mongo.db);
             }
 
             if (!scenarios || scenarios.length === 0) {
