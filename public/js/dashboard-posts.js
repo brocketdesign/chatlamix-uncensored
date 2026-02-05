@@ -783,8 +783,15 @@ class PostsDashboard {
       // Update post status to published
       const publishResponse = await fetch(`/api/posts/${postId}/publish`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
       });
+
+      if (!publishResponse.ok) {
+        const errorText = await publishResponse.text();
+        console.error('Publish response error:', publishResponse.status, errorText);
+        throw new Error(`Failed to publish post: ${publishResponse.status}`);
+      }
 
       const publishData = await publishResponse.json();
 
