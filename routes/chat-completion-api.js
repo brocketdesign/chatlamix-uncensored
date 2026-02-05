@@ -46,6 +46,9 @@ const {
     getRecentUpsellCount,
     hasRecentDismissal
 } = require('../models/nsfw-analytics-utils');
+const {
+    evaluateScenarioProgress
+} = require('../models/chat-scenario-utils');
 // Fetches chat document from 'chats' collection
 async function getChatDocument(request, db, chatId) {
     let chatdoc = await db.collection('chats').findOne({ _id: new ObjectId(chatId) });
@@ -646,6 +649,45 @@ async function routes(fastify, options) {
                             }
                         } catch (nsfwError) {
                             console.error(`🔥 [openai-chat-completion:${requestId}] NSFW detection error:`, nsfwError.message);
+                        }
+                    }
+
+                    // Evaluate scenario progress if a scenario is active
+                    if (latestUserData?.currentScenario) {
+                        try {
+                            const progressResult = await evaluateScenarioProgress(
+                                db,
+                                userChatId,
+                                latestUserData.currentScenario,
+                                userData.messages
+                            );
+                            
+                            if (progressResult.updated) {
+                                console.log(`🎯 [openai-chat-completion:${requestId}] Scenario progress updated: ${progressResult.previousProgress}% → ${progressResult.progress}%`);
+                                
+                                // Notify frontend of progress update
+                                fastify.sendNotificationToUser(userId, 'scenarioProgressUpdated', {
+                                    progress: progressResult.progress,
+                                    previousProgress: progressResult.previousProgress,
+                                    currentThreshold: progressResult.currentThreshold,
+                                    nextThreshold: progressResult.nextThreshold,
+                                    goalAchieved: progressResult.goalAchieved,
+                                    finalQuote: progressResult.finalQuote,
+                                    userChatId
+                                });
+                                
+                                // Special notification if goal was just achieved
+                                if (progressResult.goalAchieved && progressResult.previousProgress < 100) {
+                                    console.log(`🎉 [openai-chat-completion:${requestId}] Scenario goal achieved!`);
+                                    fastify.sendNotificationToUser(userId, 'scenarioGoalAchieved', {
+                                        finalQuote: progressResult.finalQuote,
+                                        scenarioTitle: latestUserData.currentScenario.scenario_title,
+                                        userChatId
+                                    });
+                                }
+                            }
+                        } catch (progressError) {
+                            console.error(`🎯 [openai-chat-completion:${requestId}] Scenario progress evaluation error:`, progressError.message);
                         }
                     }
                 } else {

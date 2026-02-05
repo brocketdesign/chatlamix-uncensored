@@ -524,6 +524,149 @@ const checkNsfwPush = async (recentMessages) => {
   }
 };
 
+// Define the schema for scenario progress evaluation
+const scenarioProgressSchema = z.object({
+  progress: z.number().min(0).max(100),
+  current_threshold_id: z.number().nullable(),
+  thresholds_achieved: z.array(z.number()),
+  emotional_alignment: z.number().min(0).max(100),
+  goal_proximity: z.number().min(0).max(100),
+  confidence: z.number().min(0).max(100),
+  reasoning: z.string(),
+});
+
+/**
+ * Evaluates scenario progress using AI analysis of the conversation.
+ * Analyzes how well the conversation aligns with the scenario's goal and thresholds.
+ * 
+ * @param {Object} scenario - The active scenario with goal, thresholds, and emotional tone
+ * @param {Array} messages - Array of conversation messages
+ * @returns {Promise<{progress: number, current_threshold_id: number|null, thresholds_achieved: number[], emotional_alignment: number, goal_proximity: number, confidence: number, reasoning: string}>}
+ */
+const evaluateScenarioProgressAI = async (scenario, messages) => {
+  try {
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    if (!scenario || !messages || messages.length === 0) {
+      return { 
+        progress: 0, 
+        current_threshold_id: null, 
+        thresholds_achieved: [], 
+        emotional_alignment: 0, 
+        goal_proximity: 0, 
+        confidence: 0, 
+        reasoning: 'No scenario or messages provided' 
+      };
+    }
+
+    // Extract scenario details
+    const scenarioTitle = scenario.scenario_title || scenario.title || 'Unknown Scenario';
+    const scenarioGoal = scenario.goal || 'No goal specified';
+    const emotionalTone = scenario.emotional_tone || scenario.emotionalTone || 'neutral';
+    const initialSituation = scenario.initial_situation || scenario.initialSituation || '';
+    const thresholds = scenario.thresholds || [];
+
+    // Format thresholds for the prompt
+    const thresholdsDescription = thresholds.map(t => 
+      `  - Threshold ${t.id} (${t.progress}%): "${t.name}" - ${t.description}`
+    ).join('\n');
+
+    // Get relevant conversation messages (exclude system, hidden, context)
+    const relevantMessages = messages
+      .filter(m => m.content && 
+                   !m.content.startsWith('[Image]') && 
+                   m.role !== 'system' && 
+                   !m.hidden &&
+                   m.name !== 'context')
+      .slice(-15) // Last 15 messages for context
+      .map(m => `${m.role === 'user' ? 'User' : 'Character'}: ${m.content}`)
+      .join('\n');
+
+    if (!relevantMessages || relevantMessages.trim().length === 0) {
+      return { 
+        progress: 0, 
+        current_threshold_id: null, 
+        thresholds_achieved: [], 
+        emotional_alignment: 0, 
+        goal_proximity: 0, 
+        confidence: 50, 
+        reasoning: 'No conversation content to analyze' 
+      };
+    }
+
+    const commandPrompt = `You are an expert scenario progress evaluator for interactive storytelling conversations.
+Your task is to analyze how well a conversation is progressing through a guided scenario with defined goals and milestones.
+
+SCENARIO CONTEXT:
+- Title: ${scenarioTitle}
+- Goal: ${scenarioGoal}
+- Emotional Tone: ${emotionalTone}
+- Initial Situation: ${initialSituation}
+
+MILESTONES/THRESHOLDS (in order):
+${thresholdsDescription}
+
+EVALUATION CRITERIA:
+1. **progress** (0-100): Overall progress through the scenario based on:
+   - How many thresholds have been achieved
+   - How close the conversation is to the final goal
+   - Quality of interactions (not just quantity)
+
+2. **current_threshold_id**: The ID of the highest threshold that has been clearly achieved (or null if none)
+
+3. **thresholds_achieved**: Array of threshold IDs that have been completed
+
+4. **emotional_alignment** (0-100): How well the conversation matches the expected emotional tone
+
+5. **goal_proximity** (0-100): How close the conversation feels to achieving the final goal
+
+6. **confidence** (0-100): How confident you are in this assessment
+
+7. **reasoning**: Brief explanation of your evaluation (1-2 sentences)
+
+IMPORTANT:
+- Be generous but accurate - if a threshold seems achieved, include it
+- Consider the SPIRIT of each threshold, not just literal keywords
+- Progress should generally increase with meaningful conversation
+- Early messages should show progress even if thresholds aren't fully achieved`;
+
+    const analysisPrompt = `Analyze this conversation and evaluate the scenario progress:
+
+CONVERSATION:
+${relevantMessages}
+
+Based on the scenario goal "${scenarioGoal}" and the defined thresholds, evaluate the progress.
+Return a JSON object with: progress, current_threshold_id, thresholds_achieved, emotional_alignment, goal_proximity, confidence, reasoning.`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: "system", content: commandPrompt },
+        { role: "user", content: analysisPrompt }
+      ],
+      response_format: zodResponseFormat(scenarioProgressSchema, "scenario_progress"),
+      max_completion_tokens: 800,
+      temperature: 0.3,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content);
+    console.log(`[evaluateScenarioProgressAI] Scenario: "${scenarioTitle}" | Progress: ${result.progress}% | Confidence: ${result.confidence}%`);
+    return result;
+
+  } catch (error) {
+    console.log('[evaluateScenarioProgressAI] Analysis error:', error);
+    return { 
+      progress: 0, 
+      current_threshold_id: null, 
+      thresholds_achieved: [], 
+      emotional_alignment: 0, 
+      goal_proximity: 0, 
+      confidence: 0, 
+      reasoning: `Error during analysis: ${error.message}` 
+    };
+  }
+};
+
 // Define the schema for language detection
 const languageDetectionSchema = z.object({
   language: z.string(),
@@ -1550,6 +1693,7 @@ module.exports = {
     generateEditPrompt,
     checkImageRequest,
     checkNsfwPush,
+    evaluateScenarioProgressAI,
     detectConversationLanguage,
     analyzeConversationContext,
     generatePromptTitle,

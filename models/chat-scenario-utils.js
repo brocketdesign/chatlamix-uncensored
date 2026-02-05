@@ -233,6 +233,94 @@ async function getScenarioProgress(db, userChatId) {
     }
 }
 
+/**
+ * Evaluate and update scenario progress based on conversation using AI
+ * This function uses GPT-4o-mini to analyze the chat messages and determine progress through thresholds
+ * 
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userChatId - User chat ID
+ * @param {Object} scenario - Current scenario object
+ * @param {Array} messages - Chat messages array
+ * @returns {Object} Progress evaluation result
+ */
+async function evaluateScenarioProgress(db, userChatId, scenario, messages) {
+    try {
+        if (!scenario || !messages || messages.length === 0) {
+            return { progress: 0, updated: false };
+        }
+        
+        // Get current progress
+        const currentProgress = await getScenarioProgress(db, userChatId);
+        
+        // If already at 100%, no need to evaluate
+        if (currentProgress >= 100) {
+            return { 
+                progress: 100, 
+                updated: false, 
+                goalAchieved: true,
+                finalQuote: scenario.final_quote || scenario.finalQuote
+            };
+        }
+        
+        // Import AI evaluation function
+        const { evaluateScenarioProgressAI } = require('./openai');
+        
+        // Use AI to evaluate progress
+        const aiResult = await evaluateScenarioProgressAI(scenario, messages);
+        
+        // Ensure progress never decreases
+        const newProgress = Math.max(currentProgress, aiResult.progress);
+        
+        // Get thresholds for determining current/next
+        const thresholds = scenario.thresholds || [];
+        
+        // Determine current and next threshold based on AI result or progress
+        let currentThreshold = null;
+        let nextThreshold = null;
+        
+        if (aiResult.current_threshold_id) {
+            currentThreshold = thresholds.find(t => t.id === aiResult.current_threshold_id);
+        }
+        
+        // Find thresholds based on progress level
+        for (let i = 0; i < thresholds.length; i++) {
+            if (newProgress >= thresholds[i].progress) {
+                currentThreshold = thresholds[i];
+            } else if (!nextThreshold) {
+                nextThreshold = thresholds[i];
+            }
+        }
+        
+        // Check if goal is achieved
+        const goalAchieved = newProgress >= 100;
+        
+        // Update progress if it increased
+        let updated = false;
+        if (newProgress > currentProgress) {
+            await updateScenarioProgress(db, userChatId, newProgress);
+            updated = true;
+        }
+        
+        return {
+            progress: newProgress,
+            previousProgress: currentProgress,
+            updated,
+            currentThreshold,
+            nextThreshold,
+            goalAchieved,
+            finalQuote: goalAchieved ? (scenario.final_quote || scenario.finalQuote) : null,
+            thresholdsAchieved: aiResult.thresholds_achieved || [],
+            emotionalAlignment: aiResult.emotional_alignment || 0,
+            goalProximity: aiResult.goal_proximity || 0,
+            confidence: aiResult.confidence || 0,
+            reasoning: aiResult.reasoning || ''
+        };
+    } catch (error) {
+        console.error('Error evaluating scenario progress:', error);
+        return { progress: 0, updated: false, error: error.message };
+    }
+}
+
 module.exports = {
     getChatScenarioData,
     getUserScenariosStats,
@@ -241,5 +329,6 @@ module.exports = {
     shouldGenerateScenarios,
     formatScenarioForUI,
     updateScenarioProgress,
-    getScenarioProgress
+    getScenarioProgress,
+    evaluateScenarioProgress
 };

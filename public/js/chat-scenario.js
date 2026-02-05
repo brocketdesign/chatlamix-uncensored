@@ -717,6 +717,67 @@ window.ChatScenarioModule = (function() {
         removeSelectedScenarioDisplay();
     }
 
+    /**
+     * Handle progress update from WebSocket
+     * @param {Object} data - Progress update data from server
+     */
+    function handleProgressUpdate(data) {
+        if (!data || typeof data.progress !== 'number') return;
+        
+        console.log(`[ChatScenarioModule] 🎯 Progress update received: ${data.previousProgress || 0}% → ${data.progress}%`);
+        
+        // Update the progress bar
+        updateProgressBar(data.progress);
+        
+        // Show milestone achieved notification if crossed a threshold
+        if (data.currentThreshold && data.previousProgress < data.currentThreshold.progress && data.progress >= data.currentThreshold.progress) {
+            showMilestoneNotification(data.currentThreshold);
+        }
+        
+        // Check for goal achievement
+        if (data.goalAchieved && data.previousProgress < 100) {
+            displayGoalAchieved(data.finalQuote);
+        }
+    }
+
+    /**
+     * Handle goal achieved notification from WebSocket
+     * @param {Object} data - Goal achievement data from server
+     */
+    function handleGoalAchieved(data) {
+        console.log(`[ChatScenarioModule] 🎉 Goal achieved notification:`, data);
+        displayGoalAchieved(data.finalQuote);
+    }
+
+    /**
+     * Show milestone achieved notification
+     * @param {Object} threshold - The achieved threshold
+     */
+    function showMilestoneNotification(threshold) {
+        if (!threshold) return;
+        
+        // Create notification toast
+        const toast = document.createElement('div');
+        toast.className = 'milestone-notification';
+        toast.innerHTML = `
+            <div class="milestone-content">
+                <span class="milestone-icon">🎯</span>
+                <span class="milestone-text">Milestone: <strong>${escapeHtml(threshold.name)}</strong></span>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Animate in
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+
     // Public API
     return {
         init,
@@ -733,7 +794,9 @@ window.ChatScenarioModule = (function() {
         getScenarios,
         clearScenarios,
         updateProgressBar,
-        displayGoalAchieved
+        displayGoalAchieved,
+        handleProgressUpdate,
+        handleGoalAchieved
     };
 })();
 
@@ -744,6 +807,23 @@ $(document).ready(function() {
         window.ChatScenarioModule.init(chatId, userChatId);
     }
 });
+
+// WebSocket event handlers for scenario progress
+if (typeof window.socket !== 'undefined') {
+    // Listen for progress updates
+    window.socket.on('scenarioProgressUpdated', function(data) {
+        if (window.ChatScenarioModule && data.userChatId === userChatId) {
+            window.ChatScenarioModule.handleProgressUpdate(data);
+        }
+    });
+    
+    // Listen for goal achieved
+    window.socket.on('scenarioGoalAchieved', function(data) {
+        if (window.ChatScenarioModule && data.userChatId === userChatId) {
+            window.ChatScenarioModule.handleGoalAchieved(data);
+        }
+    });
+}
 
 /**
  * DEBUG MODE - Console functions for testing spinner and scenario designs

@@ -317,7 +317,8 @@ class ChatSuggestionsManager {
             }
             window.chatToolSettings.settings = window.chatToolSettings.settings || {};
             window.chatToolSettings.settings.suggestionPreset = preset;
-            await window.chatToolSettings.saveSettings();
+            // Save silently without closing the modal (user can continue editing other settings)
+            await window.chatToolSettings.saveSettings({ closeAfterSave: false, showFeedback: false });
         } catch (error) {
             console.error('[ChatSuggestions] Error updating preset preference:', error);
         }

@@ -1271,14 +1271,18 @@ class ChatToolSettings {
     }
 
     // Settings persistence methods
-    async saveSettings() {
+    async saveSettings(options = {}) {
+        const { closeAfterSave = true, showFeedback = true } = options;
+        
         if (this.isLoading || !this.userId) {
             return;
         }
 
         try {
             this.isLoading = true;
-            this.showSavingState();
+            if (showFeedback) {
+                this.showSavingState();
+            }
             
             // Get chatId and userChatId from session storage
             const chatId = sessionStorage.getItem('lastChatId') || sessionStorage.getItem('chatId');
@@ -1315,22 +1319,28 @@ class ChatToolSettings {
             this.settings = { ...this.settings, ...data.settings };
             
             // Show success feedback with chat-specific info
-            const successMessage = data.isChatSpecific ? 
-                this.t('chatSpecificSettingsSaved') : 
-                this.t('globalSettingsSaved');
-            this.showSaveSuccess(successMessage);
+            if (showFeedback) {
+                const successMessage = data.isChatSpecific ? 
+                    this.t('chatSpecificSettingsSaved') : 
+                    this.t('globalSettingsSaved');
+                this.showSaveSuccess(successMessage);
+            }
             
             // Apply settings to the application
             this.applySettings();
             
-            // Close modal after short delay
-            setTimeout(() => {
-                this.closeModal();
-            }, 1000);
+            // Close modal after short delay (only when explicitly requested)
+            if (closeAfterSave) {
+                setTimeout(() => {
+                    this.closeModal();
+                }, 1000);
+            }
             
         } catch (error) {
             console.error('Error saving settings:', error);
-            this.showSaveError(error.message);
+            if (showFeedback) {
+                this.showSaveError(error.message);
+            }
         } finally {
             this.isLoading = false;
         }
