@@ -8,7 +8,7 @@
     "voiceProvider": "standard",
     "minimaxVoice": "Wise_Woman",
     "autoMergeFace": true,
-    "selectedModel": "deepseek-v3-turbo",
+    "selectedModel": "grok-2-vision",
     "suggestionsEnabled": true,
     "suggestionPreset": "neutral",
     "speechRecognitionEnabled": true,

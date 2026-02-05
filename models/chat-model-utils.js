@@ -51,6 +51,18 @@ const DEFAULT_PROVIDERS = [
     isActive: true,
     createdAt: new Date(),
     updatedAt: new Date()
+  },
+  {
+    _id: new ObjectId(),
+    name: 'segmind',
+    displayName: 'Segmind',
+    baseUrl: 'https://api.segmind.com/v1',
+    description: 'Segmind AI models including Grok 2 Vision',
+    requiresApiKey: true,
+    envKeyName: 'SEGMIND_API_KEY',
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
   }
 ];
 
@@ -276,6 +288,21 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'free',
         maxTokens: 2048,
+        supportedLanguages: ['en', 'fr', 'ja'],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      },
+      {
+        _id: new ObjectId(),
+        key: 'grok-2-vision',
+        displayName: 'Grok 2 Vision',
+        description: 'Advanced vision-enabled AI with excellent reasoning',
+        provider: 'segmind',
+        modelId: 'grok-2-vision',
+        apiUrl: 'https://api.segmind.com/v1/grok-2-vision',
+        isActive: true,
+        category: 'free',
+        maxTokens: 4096,
         supportedLanguages: ['en', 'fr', 'ja'],
         createdAt: new Date(),
         updatedAt: new Date()
@@ -583,12 +610,19 @@ const testSingleModel = async (modelKey, question, systemPrompt, language, maxTo
 
     console.log(`[Model Test] Testing ${modelKey} (${model.displayName}) with language ${language}`);
 
+    // Build headers based on provider (Segmind uses x-api-key, others use Authorization Bearer)
+    const headers = {
+      'Content-Type': 'application/json'
+    };
+    if (model.provider === 'segmind') {
+      headers['x-api-key'] = apiKey;
+    } else {
+      headers['Authorization'] = `Bearer ${apiKey}`;
+    }
+
     const response = await fetch(model.apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
+      headers,
       body: JSON.stringify(requestBody)
     });
 

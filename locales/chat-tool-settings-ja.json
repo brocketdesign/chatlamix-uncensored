@@ -213,6 +213,14 @@
     "autoImageGeneration": "自動画像生成",
     "autoImageGenerationDescription": "会話中にAIが画像作成を提案またはリクエストした際に自動的に画像を生成します。この機能はポイント残高を使用し、視覚的なストーリーテリング体験を向上させます。",
     "models": {
+        "grok-2-vision": {
+            "name": "Grok",
+            "description": "ビジョン機能を備えた高度なAI、優れた推論力と創造性",
+            "category": "無料",
+            "provider": "Segmind",
+            "speed": "高速",
+            "quality": "優秀"
+        },
         "openai": {
             "name": "Sage",
             "description": "優秀な推論力を持つ思慮深く創造的な会話相手",

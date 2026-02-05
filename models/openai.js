@@ -21,25 +21,38 @@ const apiDetails = {
       hermes: 'nousresearch/hermes-2-pro-llama-3-8b'
     }
   },
+  segmind: {
+    apiUrl: 'https://api.segmind.com/v1',
+    key: process.env.SEGMIND_API_KEY,
+    models: {
+      'grok-2-vision': 'grok-2-vision'
+    }
+  },
 };
 
 // Default model config
 let currentModelConfig = {
-  provider: 'novita',
-  modelName: 'deepseek',
+  provider: 'segmind',
+  modelName: 'grok-2-vision',
 };
 
 // Enhanced model config with categorization
 const modelConfig = {
   free: {
+    'grok-2-vision': {
+      provider: 'segmind',
+      modelName: 'grok-2-vision',
+      displayName: 'Grok 2 Vision',
+      description: 'Advanced vision-enabled AI with excellent reasoning'
+    },
+  },
+  premium: {
     deepseek: {
       provider: 'novita',
       modelName: 'deepseek',
       displayName: 'DeepSeek V3 Turbo',
       description: 'Advanced coding and reasoning'
     },
-  },
-  premium: {
     llama: {
       provider: 'novita',
       modelName: 'llama',
@@ -297,14 +310,22 @@ async function generateCompletion(messages, maxToken = 1000, model = null, lang 
     }
     // Log model and provider being used
     console.log(`[generateCompletion] Using model: ${dbModel.displayName} from provider: ${dbModel.provider}`);
+    
+    // Build headers based on provider (Segmind uses x-api-key, others use Authorization Bearer)
+    const headers = {
+      "Content-Type": "application/json"
+    };
+    if (dbModel.provider === 'segmind') {
+      headers["x-api-key"] = apiKey;
+    } else {
+      headers["Authorization"] = `Bearer ${apiKey}`;
+    }
+    
     // Make API call with retry logic
     for (let attempt = 1; attempt <= 5; attempt++) {
       try {
         const response = await fetch(dbModel.apiUrl, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          },
+          headers,
           method: "POST",
           body: JSON.stringify({
             model: dbModel.modelId,

@@ -1483,9 +1483,9 @@ class ChatToolSettings {
                 this.settings.autoImageGeneration = false;
             }
             // Auto-correct premium models
-            const premiumModels = ['llama-3-70b', 'gemma', 'deepseek'];
+            const premiumModels = ['llama-3-70b', 'gemma', 'deepseek', 'deepseek-v3-turbo', 'hermes'];
             if (premiumModels.includes(this.settings.selectedModel)) {
-                this.settings.selectedModel = 'openai'; // Default to free model
+                this.settings.selectedModel = 'grok-2-vision'; // Default to free model
             }
         }
 
@@ -2069,7 +2069,8 @@ class ChatToolSettings {
             'openai': 'OpenAI',
             'novita': 'Novita AI',
             'anthropic': 'Anthropic',
-            'google': 'Google AI'
+            'google': 'Google AI',
+            'segmind': 'Segmind'
         };
         return providerNames[provider] || provider.charAt(0).toUpperCase() + provider.slice(1);
     }
@@ -2082,7 +2083,9 @@ class ChatToolSettings {
         }
         
         const speedMap = {
+            'grok-2-vision': 'Fast',
             'deepseek': 'Very Fast',
+            'deepseek-v3-turbo': 'Very Fast',
             'gemma': 'Fast',
             'openai': 'Medium',
             'llama': 'Medium',
@@ -2101,9 +2104,11 @@ class ChatToolSettings {
         }
         
         const qualityMap = {
+            'grok-2-vision': 'Excellent',
             'openai': 'Excellent',
             'llama': 'Excellent',
             'deepseek': 'Excellent',
+            'deepseek-v3-turbo': 'Excellent',
             'gemma': 'Very Good',
             'gpt-4o': 'Excellent',
             'claude': 'Excellent',

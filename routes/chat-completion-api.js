@@ -520,7 +520,7 @@ async function routes(fastify, options) {
             }
 
             // Generate completion
-            const customModel = (language === 'ja' || language === 'japanese') ? 'deepseek-v3-turbo' : 'llama-3-70b';
+            const customModel = 'grok-2-vision';
             const selectedModel = userSettings.selectedModel || customModel;
             const isPremium = subscriptionStatus;
             

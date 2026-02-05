@@ -213,6 +213,14 @@
     "autoImageGeneration": "Auto Image Generation",
     "autoImageGenerationDescription": "Automatically generate images when the AI suggests or requests image creation during conversations. This feature uses your points balance and enhances the visual storytelling experience.",
     "models": {
+        "grok-2-vision": {
+            "name": "Grok",
+            "description": "Advanced vision-enabled AI with excellent reasoning and creativity",
+            "category": "free",
+            "provider": "Segmind",
+            "speed": "Fast",
+            "quality": "Excellent"
+        },
         "openai": {
             "name": "Sage",
             "description": "Thoughtful and creative conversationalist with excellent reasoning",
