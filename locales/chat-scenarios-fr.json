@@ -1,19 +1,27 @@
 {
-  "scenarios_title": "Scénarios de Conversation",
-  "scenarios_loading": "Génération des scénarios...",
+  "scenarios_title": "Choisissez Votre Aventure",
+  "scenarios_loading": "Préparation de vos scénarios",
   "scenarios_empty": "Aucun scénario disponible",
   "scenarios_error": "Impossible de charger les scénarios",
   "scenarios_close": "Fermer les scénarios",
   "no_scenarios_available": "Aucun scénario disponible",
-  "choose_scenario": "Choisir ce scénario",
+  "choose_scenario": "Commencer Cette Aventure",
   "selected": "Sélectionné",
-  "emotional_tone": "Ton émotionnel",
+  "emotional_tone": "Ambiance",
   "conversation_direction": "Direction de la conversation",
-  "scenario_selected": "Scénario sélectionné !",
+  "scenario_selected": "L'aventure commence !",
   "scenario_selection_failed": "Échec de la sélection du scénario",
+  "your_goal": "Votre Objectif",
+  "the_scene": "La Scène",
+  "progress": "Progression",
+  "goal_achieved": "Objectif Atteint !",
+  "congratulations": "Félicitations ! Vous avez terminé ce scénario.",
+  "premium_only": "Premium Uniquement",
+  "urgent": "Urgent",
+  "thresholds": "Étapes",
   "settings": {
     "scenariosSettings": "Paramètres des scénarios",
     "enableScenarios": "Activer les scénarios de chat",
-    "scenariosDescription": "Choisissez le ton émotionnel et la direction de votre conversation"
+    "scenariosDescription": "Choisissez des aventures guidées immersives avec des objectifs et des étapes"
   }
 }

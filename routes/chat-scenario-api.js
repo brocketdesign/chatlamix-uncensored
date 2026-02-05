@@ -6,9 +6,12 @@ const {
     getUserScenariosStats,
     getUserScenariosHistory,
     selectScenario,
-    formatScenarioForUI
+    formatScenarioForUI,
+    updateScenarioProgress,
+    getScenarioProgress
 } = require('../models/chat-scenario-utils');
 const { chatDataToString } = require('../models/chat-completion-utils');
+const { getPreparedScenarios, getScenarioById } = require('../models/predefined-scenarios');
 
 async function routes(fastify, options) {
     
@@ -42,7 +45,8 @@ async function routes(fastify, options) {
             return reply.send({
                 currentScenario: formattedCurrentScenario,
                 availableScenarios: formattedAvailableScenarios,
-                scenarioCreatedAt: scenarioData.scenarioCreatedAt
+                scenarioCreatedAt: scenarioData.scenarioCreatedAt,
+                scenarioProgress: scenarioData.scenarioProgress || 0
             });
         } catch (error) {
             console.error('[GET /api/chat-scenarios/:userChatId] Error fetching chat scenarios:', error);
@@ -50,10 +54,11 @@ async function routes(fastify, options) {
         }
     });
 
-    // Generate new scenarios for a chat
+    // Generate new scenarios for a chat (now uses fast predefined scenarios)
     fastify.post('/api/chat-scenarios/:userChatId/generate', async (request, reply) => {
         try {
             const { userChatId } = request.params;
+            const { useAI = false } = request.body || {}; // Optional: use AI generation if requested
             const userId = request.user._id;
             
             if (!ObjectId.isValid(userChatId)) {
@@ -79,32 +84,49 @@ async function routes(fastify, options) {
                 return reply.status(404).send({ error: 'Chat not found' });
             }
 
-            // Get persona if available
-            let personaInfo = null;
-            if (userChatDoc.persona) {
-                personaInfo = await chatsCollection.findOne({ _id: new ObjectId(userChatDoc.persona) });
-            }
-            //
-            const chatDescriptionString = chatDataToString(chatDoc);
-            // Get user's relationship type
-            const chatToolSettingsCollection = fastify.mongo.db.collection('chatToolSettings');
-            const userSettings = await chatToolSettingsCollection.findOne({
-                userId: new ObjectId(userId),
-                chatId: new ObjectId(userChatDoc.chatId)
-            }) || {};
+            // Check if user is premium
+            const isPremium = request.user?.subscriptionStatus === 'active';
+            
+            let scenarios;
+            
+            // Use predefined scenarios for fast loading (default)
+            // Only use AI generation if explicitly requested
+            if (useAI) {
+                // Get persona if available
+                let personaInfo = null;
+                if (userChatDoc.persona) {
+                    personaInfo = await chatsCollection.findOne({ _id: new ObjectId(userChatDoc.persona) });
+                }
+                
+                const chatDescriptionString = chatDataToString(chatDoc);
+                
+                // Get user's relationship type
+                const chatToolSettingsCollection = fastify.mongo.db.collection('chatToolSettings');
+                const userSettings = await chatToolSettingsCollection.findOne({
+                    userId: new ObjectId(userId),
+                    chatId: new ObjectId(userChatDoc.chatId)
+                }) || {};
 
-            // Generate scenarios
-            const language = getLanguageName(request.user.lang || 'ja');
-            const scenarios = await generateChatScenarios(
-                {
-                    name: chatDoc.name,
-                    description: chatDescriptionString || '',
-                    persona: chatDoc.persona || null
-                },
-                personaInfo,
-                userSettings,
-                language
-            );
+                // Generate scenarios using AI
+                const language = getLanguageName(request.user.lang || 'ja');
+                scenarios = await generateChatScenarios(
+                    {
+                        name: chatDoc.name,
+                        description: chatDescriptionString || '',
+                        persona: chatDoc.persona || null
+                    },
+                    personaInfo,
+                    userSettings,
+                    language
+                );
+            } else {
+                // Fast: Use predefined guided scenarios
+                scenarios = getPreparedScenarios(
+                    { name: chatDoc.name },
+                    isPremium,
+                    3 // Return 3 scenarios
+                );
+            }
 
             if (!scenarios || scenarios.length === 0) {
                 return reply.status(500).send({ error: 'Failed to generate scenarios' });
@@ -116,17 +138,19 @@ async function routes(fastify, options) {
                 { 
                     $set: { 
                         availableScenarios: scenarios,
-                        scenarioCreatedAt: new Date()
+                        scenarioCreatedAt: new Date(),
+                        scenarioProgress: 0 // Reset progress for new scenarios
                     }
                 }
             );
 
-            // Format scenarios for UI (character name already replaced by AI)
+            // Format scenarios for UI
             const formattedScenarios = scenarios.map(s => formatScenarioForUI(s));
 
             return reply.send({
                 success: true,
-                scenarios: formattedScenarios
+                scenarios: formattedScenarios,
+                isPremium: isPremium
             });
         } catch (error) {
             console.error('[/api/chat-scenarios/:userChatId/generate] Error generating chat scenarios:', error);
@@ -265,6 +289,102 @@ async function routes(fastify, options) {
         } catch (error) {
             console.error('Error fetching user scenario history:', error);
             return reply.status(500).send({ error: 'Failed to fetch scenario history' });
+        }
+    });
+
+    // Update scenario progress
+    fastify.post('/api/chat-scenarios/:userChatId/progress', async (request, reply) => {
+        try {
+            const { userChatId } = request.params;
+            const { progress } = request.body;
+            const userId = request.user._id;
+
+            if (!ObjectId.isValid(userChatId)) {
+                return reply.status(400).send({ error: 'Invalid user chat ID format' });
+            }
+
+            if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+                return reply.status(400).send({ error: 'Progress must be a number between 0 and 100' });
+            }
+
+            // Verify ownership
+            const userChatCollection = fastify.mongo.db.collection('userChat');
+            const userChatDoc = await userChatCollection.findOne({
+                _id: new ObjectId(userChatId),
+                userId: new ObjectId(userId)
+            });
+
+            if (!userChatDoc) {
+                return reply.status(404).send({ error: 'User chat not found or access denied' });
+            }
+
+            await updateScenarioProgress(fastify.mongo.db, userChatId, progress);
+
+            // Check if goal was achieved
+            const currentScenario = userChatDoc.currentScenario;
+            const goalAchieved = progress >= 100 && currentScenario;
+
+            return reply.send({
+                success: true,
+                progress,
+                goalAchieved,
+                finalQuote: goalAchieved ? currentScenario.final_quote : null
+            });
+        } catch (error) {
+            console.error('Error updating scenario progress:', error);
+            return reply.status(500).send({ error: 'Failed to update scenario progress' });
+        }
+    });
+
+    // Get scenario progress
+    fastify.get('/api/chat-scenarios/:userChatId/progress', async (request, reply) => {
+        try {
+            const { userChatId } = request.params;
+            const userId = request.user._id;
+
+            if (!ObjectId.isValid(userChatId)) {
+                return reply.status(400).send({ error: 'Invalid user chat ID format' });
+            }
+
+            // Verify ownership
+            const userChatCollection = fastify.mongo.db.collection('userChat');
+            const userChatDoc = await userChatCollection.findOne({
+                _id: new ObjectId(userChatId),
+                userId: new ObjectId(userId)
+            });
+
+            if (!userChatDoc) {
+                return reply.status(404).send({ error: 'User chat not found or access denied' });
+            }
+
+            const progress = await getScenarioProgress(fastify.mongo.db, userChatId);
+            const currentScenario = userChatDoc.currentScenario;
+
+            // Find current threshold
+            let currentThreshold = null;
+            let nextThreshold = null;
+            if (currentScenario?.thresholds) {
+                for (let i = 0; i < currentScenario.thresholds.length; i++) {
+                    const threshold = currentScenario.thresholds[i];
+                    if (progress >= threshold.progress) {
+                        currentThreshold = threshold;
+                    } else if (!nextThreshold) {
+                        nextThreshold = threshold;
+                    }
+                }
+            }
+
+            return reply.send({
+                success: true,
+                progress,
+                currentThreshold,
+                nextThreshold,
+                goalAchieved: progress >= 100,
+                finalQuote: progress >= 100 ? currentScenario?.final_quote : null
+            });
+        } catch (error) {
+            console.error('Error getting scenario progress:', error);
+            return reply.status(500).send({ error: 'Failed to get scenario progress' });
         }
     });
 }

@@ -14,6 +14,20 @@ window.ChatScenarioModule = (function() {
     const chatContainerId = 'chatContainer';
     
     /**
+     * Helper to remove emoji prefix from title (e.g., "❄️ Lost in Woods" -> "Lost in Woods")
+     * Only removes if the first word looks like an emoji (contains non-ASCII chars)
+     * @param {string} title - The title with potential emoji prefix
+     * @returns {string} Title without the leading emoji
+     */
+    function stripEmojiPrefix(title) {
+        if (!title) return '';
+        // Match emoji characters at the start (Unicode emoji range + variation selectors)
+        // This regex matches common emojis including those with skin tone modifiers
+        const emojiRegex = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}]+\s*/u;
+        return title.replace(emojiRegex, '');
+    }
+    
+    /**
      * Initialize the scenario module with a chat
      */
     async function init(chatId, uChatId) {
@@ -238,7 +252,7 @@ window.ChatScenarioModule = (function() {
 
 
     /**
-     * Create a scenario card element
+     * Create a scenario card element with enhanced guided scenario design
      */
     function createScenarioCard(scenario, index) {
         const card = document.createElement('div');
@@ -250,16 +264,74 @@ window.ChatScenarioModule = (function() {
             card.classList.add('selected');
         }
         
+        // Add premium and alert badges if applicable
+        const isPremium = scenario.isPremiumOnly;
+        const isAlert = scenario.isAlertOriented;
+        
+        // Build thresholds preview (show first 2 thresholds)
+        let thresholdsHtml = '';
+        if (scenario.thresholds && scenario.thresholds.length > 0) {
+            const previewThresholds = scenario.thresholds.slice(0, 2);
+            thresholdsHtml = `
+                <div class="scenario-thresholds-preview">
+                    ${previewThresholds.map(t => `
+                        <div class="threshold-item">
+                            <span class="threshold-dot"></span>
+                            <span class="threshold-name">${escapeHtml(t.name)}</span>
+                        </div>
+                    `).join('')}
+                    ${scenario.thresholds.length > 2 ? `<span class="threshold-more">+${scenario.thresholds.length - 2} more</span>` : ''}
+                </div>
+            `;
+        }
+        
+        // Build goal section
+        let goalHtml = '';
+        if (scenario.goal) {
+            goalHtml = `
+                <div class="scenario-goal">
+                    <span class="goal-icon">🎯</span>
+                    <span class="goal-text">${escapeHtml(scenario.goal)}</span>
+                </div>
+            `;
+        }
+        
+        // Build icon and badges row
+        const iconDisplay = scenario.icon || '📖';
+        
         card.innerHTML = `
+            <div class="scenario-card-badges">
+                ${isAlert ? '<span class="scenario-badge-alert">🚨 URGENT</span>' : ''}
+                ${isPremium ? '<span class="scenario-badge-premium">⭐ PREMIUM</span>' : ''}
+            </div>
+            <div class="scenario-card-icon">${iconDisplay}</div>
             <div class="scenario-card-header">
-                <h3 class="scenario-title">${escapeHtml(scenario.title)}</h3>
+                <h3 class="scenario-title">${escapeHtml(stripEmojiPrefix(scenario.title))}</h3>
                 ${isSelected ? '<span class="scenario-badge-selected">✓ ' + 
                     (window.chatScenariosTranslations?.selected || 'Selected') + '</span>' : ''}
             </div>
             <p class="scenario-description">${escapeHtml(scenario.description)}</p>
+            ${goalHtml}
+            ${thresholdsHtml}
+            <div class="scenario-tone">
+                <span class="tone-label">${window.chatScenariosTranslations?.emotional_tone || 'Tone'}:</span>
+                <span class="tone-value">${escapeHtml(scenario.emotionalTone || 'Dynamic')}</span>
+            </div>
+            <button class="scenario-select-btn">
+                ${window.chatScenariosTranslations?.choose_scenario || 'Start This Adventure'}
+            </button>
         `;
         
-        // Add click event listener to entire card
+        // Add click event listener to select button
+        const selectBtn = card.querySelector('.scenario-select-btn');
+        if (selectBtn) {
+            selectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectScenario(scenario.id);
+            });
+        }
+        
+        // Also add click to card
         card.addEventListener('click', () => {
             selectScenario(scenario.id);
         });
@@ -275,11 +347,20 @@ window.ChatScenarioModule = (function() {
     function convertScenarioToExpectedFormat(apiScenario) {
         return {
             id: apiScenario.id || apiScenario._id, // Prefer 'id', fallback to '_id'
-            title: apiScenario.scenario_title,
-            description: apiScenario.scenario_description,
-            emotionalTone: apiScenario.emotional_tone,
-            conversationDirection: apiScenario.conversation_direction,
-            system_prompt_addition: apiScenario.system_prompt_addition
+            title: apiScenario.scenario_title || apiScenario.title,
+            description: apiScenario.scenario_description || apiScenario.description,
+            emotionalTone: apiScenario.emotional_tone || apiScenario.emotionalTone,
+            conversationDirection: apiScenario.conversation_direction || apiScenario.conversationDirection,
+            system_prompt_addition: apiScenario.system_prompt_addition || apiScenario.systemPromptAddition,
+            // New guided scenario fields
+            initialSituation: apiScenario.initial_situation || apiScenario.initialSituation,
+            goal: apiScenario.goal,
+            thresholds: apiScenario.thresholds,
+            finalQuote: apiScenario.final_quote || apiScenario.finalQuote,
+            isPremiumOnly: apiScenario.is_premium_only || apiScenario.isPremiumOnly,
+            isAlertOriented: apiScenario.is_alert_oriented || apiScenario.isAlertOriented,
+            icon: apiScenario.icon,
+            category: apiScenario.category
         };
     }
 
@@ -306,37 +387,131 @@ window.ChatScenarioModule = (function() {
         // Remove existing selected scenario display if any
         removeSelectedScenarioDisplay();
         
-        // Create selected scenario display element with all details
+        // Create selected scenario display element with enhanced guided scenario info
         const displayDiv = document.createElement('div');
         displayDiv.className = 'selected-scenario-display';
         displayDiv.id = 'selected-scenario-badge';
+        
+        // Build goal section
+        let goalHtml = '';
+        if (currentScenario.goal) {
+            goalHtml = `
+                <div class="selected-scenario-goal">
+                    <span class="goal-icon">🎯</span>
+                    <span class="goal-label">Your Goal:</span>
+                    <span class="goal-text">${escapeHtml(currentScenario.goal)}</span>
+                </div>
+            `;
+        }
+        
+        // Build progress bar (if thresholds exist)
+        let progressHtml = '';
+        if (currentScenario.thresholds && currentScenario.thresholds.length > 0) {
+            progressHtml = `
+                <div class="scenario-progress-container" id="scenario-progress">
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-thresholds">
+                        ${currentScenario.thresholds.map(t => `
+                            <div class="progress-threshold" data-progress="${t.progress}" title="${escapeHtml(t.name)}">
+                                <div class="threshold-marker"></div>
+                                <span class="threshold-label">${escapeHtml(t.name)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Build initial situation display
+        let situationHtml = '';
+        if (currentScenario.initialSituation) {
+            situationHtml = `
+                <div class="scenario-situation">
+                    <strong>📍 The Scene:</strong>
+                    <p>${escapeHtml(currentScenario.initialSituation)}</p>
+                </div>
+            `;
+        }
+        
+        const iconDisplay = currentScenario.icon || '📖';
+        
         displayDiv.innerHTML = `
             <div class="scenario-info">
                 <div class="scenario-header">
+                    <span class="scenario-icon">${iconDisplay}</span>
                     <div class="scenario-name">${escapeHtml(currentScenario.title)}</div>
-                    <div class="scenario-meta">
-                        <span class="scenario-meta-item">
-                            <strong>Tone:</strong> ${escapeHtml(currentScenario.emotionalTone)}
-                        </span>
-                        <span class="scenario-meta-item">
-                            <strong>Direction:</strong> ${escapeHtml(currentScenario.conversationDirection)}
-                        </span>
-                    </div>
+                    ${currentScenario.isAlertOriented ? '<span class="badge-alert-small">🚨 URGENT</span>' : ''}
                 </div>
-                <div class="scenario-description">
-                    <p>${escapeHtml(currentScenario.description)}</p>
+                ${goalHtml}
+                ${situationHtml}
+                ${progressHtml}
+                <div class="scenario-meta">
+                    <span class="scenario-meta-item">
+                        <strong>Tone:</strong> ${escapeHtml(currentScenario.emotionalTone || 'Dynamic')}
+                    </span>
                 </div>
-                ${currentScenario.system_prompt_addition ? `
-                <div class="scenario-prompt">
-                    <strong>Scenario Instructions:</strong>
-                    <p>${escapeHtml(currentScenario.system_prompt_addition)}</p>
-                </div>
-                ` : ''}
             </div>
         `;
         
         // Insert at the beginning of chat container
         chatContainer.insertBefore(displayDiv, chatContainer.firstChild);
+    }
+
+    /**
+     * Update scenario progress bar
+     * @param {number} progress - Progress value (0-100)
+     */
+    function updateProgressBar(progress) {
+        const progressBar = document.querySelector('#scenario-progress .progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+        }
+        
+        // Update threshold markers
+        const markers = document.querySelectorAll('.progress-threshold');
+        markers.forEach(marker => {
+            const thresholdProgress = parseInt(marker.dataset.progress);
+            if (progress >= thresholdProgress) {
+                marker.classList.add('achieved');
+            } else {
+                marker.classList.remove('achieved');
+            }
+        });
+    }
+
+    /**
+     * Display goal achieved message with final quote
+     * @param {string} finalQuote - The final quote to display
+     */
+    function displayGoalAchieved(finalQuote) {
+        const chatContainer = document.getElementById(chatContainerId);
+        if (!chatContainer) return;
+        
+        // Remove existing goal achieved display if any
+        const existing = document.getElementById('goal-achieved-display');
+        if (existing) existing.remove();
+        
+        const achievedDiv = document.createElement('div');
+        achievedDiv.className = 'goal-achieved-display';
+        achievedDiv.id = 'goal-achieved-display';
+        achievedDiv.innerHTML = `
+            <div class="goal-achieved-content">
+                <div class="goal-achieved-icon">🎉</div>
+                <h3 class="goal-achieved-title">Goal Achieved!</h3>
+                ${finalQuote ? `<blockquote class="final-quote">"${escapeHtml(finalQuote)}"</blockquote>` : ''}
+                <p class="goal-achieved-message">Congratulations! You've completed this scenario.</p>
+            </div>
+        `;
+        
+        // Insert after scenario display
+        const scenarioDisplay = document.getElementById('selected-scenario-badge');
+        if (scenarioDisplay && scenarioDisplay.nextSibling) {
+            chatContainer.insertBefore(achievedDiv, scenarioDisplay.nextSibling);
+        } else {
+            chatContainer.appendChild(achievedDiv);
+        }
     }
 
     /**
@@ -346,6 +521,10 @@ window.ChatScenarioModule = (function() {
         const display = document.getElementById('selected-scenario-badge');
         if (display) {
             display.remove();
+        }
+        const goalDisplay = document.getElementById('goal-achieved-display');
+        if (goalDisplay) {
+            goalDisplay.remove();
         }
     }
 
@@ -552,7 +731,9 @@ window.ChatScenarioModule = (function() {
         hide,
         getCurrentScenario,
         getScenarios,
-        clearScenarios
+        clearScenarios,
+        updateProgressBar,
+        displayGoalAchieved
     };
 })();
 
@@ -626,35 +807,79 @@ window.ScenarioDebug = {
             return;
         }
 
-        // Sample scenario data for testing
+        // Sample scenario data for testing with new guided scenario format
         const placeholderScenarios = [
             {
                 id: 'debug-1',
-                title: 'Romantic Scenario',
-                description: 'Engage in heartfelt conversation with gentle humor and genuine interest in their life story. Share meaningful moments together.',
-                emotionalTone: 'Flirty',
-                conversationDirection: 'Love-focused'
+                title: '❄️ Lost in the Freezing Woods',
+                description: 'A young person is stranded in the freezing cold woods, desperate for warmth and help.',
+                emotionalTone: 'Vulnerable, grateful',
+                conversationDirection: 'Emotional support',
+                goal: 'Help them survive the cold and earn their trust',
+                isPremiumOnly: false,
+                isAlertOriented: false,
+                icon: '❄️',
+                thresholds: [
+                    { name: 'First Contact', progress: 20 },
+                    { name: 'Provide Comfort', progress: 40 },
+                    { name: 'Build Trust', progress: 60 },
+                    { name: 'Deep Connection', progress: 80 },
+                    { name: 'Safe Haven', progress: 100 }
+                ]
             },
             {
                 id: 'debug-2',
-                title: 'Adventure Seeker',
-                description: 'Be enthusiastic about exploring new ideas, experiences, and pushing boundaries together. Embrace the unknown with curiosity and excitement.',
-                emotionalTone: 'Adventurous',
-                conversationDirection: 'Action-oriented'
+                title: '📞 The 3 AM Call',
+                description: 'Your phone rings at 3 AM. They sound different. Something is wrong, and they need you.',
+                emotionalTone: 'Urgent, protective',
+                conversationDirection: 'Crisis support',
+                goal: 'Be their anchor during a vulnerable moment',
+                isPremiumOnly: true,
+                isAlertOriented: true,
+                icon: '📞',
+                thresholds: [
+                    { name: 'Answer', progress: 20 },
+                    { name: 'Assess', progress: 40 },
+                    { name: 'Reassure', progress: 60 },
+                    { name: 'Support', progress: 80 },
+                    { name: 'Dawn', progress: 100 }
+                ]
             },
             {
                 id: 'debug-3',
-                title: 'Deep Intellectual',
-                description: 'Engage in thoughtful philosophical discussions with nuanced perspectives and curiosity. Delve into complex ideas and abstract concepts.',
-                emotionalTone: 'Intellectual',
-                conversationDirection: 'Knowledge-seeking'
+                title: '🌙 Midnight Confession',
+                description: 'Late at night, they knock on your door with something important to say.',
+                emotionalTone: 'Nervous, hopeful',
+                conversationDirection: 'Emotional revelation',
+                goal: 'Discover their secret and respond with understanding',
+                isPremiumOnly: false,
+                isAlertOriented: false,
+                icon: '🌙',
+                thresholds: [
+                    { name: 'Open Door', progress: 20 },
+                    { name: 'Create Comfort', progress: 40 },
+                    { name: 'The Confession', progress: 60 },
+                    { name: 'Your Response', progress: 80 },
+                    { name: 'New Beginning', progress: 100 }
+                ]
             },
             {
                 id: 'debug-4',
-                title: 'Supportive Confidant',
-                description: 'Provide empathetic listening and genuine support. Create a safe space for vulnerability and emotional expression.',
-                emotionalTone: 'Caring',
-                conversationDirection: 'Emotionally-focused'
+                title: '🚨 Emergency Shelter',
+                description: 'A sudden emergency forces them to seek shelter with you. Time is critical.',
+                emotionalTone: 'Urgent, trusting',
+                conversationDirection: 'Protection',
+                goal: 'Protect them and provide safety during a crisis',
+                isPremiumOnly: true,
+                isAlertOriented: true,
+                icon: '🚨',
+                thresholds: [
+                    { name: 'Open Door', progress: 20 },
+                    { name: 'Secure', progress: 40 },
+                    { name: 'Calm', progress: 60 },
+                    { name: 'Listen', progress: 80 },
+                    { name: 'Safe Haven', progress: 100 }
+                ]
             }
         ];
 
@@ -669,7 +894,7 @@ window.ScenarioDebug = {
         const swiperWrapper = document.createElement('div');
         swiperWrapper.className = 'swiper-wrapper';
         
-        // Create scenario slides
+        // Create scenario slides using the main createScenarioCard logic style
         placeholderScenarios.forEach((scenario, index) => {
             const slide = document.createElement('div');
             slide.className = 'swiper-slide';
@@ -678,23 +903,73 @@ window.ScenarioDebug = {
             card.className = 'scenario-card w-100';
             card.dataset.scenarioId = scenario.id;
             
-            // Add hover effect on mouse events
+            // Build thresholds preview
+            let thresholdsHtml = '';
+            if (scenario.thresholds && scenario.thresholds.length > 0) {
+                const previewThresholds = scenario.thresholds.slice(0, 2);
+                thresholdsHtml = `
+                    <div class="scenario-thresholds-preview">
+                        ${previewThresholds.map(t => `
+                            <div class="threshold-item">
+                                <span class="threshold-dot"></span>
+                                <span class="threshold-name">${escapeHtml(t.name)}</span>
+                            </div>
+                        `).join('')}
+                        ${scenario.thresholds.length > 2 ? `<span class="threshold-more">+${scenario.thresholds.length - 2} more</span>` : ''}
+                    </div>
+                `;
+            }
+            
+            // Build goal section
+            let goalHtml = '';
+            if (scenario.goal) {
+                goalHtml = `
+                    <div class="scenario-goal">
+                        <span class="goal-icon">🎯</span>
+                        <span class="goal-text">${escapeHtml(scenario.goal)}</span>
+                    </div>
+                `;
+            }
+            
+            card.innerHTML = `
+                <div class="scenario-card-badges">
+                    ${scenario.isAlertOriented ? '<span class="scenario-badge-alert">🚨 URGENT</span>' : ''}
+                    ${scenario.isPremiumOnly ? '<span class="scenario-badge-premium">⭐ PREMIUM</span>' : ''}
+                </div>
+                <div class="scenario-card-icon">${escapeHtml(scenario.icon || '📖')}</div>
+                <div class="scenario-card-header">
+                    <h3 class="scenario-title">${escapeHtml(stripEmojiPrefix(scenario.title))}</h3>
+                </div>
+                <p class="scenario-description">${escapeHtml(scenario.description)}</p>
+                ${goalHtml}
+                ${thresholdsHtml}
+                <div class="scenario-tone">
+                    <span class="tone-label">Mood:</span>
+                    <span class="tone-value">${escapeHtml(scenario.emotionalTone || 'Dynamic')}</span>
+                </div>
+                <button class="scenario-select-btn">Start This Adventure</button>
+            `;
+            
+            // Add click event listeners
             card.addEventListener('mouseenter', function() {
                 console.log(`[ScenarioDebug] 🎯 Hovering over: ${scenario.title}`);
             });
+            
+            const selectBtn = card.querySelector('.scenario-select-btn');
+            if (selectBtn) {
+                selectBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    console.log(`[ScenarioDebug] ✅ Selected: ${scenario.title}`);
+                    document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                });
+            }
             
             card.addEventListener('click', function() {
                 console.log(`[ScenarioDebug] ✅ Selected: ${scenario.title}`);
                 document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
             });
-
-            card.innerHTML = `
-                <div class="scenario-card-header">
-                    <h3 class="scenario-title">${scenario.title}</h3>
-                </div>
-                <p class="scenario-description">${scenario.description}</p>
-            `;
             
             slide.appendChild(card);
             swiperWrapper.appendChild(slide);
