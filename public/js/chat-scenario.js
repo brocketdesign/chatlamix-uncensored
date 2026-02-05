@@ -15,12 +15,16 @@ window.ChatScenarioModule = (function() {
     
     /**
      * Helper to remove emoji prefix from title (e.g., "❄️ Lost in Woods" -> "Lost in Woods")
+     * Only removes if the first word looks like an emoji (contains non-ASCII chars)
      * @param {string} title - The title with potential emoji prefix
      * @returns {string} Title without the leading emoji
      */
     function stripEmojiPrefix(title) {
         if (!title) return '';
-        return title.replace(/^[^\s]+\s/, '');
+        // Match emoji characters at the start (Unicode emoji range + variation selectors)
+        // This regex matches common emojis including those with skin tone modifiers
+        const emojiRegex = /^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F000}-\u{1F02F}\u{1F0A0}-\u{1F0FF}]+\s*/u;
+        return title.replace(emojiRegex, '');
     }
     
     /**
@@ -908,7 +912,7 @@ window.ScenarioDebug = {
                         ${previewThresholds.map(t => `
                             <div class="threshold-item">
                                 <span class="threshold-dot"></span>
-                                <span class="threshold-name">${t.name}</span>
+                                <span class="threshold-name">${escapeHtml(t.name)}</span>
                             </div>
                         `).join('')}
                         ${scenario.thresholds.length > 2 ? `<span class="threshold-more">+${scenario.thresholds.length - 2} more</span>` : ''}
@@ -922,7 +926,7 @@ window.ScenarioDebug = {
                 goalHtml = `
                     <div class="scenario-goal">
                         <span class="goal-icon">🎯</span>
-                        <span class="goal-text">${scenario.goal}</span>
+                        <span class="goal-text">${escapeHtml(scenario.goal)}</span>
                     </div>
                 `;
             }
@@ -932,16 +936,16 @@ window.ScenarioDebug = {
                     ${scenario.isAlertOriented ? '<span class="scenario-badge-alert">🚨 URGENT</span>' : ''}
                     ${scenario.isPremiumOnly ? '<span class="scenario-badge-premium">⭐ PREMIUM</span>' : ''}
                 </div>
-                <div class="scenario-card-icon">${scenario.icon || '📖'}</div>
+                <div class="scenario-card-icon">${escapeHtml(scenario.icon || '📖')}</div>
                 <div class="scenario-card-header">
-                    <h3 class="scenario-title">${stripEmojiPrefix(scenario.title)}</h3>
+                    <h3 class="scenario-title">${escapeHtml(stripEmojiPrefix(scenario.title))}</h3>
                 </div>
-                <p class="scenario-description">${scenario.description}</p>
+                <p class="scenario-description">${escapeHtml(scenario.description)}</p>
                 ${goalHtml}
                 ${thresholdsHtml}
                 <div class="scenario-tone">
                     <span class="tone-label">Mood:</span>
-                    <span class="tone-value">${scenario.emotionalTone || 'Dynamic'}</span>
+                    <span class="tone-value">${escapeHtml(scenario.emotionalTone || 'Dynamic')}</span>
                 </div>
                 <button class="scenario-select-btn">Start This Adventure</button>
             `;
