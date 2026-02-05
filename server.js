@@ -14,6 +14,7 @@ const {
 } = require('./models/databasemanagement');
 const { checkUserAdmin, getUserData, updateCounter, fetchTags, generateSeoMetadata } = require('./models/tool');
 const { deleteOldTasks } = require('./models/imagen');
+const { buildImageModelsList } = require('./models/admin-image-test-utils');
 const { 
   cronJobs, 
   configureCronJob, 
@@ -435,6 +436,7 @@ fastify.get('/chat', async (request, reply) => {
   }));
 
   const seoMetadata = generateSeoMetadata(request, `/chat/`, lang);
+  const imageModels = await buildImageModelsList(db);
   
   // Flag to indicate URL should be updated client-side to /chat/
   const shouldUpdateUrl = true;
@@ -450,6 +452,7 @@ fastify.get('/chat', async (request, reply) => {
     userId,
     chatId: undefined,
     userData,
+    imageModels,
     promptData: normalizedPromptData,
     giftData,
     isTemporaryOrGuest: !user || user.isTemporary,
@@ -506,6 +509,7 @@ fastify.get('/chat/:chatId', async (request, reply) => {
   }));
 
   const seoMetadata = generateSeoMetadata(request, `/chat/${chatId}`, lang);
+  const imageModels = await buildImageModelsList(db);
   return reply.view('chat.hbs', {
     title: translations.seo.title,
     canonicalUrl: seoMetadata.canonicalUrl,
@@ -517,6 +521,7 @@ fastify.get('/chat/:chatId', async (request, reply) => {
     userId,
     chatId,
     userData,
+    imageModels,
     promptData: normalizedPromptData,
     giftData,
     isTemporaryOrGuest: !user || user.isTemporary,

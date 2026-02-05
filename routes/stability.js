@@ -17,7 +17,7 @@ async function routes(fastify, options) {
     // Increase body limit to 10MB to handle base64 image uploads
     bodyLimit: 10 * 1024 * 1024
   }, async (request, reply) => {
-    const { title, prompt, aspectRatio, userId, chatId, userChatId, placeholderId, promptId, giftId, customPrompt, image_base64, chatCreation, modelId, regenerate, enableMergeFace, description, editStrength } = request.body;
+    const { title, prompt, aspectRatio, userId, chatId, userChatId, placeholderId, promptId, giftId, customPrompt, image_base64, chatCreation, modelId, regenerate, enableMergeFace, description, editStrength, originalWidth, originalHeight } = request.body;
     let imageType = request.body.imageType
     const db = fastify.mongo.db;
     const translations = request.translations
@@ -133,7 +133,9 @@ async function routes(fastify, options) {
           fastify,
           customPromptId: promptId,
           enableMergeFace: enableMergeFace || false,
-          editStrength: editStrength || 'medium'
+          editStrength: editStrength || 'medium',
+          originalWidth: originalWidth || null,
+          originalHeight: originalHeight || null
       })      
       .then((response) => {
       })

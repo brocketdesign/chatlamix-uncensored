@@ -381,6 +381,11 @@
     }
     </style>
 
+    <script>
+    window.GEN_DASHBOARD_CONFIG = window.GEN_DASHBOARD_CONFIG || {};
+    window.GEN_DASHBOARD_CONFIG.imageModels = {{#if imageModels}}{{{json imageModels}}}{{else}}[]{{/if}};
+    </script>
+
     <script src="https://cdn.jsdelivr.net/npm/blueimp-md5@2.19.0/js/md5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="/js/viewport-height-fix.js"></script>

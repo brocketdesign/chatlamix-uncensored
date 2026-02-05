@@ -271,14 +271,9 @@ async function routes(fastify, options) {
             
             // Add img2img parameters
             if (generationMode === 'img2img' && image_base64) {
-              // For reimagine, use image_file parameter
-              if (modelId === 'reimagine') {
-                baseParams.image_file = image_base64;
-              } else {
-                baseParams.image = image_base64;
-                baseParams.image_base64 = image_base64;
-                baseParams.editStrength = editStrength || 'medium';
-              }
+              baseParams.image = image_base64;
+              baseParams.image_base64 = image_base64;
+              baseParams.editStrength = editStrength || 'medium';
             }
             
             // Add face tool parameters

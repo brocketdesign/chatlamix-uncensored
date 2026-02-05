@@ -1,5 +1,6 @@
 {
     "minImages": 1,
+    "defaultImageRatio": "9:16",
     "videoPrompt": "Generate a short, engaging video with smooth transitions and vibrant colors.",
     "characterTone": "casual",
     "relationshipType": "companion",

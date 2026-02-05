@@ -87,6 +87,24 @@ function getTitleForLang(title, lang = 'en') {
   return title[key] || title.en || title.ja || title.fr || Object.values(title).find(v => !!v) || '';
 }
 
+/**
+ * Convert aspect ratio string to width and height
+ * @param {string} ratio - Aspect ratio like '1:1', '16:9', '9:16', '4:3', '3:4'
+ * @returns {Object} { width, height }
+ */
+function aspectRatioToSize(ratio) {
+  const sizeMap = {
+    '1:1': { width: 1024, height: 1024 },
+    '16:9': { width: 1280, height: 720 },
+    '9:16': { width: 720, height: 1280 },
+    '4:3': { width: 1024, height: 768 },
+    '3:4': { width: 768, height: 1024 },
+    '3:2': { width: 1024, height: 683 },
+    '2:3': { width: 683, height: 1024 }
+  };
+  return sizeMap[ratio] || { width: 1024, height: 1360 }; // Default to portrait
+}
+
 // Simplified generateImg function
 async function generateImg({
     title, 
@@ -110,7 +128,9 @@ async function generateImg({
     customPromptId = null, 
     customGiftId = null, 
     enableMergeFace = false,
-    editStrength = 'medium'
+    editStrength = 'medium',
+    originalWidth = null,
+    originalHeight = null
 }) {
     const db = fastify.mongo.db;
     
@@ -214,19 +234,27 @@ async function generateImg({
     }
 
     // Prepare task based on imageType and model
-    console.log(`\x1b[36m[generateImg] Preparing image generation request for user ${userId} (Type: ${resolvedImageType.toUpperCase()}, BuiltInModel: ${isBuiltInModel})\x1b[0m`);
+    console.log(`\x1b[36m[generateImg] Preparing image generation request for user ${userId} (Type: ${resolvedImageType.toUpperCase()}, BuiltInModel: ${isBuiltInModel}, AspectRatio: ${aspectRatio || 'default'})\x1b[0m`);
     let image_request;
     if (isBuiltInModel) {
         // Built-in model (z-image-turbo, etc.) - use simpler request structure
         const modelConfig = MODEL_CONFIGS[imageModel];
-        const defaultSize = modelConfig?.defaultParams?.size || '1024*1024';
         const sizeFormat = modelConfig?.sizeFormat || '*'; // 'x' for Seedream, '*' for others
+        
+        // Convert aspect ratio to size string for built-in models
+        let size;
+        if (aspectRatio) {
+            const { width, height } = aspectRatioToSize(aspectRatio);
+            size = `${width}${sizeFormat}${height}`;
+        } else {
+            size = modelConfig?.defaultParams?.size || '1024*1024';
+        }
         
         image_request = {
             type: resolvedImageType,
             prompt: prompt.replace(/^\s+/gm, '').trim(),
             negative_prompt: negativePrompt || '',
-            size: defaultSize, // Use model's default size
+            size: size,
             seed: imageSeed || modelConfig?.defaultParams?.seed || -1,
             enable_base64_output: modelConfig?.defaultParams?.enable_base64_output || false,
             blur: false
@@ -261,6 +289,9 @@ async function generateImg({
                 );
             }
         }
+
+        // Get dimensions from aspect ratio if provided, otherwise use defaults
+        const { width: ratioWidth, height: ratioHeight } = aspectRatio ? aspectRatioToSize(aspectRatio) : { width: null, height: null };
         
         if (resolvedImageType === 'sfw') {
           image_request = {
@@ -270,8 +301,8 @@ async function generateImg({
             loras: selectedLoras,
             prompt: (selectedStyle.sfw.prompt ? selectedStyle.sfw.prompt + prompt : prompt).replace(/^\s+/gm, '').trim(),
             negative_prompt: finalNegativePrompt,
-            width: selectedStyle.sfw.width || params.width,
-            height: selectedStyle.sfw.height || params.height,
+            width: ratioWidth || selectedStyle.sfw.width || params.width,
+            height: ratioHeight || selectedStyle.sfw.height || params.height,
             blur: false,
             seed: imageSeed || selectedStyle.sfw.seed,
             steps: regenerate ? params.steps + 10 : params.steps,
@@ -284,8 +315,8 @@ async function generateImg({
             loras: selectedLoras,
             prompt: (selectedStyle.nsfw.prompt ? selectedStyle.nsfw.prompt + prompt : prompt).replace(/^\s+/gm, '').trim(),
             negative_prompt: finalNegativePrompt,
-            width: selectedStyle.nsfw.width || params.width,
-            height: selectedStyle.nsfw.height || params.height,
+            width: ratioWidth || selectedStyle.nsfw.width || params.width,
+            height: ratioHeight || selectedStyle.nsfw.height || params.height,
             blur: !isSubscribed,
             seed: imageSeed || selectedStyle.nsfw.seed,
             steps: regenerate ? params.steps + 10 : params.steps,
@@ -338,7 +369,7 @@ async function generateImg({
         });
         return;
     }
-    let requestData = { ...params, ...image_request, image_num };
+    let requestData = { ...params, ...image_request, image_num, editStrength, originalWidth, originalHeight, aspectRatio };
     
     if(process.env.MODE !== 'production'){
       // Log prompt & negative prompt
@@ -1988,8 +2019,7 @@ async function fetchNovitaMagic(data, hunyuan = false, builtInModelId = null) {
         }
       };
     } else if (builtInModelId && MODEL_CONFIGS[builtInModelId]) {
-      // Built-in model (z-image-turbo, etc.) - use flat request structure
-      // Only include supported parameters from MODEL_CONFIGS
+      // Built-in model (flux-kontext, flux-2, seedream, etc.) - use model-specific request structure
       const modelConfig = MODEL_CONFIGS[builtInModelId];
       const supportedParams = modelConfig.supportedParams || [];
       
@@ -1997,9 +2027,79 @@ async function fetchNovitaMagic(data, hunyuan = false, builtInModelId = null) {
         prompt: data.prompt
       };
       
+      // Handle image data for img2img models - different models require different formats
+      if (data.image_base64) {
+        // FLUX Kontext models: require 'images' as array
+        if (builtInModelId.startsWith('flux-kontext')) {
+          requestBody.data.images = [data.image_base64];
+          // Map editStrength to guidance_scale for Kontext models
+          // Low = subtle (2.0), Medium = default (3.5), High = strong (5.5)
+          if (supportedParams.includes('guidance_scale')) {
+            let guidance = modelConfig.defaultParams?.guidance_scale || 3.5;
+            if (data.editStrength === 'low') guidance = 2.0;
+            else if (data.editStrength === 'high') guidance = 5.5;
+            requestBody.data.guidance_scale = guidance;
+            console.log(`[fetchNovitaMagic] FLUX Kontext editStrength=${data.editStrength} -> guidance_scale=${guidance}`);
+          }
+          // Add num_inference_steps for dev model
+          if (builtInModelId === 'flux-kontext-dev' && data.steps) {
+            requestBody.data.num_inference_steps = data.steps;
+          }
+          // Preserve aspect ratio - use aspect_ratio for Pro/Max, size for Dev
+          if (data.originalWidth && data.originalHeight) {
+            const ratio = data.originalWidth / data.originalHeight;
+            // Map to standard aspect ratios
+            let aspectRatio = '1:1';
+            if (ratio >= 1.7) aspectRatio = '16:9';
+            else if (ratio >= 1.4) aspectRatio = '3:2';
+            else if (ratio >= 1.2) aspectRatio = '4:3';
+            else if (ratio >= 0.9 && ratio <= 1.1) aspectRatio = '1:1';
+            else if (ratio >= 0.7) aspectRatio = '3:4';
+            else if (ratio >= 0.6) aspectRatio = '2:3';
+            else aspectRatio = '9:16';
+            
+            if (supportedParams.includes('aspect_ratio')) {
+              // Pro/Max use aspect_ratio
+              requestBody.data.aspect_ratio = aspectRatio;
+              console.log(`[fetchNovitaMagic] FLUX Kontext aspect_ratio=${aspectRatio} (from ${data.originalWidth}x${data.originalHeight})`);
+            } else if (supportedParams.includes('size')) {
+              // Dev uses size - map aspect ratio to actual dimensions
+              const sizeMap = {
+                '1:1': '1024*1024',
+                '16:9': '1360*768',
+                '9:16': '768*1360',
+                '4:3': '1184*880',
+                '3:4': '880*1184',
+                '3:2': '1248*832',
+                '2:3': '832*1248'
+              };
+              requestBody.data.size = sizeMap[aspectRatio] || '1024*1024';
+              console.log(`[fetchNovitaMagic] FLUX Kontext Dev size=${requestBody.data.size} (from aspect ${aspectRatio})`);
+            }
+          }
+          // Add safety_tolerance for pro/max
+          if (builtInModelId === 'flux-kontext-pro' || builtInModelId === 'flux-kontext-max') {
+            requestBody.data.safety_tolerance = data.safety_tolerance || '5';
+          }
+        }
+        // FLUX 2 models: require 'images' as array
+        else if (builtInModelId === 'flux-2-flex' || builtInModelId === 'flux-2-dev') {
+          requestBody.data.images = [data.image_base64];
+        }
+        // Seedream models: require 'image' as array
+        else if (builtInModelId.startsWith('seedream')) {
+          requestBody.data.image = [data.image_base64];
+        }
+      }
+      
       // Add only supported parameters
       if (supportedParams.includes('size') && data.size) {
-        requestBody.data.size = data.size;
+        // Handle size format conversion for Seedream (uses 'x' instead of '*')
+        if (modelConfig.sizeFormat === 'x') {
+          requestBody.data.size = data.size.replace('*', 'x');
+        } else {
+          requestBody.data.size = data.size;
+        }
       }
       if (supportedParams.includes('seed') && data.seed !== undefined) {
         requestBody.data.seed = data.seed;

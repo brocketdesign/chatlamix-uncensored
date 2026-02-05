@@ -37,6 +37,15 @@
     "imageSettings": "Image Settings",
     "minImagesToSend": "Number of Images per Request",
     "imageSettingsDescription": "Configure the number of images you'll receive per request. Each image costs 10 points and contributes to creating a richer, more immersive conversation experience.",
+    "defaultImageRatio": "Default Image Ratio",
+    "defaultImageRatioDescription": "Choose the default aspect ratio for generated images. This affects the composition and framing of your images.",
+    "imageRatios": {
+        "1:1": "Square (1:1)",
+        "16:9": "Landscape (16:9)",
+        "9:16": "Portrait (9:16)",
+        "4:3": "Standard (4:3)",
+        "3:4": "Portrait (3:4)"
+    },
     "autoMergeFace": "Auto Merge Face",
     "autoMergeFaceDescription": "Maintain consistent character appearance across all generated images using advanced facial recognition technology. This ensures your character's face remains uniform throughout photorealistic image generation.",
     "videoSettings": "Video Generation",

@@ -346,6 +346,14 @@ class ChatToolSettings {
                 this.selectLanguage(langOption);
             }
         });
+
+        // Image ratio selection - Use event delegation for ratio options
+        document.addEventListener('click', (e) => {
+            const ratioOption = e.target.closest('.ratio-option');
+            if (ratioOption && ratioOption.closest('#image-ratio-grid')) {
+                this.selectImageRatio(ratioOption);
+            }
+        });
     }
 
     selectLanguage(option) {
@@ -368,6 +376,23 @@ class ChatToolSettings {
         if (typeof window.clearNsfwUpsellTranslationCache === 'function') {
             window.clearNsfwUpsellTranslationCache();
         }
+    }
+
+    selectImageRatio(option) {
+        const ratio = option.dataset.ratio;
+        if (!ratio) return;
+
+        // Update selection UI
+        document.querySelectorAll('#image-ratio-grid .ratio-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        option.classList.add('selected');
+
+        // Update settings
+        this.settings.defaultImageRatio = ratio;
+        
+        // Save to localStorage for immediate access
+        localStorage.setItem('defaultImageRatio', ratio);
     }
 
     toggleSpeechButton() {
@@ -1548,6 +1573,14 @@ class ChatToolSettings {
             }
         }
 
+        // Update image ratio selection
+        const selectedRatio = this.settings.defaultImageRatio || '9:16';
+        document.querySelectorAll('#image-ratio-grid .ratio-option').forEach(opt => {
+            opt.classList.toggle('selected', opt.dataset.ratio === selectedRatio);
+        });
+        // Sync to localStorage for immediate access
+        localStorage.setItem('defaultImageRatio', selectedRatio);
+
         // Update premium indicators
         this.setupPremiumIndicators(subscriptionStatus);
     }
@@ -1689,6 +1722,10 @@ class ChatToolSettings {
     
     getPreferredChatLanguage() {
         return this.settings.preferredChatLanguage || '';
+    }
+
+    getDefaultImageRatio() {
+        return this.settings.defaultImageRatio || '9:16';
     }
 
     // Chat-specific methods

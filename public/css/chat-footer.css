@@ -589,6 +589,111 @@
     display: flex;
 }
 
+/* Image Ratio Options */
+.settings-ratio-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+.ratio-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(130, 64, 255, 0.2);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-height: 90px;
+}
+
+.ratio-option:hover {
+    border-color: #8240FF;
+    background: rgba(130, 64, 255, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(130, 64, 255, 0.2);
+}
+
+.ratio-option.selected {
+    background: linear-gradient(135deg, #6E20F4 0%, #8B4CF8 100%);
+    border-color: #6E20F4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(110, 32, 244, 0.25);
+}
+
+.ratio-option .ratio-preview {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ratio-option.selected .ratio-preview {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.ratio-preview.ratio-1-1 {
+    width: 40px;
+    height: 40px;
+}
+
+.ratio-preview.ratio-16-9 {
+    width: 48px;
+    height: 27px;
+}
+
+.ratio-preview.ratio-9-16 {
+    width: 27px;
+    height: 48px;
+}
+
+.ratio-preview.ratio-4-3 {
+    width: 40px;
+    height: 30px;
+}
+
+.ratio-preview.ratio-3-4 {
+    width: 30px;
+    height: 40px;
+}
+
+.ratio-option .ratio-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    text-align: center;
+}
+
+.ratio-option.selected .ratio-label {
+    color: white;
+}
+
+.ratio-option .check-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    background: #10B981;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.ratio-option.selected .check-badge {
+    display: flex;
+}
+
 /* Border adjustments for better visibility */
 #settingsModal .settings-section-header,
 .settings-modal .settings-section-header {

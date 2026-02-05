@@ -26,11 +26,21 @@ window.novitaImageGeneration = async function(userId, chatId, userChatId, option
         activeGenerations++;
         const getValue = (selector, defaultValue = '') => $(selector).val() || defaultValue;
 
+        // Get default image ratio from settings or localStorage
+        const getDefaultRatio = () => {
+            // Try to get from chatToolSettings instance first
+            if (window.chatToolSettings && typeof window.chatToolSettings.getDefaultImageRatio === 'function') {
+                return window.chatToolSettings.getDefaultImageRatio();
+            }
+            // Fallback to localStorage
+            return localStorage.getItem('defaultImageRatio') || '9:16';
+        };
+
         const {
             negativePrompt = getValue('#negativePrompt-input'),
             title = option.title || getValue('#title-input', null),
             prompt = (option.prompt || getValue('#prompt-input')).replace(/^\s+/gm, '').trim(),
-            aspectRatio = '9:16',
+            aspectRatio = option.aspectRatio || getDefaultRatio(),
             baseFace = null,
             file = null,
             imageType = option.imageType || 'sfw',

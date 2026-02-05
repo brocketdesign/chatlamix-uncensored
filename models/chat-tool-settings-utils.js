@@ -242,6 +242,23 @@ async function getUserMinImages(db, userId, chatId = null) {
 }
 
 /**
+ * Get default image ratio setting
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userId - User ID
+ * @param {string} chatId - Optional chat ID
+ * @returns {string} Default image ratio (e.g., '1:1', '9:16', '16:9')
+ */
+async function getDefaultImageRatio(db, userId, chatId = null) {
+    try {
+        const settings = await getUserChatToolSettings(db, userId, chatId);
+        return settings.defaultImageRatio || DEFAULT_CHAT_SETTINGS.defaultImageRatio || '9:16';
+    } catch (error) {
+        console.error('[getDefaultImageRatio] Error getting default image ratio:', error);
+        return DEFAULT_CHAT_SETTINGS.defaultImageRatio || '9:16';
+    }
+}
+
+/**
  * Get auto merge face setting
  * @param {Object} db - MongoDB database instance
  * @param {string} userId - User ID
@@ -445,6 +462,7 @@ module.exports = {
     getUserVideoPrompt,
     getVoiceSettings,
     getUserMinImages,
+    getDefaultImageRatio,
     getAutoMergeFaceSetting,
     getUserSelectedModel,
     getUserPremiumStatus,

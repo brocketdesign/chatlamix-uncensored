@@ -36,6 +36,51 @@ function isNSFWPrompt(prompt) {
 }
 
 /**
+ * Build image model list for selection UIs (dashboard/chat).
+ * Includes system models plus active SD models from DB.
+ * @param {import('mongodb').Db} db
+ * @returns {Promise<Array>} image models list
+ */
+async function buildImageModelsList(db) {
+  const activeSDModels = await db.collection('myModels').find({}).toArray();
+  const sdModelsForSelection = activeSDModels.map(model => ({
+    id: `sd-txt2img-${model.modelId}`,
+    modelId: model.modelId,
+    name: model.name || model.model,
+    sdName: model.model,
+    description: `Stable Diffusion ${model.style || ''} model`,
+    async: true,
+    category: 'txt2img',
+    isSDModel: true,
+    requiresModel: true,
+    modelName: model.model,
+    style: model.style,
+    baseModel: model.base_model || 'SD 1.5',
+    supportedParams: MODEL_CONFIGS['sd-txt2img'].supportedParams,
+    defaultParams: MODEL_CONFIGS['sd-txt2img'].defaultParams
+  }));
+
+  return [
+    ...Object.entries(MODEL_CONFIGS)
+      .filter(([id, config]) => !config.requiresModel)
+      .map(([id, config]) => ({
+        id,
+        name: config.name,
+        description: config.description || '',
+        async: config.async || false,
+        category: config.category || 'txt2img',
+        supportsImg2Img: config.supportsImg2Img || false,
+        requiresImage: config.requiresImage || false,
+        requiresTwoImages: config.requiresTwoImages || false,
+        supportedParams: config.supportedParams || [],
+        defaultParams: config.defaultParams || {},
+        sizeFormat: config.sizeFormat || '*'
+      })),
+    ...sdModelsForSelection
+  ];
+}
+
+/**
  * Get webhook URL for Novita tasks
  */
 function getWebhookUrl() {
@@ -181,27 +226,7 @@ const MODEL_CONFIGS = {
     supportedParams: ['prompt', 'images', 'seed', 'guidance_scale', 'aspect_ratio', 'safety_tolerance'],
     description: 'FLUX.1 Kontext Max for maximum quality image editing'
   },
-  'sd-img2img': {
-    name: 'SD Image to Image',
-    endpoint: 'https://api.novita.ai/v3/async/img2img',
-    async: true,
-    category: 'img2img',
-    supportsImg2Img: true,
-    requiresImage: true,
-    defaultParams: {
-      width: 1024,
-      height: 1024,
-      image_num: 1,
-      steps: 30,
-      guidance_scale: 7.5,
-      sampler_name: 'Euler a',
-      seed: -1,
-      strength: 0.75
-    },
-    supportedParams: ['model_name', 'prompt', 'negative_prompt', 'image_base64', 'width', 'height', 'image_num', 'steps', 'guidance_scale', 'sampler_name', 'seed', 'strength', 'loras', 'sd_vae'],
-    requiresModel: true, // This model requires a model_name from active models
-    description: 'Stable Diffusion image-to-image editing with custom models'
-  },
+
   'sd-txt2img': {
     name: 'SD Text to Image',
     endpoint: 'https://api.novita.ai/v3/async/txt2img',
@@ -220,17 +245,7 @@ const MODEL_CONFIGS = {
     requiresModel: true, // This model requires a model_name from active models
     description: 'Stable Diffusion text-to-image with custom models'
   },
-  'reimagine': {
-    name: 'Reimagine',
-    endpoint: 'https://api.novita.ai/v3/reimagine',
-    async: false, // Synchronous API per Novita docs
-    category: 'img2img', // Image-to-image category - generates variations of a single image
-    supportsImg2Img: true,
-    requiresImage: true,
-    defaultParams: {},
-    supportedParams: ['image_file', 'extra'],
-    description: 'Generate creative variations of a single image without prompts'
-  },
+
   'qwen-image-2512': {
     name: 'Qwen Image 2512',
     endpoint: 'https://api.segmind.com/v1/qwen-image-2512',
@@ -280,12 +295,11 @@ const MODEL_CONFIGS = {
  * - z-image-turbo: No image_num or images parameter
  * - seedream-4.0, seedream-4.5: Use sequential_image_generation: 'disabled'
  * - qwen-image-2512: No batch parameters
- * - reimagine: No batch parameters
  * 
  * Known models WITH batch support:
  * - flux-2-flex, flux-2-dev: Support 'images' parameter
  * - flux-kontext-*: Support 'images' parameter
- * - sd-img2img, sd-txt2img: Support 'image_num' parameter
+ * - sd-txt2img: Support 'image_num' parameter
  * 
  * @param {string} modelId - The model identifier from MODEL_CONFIGS
  * @returns {boolean} - True if model supports batch generation, false if requires sequential.
@@ -415,64 +429,7 @@ async function initializeModelTest(modelId, params) {
       if (params.sd_vae) requestBody.request.sd_vae = params.sd_vae;
       if (params.loras && Array.isArray(params.loras)) requestBody.request.loras = params.loras;
     }
-    // Handle SD img2img
-    else if (modelId === 'sd-img2img') {
-      if (!params.model_name) {
-        throw new Error('SD img2img requires a model_name parameter');
-      }
-      if (!params.image_base64) {
-        throw new Error('SD img2img requires an image_base64 parameter');
-      }
-      
-      // Parse size from string format (e.g., "1024*1024") to width/height
-      const size = params.size || '1024*1024';
-      const [width, height] = size.split('*').map(Number);
-      
-      // Map editStrength to strength value
-      let strength = params.strength || config.defaultParams.strength;
-      if (params.editStrength) {
-        if (params.editStrength === 'low') strength = 0.3;
-        else if (params.editStrength === 'medium') strength = 0.6;
-        else if (params.editStrength === 'high') strength = 0.85;
-      }
-      
-      requestBody = {
-        extra: {
-          response_image_type: 'jpeg',
-          enable_nsfw_detection: false,
-          ...(webhookUrl ? { webhook: { url: webhookUrl } } : {})
-        },
-        request: {
-          model_name: params.model_name,
-          prompt: params.prompt,
-          negative_prompt: params.negative_prompt || '',
-          image_base64: params.image_base64,
-          width: width || config.defaultParams.width,
-          height: height || config.defaultParams.height,
-          image_num: params.image_num || config.defaultParams.image_num,
-          steps: params.steps || config.defaultParams.steps,
-          guidance_scale: params.guidance_scale || config.defaultParams.guidance_scale,
-          sampler_name: params.sampler_name || config.defaultParams.sampler_name,
-          seed: params.seed !== undefined ? params.seed : config.defaultParams.seed,
-          strength: strength
-        }
-      };
-      
-      // Add optional params if provided
-      if (params.sd_vae) requestBody.request.sd_vae = params.sd_vae;
-      if (params.loras && Array.isArray(params.loras)) requestBody.request.loras = params.loras;
-    }
-    // Handle Reimagine (requires only image, no prompt) - Synchronous API
-    else if (modelId === 'reimagine') {
-      requestBody = {
-        image_file: params.image_file || params.image || params.image_base64
-      };
-      
-      // Add extra params for response image type
-      requestBody.extra = {
-        response_image_type: 'png'
-      };
-    }
+
     // Handle Qwen Image 2512 (Segmind text-to-image)
     else if (modelId === 'qwen-image-2512') {
       requestBody = {
@@ -766,21 +723,6 @@ async function initializeModelTest(modelId, params) {
           console.log(`[AdminImageTest] ✅ ${config.name} image processed (${imageBuffer.length} bytes)`);
         } else {
           console.log(`[AdminImageTest] ⚠️ No image data in ${config.name} response`);
-        }
-      }
-      // Novita Reimagine returns image_file (raw base64) and image_type
-      else if (modelId === 'reimagine') {
-        console.log(`[AdminImageTest] 🔍 Reimagine response keys:`, Object.keys(response.data));
-        if (response.data.image_file) {
-          // Convert raw base64 to data URL format
-          const imageType = response.data.image_type || 'png';
-          const base64Length = response.data.image_file.length;
-          console.log(`[AdminImageTest] ✅ Found image_file (${base64Length} chars), type: ${imageType}`);
-          const dataUrl = `data:image/${imageType};base64,${response.data.image_file}`;
-          images = [dataUrl];
-          console.log(`[AdminImageTest] 📦 Created data URL (${dataUrl.length} chars)`);
-        } else {
-          console.log(`[AdminImageTest] ⚠️ No image_file found in reimagine response`);
         }
       }
       // Seedream returns images array
@@ -1457,6 +1399,7 @@ async function updateModelRatingStats(db, modelId) {
 }
 
 module.exports = {
+  buildImageModelsList,
   MODEL_CONFIGS,
   SIZE_OPTIONS,
   STYLE_PRESETS,

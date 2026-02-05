@@ -561,6 +561,43 @@
                         <div class="settings-range-value fw-bold" id="min-images-value">3</div>
                     </div>
                 </div>
+
+                <!-- Default Image Ratio -->
+                <div class="settings-field">
+                    <label class="settings-label fw-semibold">
+                        {{chatToolSettingsTranslations.defaultImageRatio}}
+                    </label>
+                    <div class="settings-description text-muted mb-3">
+                        {{chatToolSettingsTranslations.defaultImageRatioDescription}}
+                    </div>
+                    <div class="settings-ratio-grid row" id="image-ratio-grid">
+                        <div class="ratio-option col-4" data-ratio="1:1">
+                            <div class="ratio-preview ratio-1-1"></div>
+                            <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[1:1]}}</span>
+                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                        </div>
+                        <div class="ratio-option col-4" data-ratio="16:9">
+                            <div class="ratio-preview ratio-16-9"></div>
+                            <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[16:9]}}</span>
+                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                        </div>
+                        <div class="ratio-option col-4" data-ratio="9:16">
+                            <div class="ratio-preview ratio-9-16"></div>
+                            <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[9:16]}}</span>
+                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                        </div>
+                        <div class="ratio-option col-4" data-ratio="4:3">
+                            <div class="ratio-preview ratio-4-3"></div>
+                            <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[4:3]}}</span>
+                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                        </div>
+                        <div class="ratio-option col-4" data-ratio="3:4">
+                            <div class="ratio-preview ratio-3-4"></div>
+                            <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[3:4]}}</span>
+                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                        </div>
+                    </div>
+                </div>
                 
                 <!-- Auto Merge Face Switch -->
                 <div class="settings-field">

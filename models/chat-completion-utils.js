@@ -342,7 +342,9 @@ async function handleImageGeneration(db, currentUserMessage, lastUserMessage, ge
                     const prompt = promptResponse.replace(/(\r\n|\n|\r)/gm, " ").trim();
                     processPromptToTags(db, prompt);
                     
-                    const aspectRatio = null;
+                    // Get aspect ratio from user settings
+                    const userSettings = await getUserChatToolSettings(db, userId, chatId);
+                    const aspectRatio = userSettings.defaultImageRatio || '9:16';
                     
                     // Use the same generateImg pattern but with auto-generation metadata
                     const result = await generateImg({
