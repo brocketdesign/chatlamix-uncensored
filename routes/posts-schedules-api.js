@@ -364,7 +364,16 @@ Return ONLY the caption text with hashtags, nothing else.`;
         return reply.code(403).send({ error: 'Not authorized' });
       }
 
-      await updatePost(postId, request.body, db);
+      const { status, ...updates } = request.body || {};
+
+      if (status !== undefined) {
+        if (!Object.values(POST_STATUSES).includes(status)) {
+          return reply.code(400).send({ error: 'Invalid status' });
+        }
+        await updatePostStatus(postId, status, db);
+      }
+
+      await updatePost(postId, updates, db);
 
       return reply.send({
         success: true,

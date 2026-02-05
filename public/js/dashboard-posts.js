@@ -781,11 +781,16 @@ class PostsDashboard {
       }
 
       // Update post status to published
-      await fetch(`/api/posts/${postId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'published' })
+      const publishResponse = await fetch(`/api/posts/${postId}/publish`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
       });
+
+      const publishData = await publishResponse.json();
+
+      if (!publishData.success) {
+        throw new Error(publishData.error || 'Failed to publish post');
+      }
 
       this.showNotification('Post published to your profile!', 'success');
       this.scheduleModal?.hide();
