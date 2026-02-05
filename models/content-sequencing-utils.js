@@ -67,17 +67,17 @@ const DIVERSITY_CONFIG = {
  * Calculate time-based decay multiplier
  * Content seen longer ago has less penalty
  */
-function getDecayMultiplier(lastSeenTimestamp) {
+function getDecayMultiplier(lastSeenTimestamp, timeConstants = TIME_CONSTANTS) {
   if (!lastSeenTimestamp) return 1.0;
   
   const now = Date.now();
   const timeSince = now - lastSeenTimestamp;
   
-  if (timeSince < TIME_CONSTANTS.RECENTLY_SEEN) {
+  if (timeSince < timeConstants.RECENTLY_SEEN) {
     return WEIGHTS.RECENTLY_SEEN; // Heavy penalty
-  } else if (timeSince < TIME_CONSTANTS.SHORT_TERM) {
+  } else if (timeSince < timeConstants.SHORT_TERM) {
     return WEIGHTS.SHORT_TERM_SEEN; // Medium penalty
-  } else if (timeSince < TIME_CONSTANTS.MEDIUM_TERM) {
+  } else if (timeSince < timeConstants.MEDIUM_TERM) {
     return 0.8; // Light penalty
   }
   
@@ -123,7 +123,7 @@ function getTagRelevanceScore(characterTags, userPreferredTags) {
 /**
  * Calculate weighted score for a character
  */
-function calculateCharacterScore(character, userState) {
+function calculateCharacterScore(character, userState, timeConstants = TIME_CONSTANTS) {
   const {
     seenCharacters = {},
     preferredTags = [],
@@ -134,7 +134,7 @@ function calculateCharacterScore(character, userState) {
   // 1. Apply time-based decay for seen characters
   const lastSeen = seenCharacters[character.chatId?.toString()];
   if (lastSeen) {
-    score *= getDecayMultiplier(lastSeen);
+    score *= getDecayMultiplier(lastSeen, timeConstants);
   }
   
   // 2. Apply freshness boost
@@ -313,11 +313,12 @@ async function sequenceCharacters(characters, userState, options = {}) {
     excludeRecent = true,
     useDiversity = true,
     userPreferences = null,
+    timeConstants = TIME_CONSTANTS,
   } = options;
   
   // Score each character
   const scoredCharacters = characters.map(character => {
-    let score = calculateCharacterScore(character, userState);
+    let score = calculateCharacterScore(character, userState, timeConstants);
     
     // Apply user preference boost from nightly analysis
     if (userPreferences) {
@@ -330,7 +331,7 @@ async function sequenceCharacters(characters, userState, options = {}) {
   // Filter out very recently seen if requested
   let filteredCharacters = scoredCharacters;
   if (excludeRecent && userState?.seenCharacters) {
-    const recentThreshold = Date.now() - TIME_CONSTANTS.RECENTLY_SEEN;
+    const recentThreshold = Date.now() - timeConstants.RECENTLY_SEEN;
     filteredCharacters = scoredCharacters.filter(({ character }) => {
       const lastSeen = userState.seenCharacters[character.chatId?.toString()];
       return !lastSeen || lastSeen < recentThreshold;
@@ -339,7 +340,16 @@ async function sequenceCharacters(characters, userState, options = {}) {
   
   // If we filtered too much, include some recent ones with low scores
   if (filteredCharacters.length < limit && filteredCharacters.length < scoredCharacters.length) {
-    filteredCharacters = scoredCharacters;
+    const filteredSet = new Set(filteredCharacters.map(c => c.character.chatId?.toString()));
+    const remaining = scoredCharacters
+      .filter(c => !filteredSet.has(c.character.chatId?.toString()))
+      .sort((a, b) => {
+        const lastSeenA = userState?.seenCharacters?.[a.character.chatId?.toString()] || 0;
+        const lastSeenB = userState?.seenCharacters?.[b.character.chatId?.toString()] || 0;
+        return lastSeenA - lastSeenB; // older first
+      });
+    const needed = limit - filteredCharacters.length;
+    filteredCharacters = filteredCharacters.concat(remaining.slice(0, needed));
   }
   
   // Select characters using diversity-aware selection or simple weighted selection
@@ -378,7 +388,7 @@ function parseUserState(storageData) {
 /**
  * Update user's seen state
  */
-function updateSeenState(userState, characterId, imageIds = []) {
+function updateSeenState(userState, characterId, imageIds = [], timeConstants = TIME_CONSTANTS) {
   const state = userState || {};
   const now = Date.now();
   
@@ -406,7 +416,7 @@ function updateSeenState(userState, characterId, imageIds = []) {
   }
   
   // Clean up old seen data (remove entries older than MEDIUM_TERM)
-  const cleanupThreshold = now - TIME_CONSTANTS.MEDIUM_TERM;
+  const cleanupThreshold = now - timeConstants.MEDIUM_TERM;
   Object.keys(state.seenCharacters).forEach(charId => {
     if (state.seenCharacters[charId] < cleanupThreshold) {
       delete state.seenCharacters[charId];

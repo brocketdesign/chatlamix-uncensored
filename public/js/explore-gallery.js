@@ -30,8 +30,21 @@ class ExploreGallery {
         this.isLoading = false;
         this.hasMore = true;
         this.page = 1;
-        this.limit = 15;
+        this.limit = 6; // Smooth infinite feel while keeping memory in check
         this.query = window.initialQuery || '';
+
+        // Memory safety: cap number of character slides kept in DOM
+        this.maxCharactersInDom = 10; // Slightly larger window for smoother scrolling
+        this.pruneBuffer = 2; // keep this many slides behind current
+
+        // Load throttling and prefetch tuning
+        this.lastLoadTime = 0;
+        this.loadCooldownMs = 500;
+        this.prefetchThreshold = 3;
+
+        // Tracking for image upgrades / pruning
+        this.lastCharacterIndex = 0;
+        this.pruneTimer = null;
         
         // Read showNSFW from sessionStorage first (user's current session preference),
         // then localStorage (persisted preference), then window.showNSFW (server default)
@@ -63,6 +76,9 @@ class ExploreGallery {
         
         // Debounce timer for search
         this.searchDebounce = null;
+
+        // Internal guard for pruning logic
+        this.isPruning = false;
         
         this.init();
     }
@@ -370,8 +386,16 @@ class ExploreGallery {
     async loadCharacters() {
         if (this.isLoading || !this.hasMore) return;
 
+        const now = Date.now();
+        if (this.characters.length > 0 && (now - this.lastLoadTime) < this.loadCooldownMs) {
+            return;
+        }
+        this.lastLoadTime = now;
+
         this.isLoading = true;
-        this.showLoading();
+        if (this.characters.length === 0) {
+            this.showLoading();
+        }
 
         try {
             const params = new URLSearchParams({
@@ -396,6 +420,12 @@ class ExploreGallery {
                 const newCharacters = this.processCharacters(data.characters);
                 this.characters.push(...newCharacters);
                 this.renderCharacterSlides(newCharacters);
+
+                // Track served characters to avoid immediate repeats on refresh/page load
+                if (window.ContentDiscovery?.trackCharactersServed) {
+                    const servedIds = newCharacters.map(c => c.chatId).filter(Boolean);
+                    window.ContentDiscovery.trackCharactersServed(servedIds);
+                }
 
                 this.page++;
 
@@ -431,9 +461,11 @@ class ExploreGallery {
     processCharacters(characters) {
         // Don't filter out NSFW images - just pass them through
         // Blurring is handled in createCharacterSlide and updateImageBlurStates
+        // CRITICAL: Limit images per character to prevent mobile memory crashes
+        const MAX_IMAGES_PER_CHARACTER = 3;
         return characters.map(char => ({
             ...char,
-            images: char.images || []
+            images: (char.images || []).slice(0, MAX_IMAGES_PER_CHARACTER)
         })).filter(char => char.images.length > 0);
     }
     
@@ -452,6 +484,9 @@ class ExploreGallery {
 
         // Initialize or update horizontal swipers for newly added slides
         this.initHorizontalSwipers();
+
+        // Prune offscreen slides to prevent memory pressure on mobile
+        this.schedulePrune();
     }
     
     createCharacterSlide(character) {
@@ -461,25 +496,28 @@ class ExploreGallery {
         slide.dataset.currentImageId = character.images[0]?._id || character.images[0]?.imageUrl || '';
         
         const imagesHtml = character.images.map((img, idx) => {
-            // Use imageUrl as primary source, fallback to thumbnailUrl, then placeholder
-            const imageUrl = img.imageUrl || img.thumbnailUrl || '/img/placeholder.png';
+            // Use thumbnail for initial display to reduce memory (full image available via data-full)
             const thumbUrl = img.thumbnailUrl || img.imageUrl || '/img/placeholder.png';
+            const fullUrl = img.imageUrl || img.thumbnailUrl || '/img/placeholder.png';
             // Check if image is NSFW using helper (handles boolean, 'true', 'on', etc.)
             const isNsfwImage = ExploreGallery.isNsfwValue(img.nsfw);
             const shouldBlur = isNsfwImage && !this.showNSFW;
             // data-sfw is the inverse of isNsfwImage
             const isSfw = !isNsfwImage;
 
-            // All images use the full imageUrl for display
+            // Use placeholder for deferred loading - actual images loaded when slide becomes visible
+            const usePlaceholder = idx > 0; // Only first image loads immediately
             return `
                 <div class="swiper-slide" data-image-id="${img._id || img.imageUrl}" data-image-model="${img.imageModelId || ''}">
                     <div class="explore-image-card ${isNsfwImage ? 'nsfw-content' : ''} ${shouldBlur ? 'nsfw-blurred' : ''}">
                         <img 
-                            src="${imageUrl}" 
+                            src="${usePlaceholder ? '/img/placeholder.png' : thumbUrl}" 
+                            data-src="${thumbUrl}"
+                            data-full="${fullUrl}"
                             alt="${this.escapeHtml(character.chatName)}"
-                            class="explore-image"
+                            class="explore-image${usePlaceholder ? ' deferred-image' : ''}"
                             data-sfw="${isSfw}"
-                            loading="${idx < 2 ? 'eager' : 'lazy'}"
+                            loading="lazy"
                             onerror="this.onerror=null; this.src='/img/placeholder.png';"
                         >
                         ${shouldBlur ? this.createNSFWOverlay() : ''}
@@ -656,12 +694,17 @@ class ExploreGallery {
                 onlyInViewport: true
             },
             touchEventsTarget: 'container',
-            threshold: 20,
-            resistanceRatio: 0.85,
+            threshold: 5,
+            resistanceRatio: 0.9,
+            touchRatio: 1,
+            longSwipesRatio: 0.2,
+            longSwipesMs: 150,
+            shortSwipes: true,
+            touchReleaseOnEdges: true,
             speed: 400,
             effect: 'slide',
             on: {
-                slideChange: () => this.onCharacterChange(),
+                slideChangeTransitionEnd: () => this.onCharacterChange(),
                 reachEnd: () => this.onReachEnd()
             }
         });
@@ -674,14 +717,29 @@ class ExploreGallery {
             this.quickActions.style.display = 'flex';
             this.updateCurrentCharacter();
         }
+
+        // Ensure the first visible image is upgraded to full resolution
+        this.loadDeferredImagesForActiveCharacter();
+        this.promoteActiveImageToFullRes();
     }
     
     initHorizontalSwipers() {
-        const horizontalContainers = document.querySelectorAll('.character-images-swiper');
+        // Only initialize swipers for current and adjacent slides to save memory
+        const currentIndex = this.verticalSwiper?.activeIndex || 0;
+        const indicesToInit = [currentIndex - 1, currentIndex, currentIndex + 1].filter(i => i >= 0);
         
-        horizontalContainers.forEach(container => {
+        indicesToInit.forEach(slideIndex => {
+            const slide = this.verticalSwiper?.slides?.[slideIndex];
+            if (!slide) return;
+            
+            const container = slide.querySelector('.character-images-swiper');
+            if (!container) return;
+            
             const charId = container.dataset.characterId;
             if (this.horizontalSwipers.has(charId)) return;
+            
+            // Load deferred images for this slide
+            this.loadDeferredImages(container);
             
             const swiper = new Swiper(container, {
                 direction: 'horizontal',
@@ -692,24 +750,101 @@ class ExploreGallery {
                 threshold: 20,
                 resistanceRatio: 0.85,
                 speed: 300,
-                observer: true,
-                observeParents: true,
-                watchSlidesProgress: true,
+                lazy: true,
                 on: {
                     slideChange: (s) => this.onImageChange(charId, s.activeIndex)
                 }
             });
-            
-            // Force an update in case slides were added dynamically
-            swiper.update();
             
             this.horizontalSwipers.set(charId, swiper);
             
             // Update heart button state for the first image
             this.updateHeartButtonForImage(container, 0);
             
-            // Setup double-tap to like on images
-            this.setupDoubleTapLike(container);
+            // Setup double-tap to like on images (only once)
+            if (!container.dataset.doubleTapInit) {
+                this.setupDoubleTapLike(container);
+                container.dataset.doubleTapInit = 'true';
+            }
+        });
+    }
+    
+    /**
+     * Load deferred images for a container
+     */
+    loadDeferredImages(container) {
+        const deferredImages = container.querySelectorAll('img.deferred-image');
+        deferredImages.forEach(img => {
+            if (img.dataset.src && img.src.includes('placeholder')) {
+                img.src = img.dataset.src;
+                img.classList.remove('deferred-image');
+            }
+        });
+    }
+
+    /**
+     * Load deferred thumbnails for the active character slide
+     */
+    loadDeferredImagesForActiveCharacter() {
+        const slide = this.verticalSwiper?.slides?.[this.verticalSwiper.activeIndex];
+        const container = slide?.querySelector('.character-images-swiper');
+        if (container) {
+            this.loadDeferredImages(container);
+        }
+    }
+
+    /**
+     * Promote the active image to full resolution
+     */
+    promoteActiveImageToFullRes() {
+        const slide = this.verticalSwiper?.slides?.[this.verticalSwiper.activeIndex];
+        if (!slide) return;
+
+        const activeIndex = this.getActiveImageIndexForSlide(slide);
+        this.promoteImageToFullRes(slide, activeIndex);
+        this.demoteInactiveImages(slide, activeIndex);
+    }
+
+    getActiveImageIndexForSlide(slide) {
+        const charId = slide?.dataset?.characterId;
+        if (!charId) return 0;
+        const swiper = this.horizontalSwipers.get(charId);
+        return swiper ? swiper.activeIndex : 0;
+    }
+
+    promoteImageToFullRes(slide, imageIndex) {
+        if (!slide) return;
+        const imageSlides = Array.from(slide.querySelectorAll('.character-images-swiper .swiper-slide'));
+        const imageSlide = imageSlides[imageIndex];
+        const img = imageSlide?.querySelector('img.explore-image');
+        if (!img || !img.dataset.full) return;
+
+        if (img.src !== img.dataset.full) {
+            img.src = img.dataset.full;
+            img.dataset.fullLoaded = 'true';
+        }
+    }
+
+    demoteInactiveImages(slide, activeIndex) {
+        if (!slide) return;
+        const images = Array.from(slide.querySelectorAll('img.explore-image'));
+        images.forEach((img, idx) => {
+            if (idx === activeIndex) return;
+            if (img.dataset.fullLoaded === 'true' && img.dataset.src) {
+                img.src = img.dataset.src;
+                delete img.dataset.fullLoaded;
+            }
+        });
+    }
+
+    demoteFullResForSlide(slide) {
+        if (!slide) return;
+        const images = Array.from(slide.querySelectorAll('img.explore-image'));
+        images.forEach(img => {
+            if (img.dataset.fullLoaded === 'true' && img.dataset.src) {
+                img.src = img.dataset.src;
+                delete img.dataset.fullLoaded;
+            }
         });
     }
     
@@ -933,7 +1068,15 @@ class ExploreGallery {
     }
     
     onCharacterChange() {
+        const previousIndex = this.currentCharacterIndex;
         this.currentCharacterIndex = this.verticalSwiper.activeIndex;
+
+        // Demote previous slide's full-res images back to thumbnails to reduce memory
+        if (previousIndex !== this.currentCharacterIndex) {
+            const prevSlide = this.verticalSwiper.slides[previousIndex];
+            this.demoteFullResForSlide(prevSlide);
+        }
+
         this.updateCurrentCharacter();
 
         // Track character view
@@ -942,15 +1085,103 @@ class ExploreGallery {
         // Initialize horizontal swiper for new slides
         this.initHorizontalSwipers();
 
+        // Load deferred thumbnails for active slide and upgrade active image to full res
+        this.loadDeferredImagesForActiveCharacter();
+        this.promoteActiveImageToFullRes();
+
         // Preload next characters
         this.preloadNextCharacters();
 
         // Load more characters when approaching the end (5 characters before the end)
         const remainingCharacters = this.characters.length - this.currentCharacterIndex;
-        if (remainingCharacters <= 5 && this.hasMore && !this.isLoading) {
+        if (remainingCharacters <= this.prefetchThreshold && this.hasMore && !this.isLoading) {
             console.log('[ExploreGallery] Approaching end, preloading more characters...');
             this.loadCharacters();
         }
+
+        // Prune offscreen slides to prevent DOM/image bloat on mobile
+        this.schedulePrune();
+    }
+
+    schedulePrune() {
+        if (this.pruneTimer) {
+            clearTimeout(this.pruneTimer);
+        }
+        this.pruneTimer = setTimeout(() => {
+            if (!this.verticalSwiper || this.verticalSwiper.destroyed) return;
+            if (this.verticalSwiper.animating) {
+                this.schedulePrune();
+                return;
+            }
+            this.pruneSlides();
+        }, 200);
+    }
+
+    /**
+     * Prune far-off slides to avoid mobile browser crashes due to memory pressure.
+     * Keeps a sliding window of slides around the current index.
+     */
+    pruneSlides() {
+        if (this.isPruning || !this.verticalSwiper) return;
+        if (this.verticalSwiper.animating) return;
+
+        const totalSlides = this.verticalSwiper.slides.length;
+        if (totalSlides <= this.maxCharactersInDom) return;
+
+        this.isPruning = true;
+
+        const currentIndex = this.verticalSwiper.activeIndex;
+        const keepStart = Math.max(0, currentIndex - this.pruneBuffer);
+        const keepEnd = Math.min(totalSlides - 1, keepStart + this.maxCharactersInDom - 1);
+        const adjustedKeepStart = Math.max(0, keepEnd - this.maxCharactersInDom + 1);
+
+        // Safety: always keep the current slide and its immediate neighbors
+        const protectedStart = Math.max(0, currentIndex - 1);
+        const protectedEnd = Math.min(totalSlides - 1, currentIndex + 1);
+
+        const indexesToRemove = [];
+        for (let i = 0; i < totalSlides; i++) {
+            if ((i < adjustedKeepStart || i > keepEnd) && (i < protectedStart || i > protectedEnd)) {
+                indexesToRemove.push(i);
+            }
+        }
+
+        if (indexesToRemove.length === 0) {
+            this.isPruning = false;
+            return;
+        }
+
+        // Clean up horizontal swipers for removed slides
+        indexesToRemove.forEach(index => {
+            const slide = this.verticalSwiper.slides[index];
+            if (!slide) return;
+            const charId = slide.dataset.characterId;
+            const swiper = this.horizontalSwipers.get(charId);
+            if (swiper) {
+                swiper.destroy(true, true);
+                this.horizontalSwipers.delete(charId);
+            }
+        });
+
+        // Remove associated character data (remove from end to start)
+        indexesToRemove
+            .slice()
+            .sort((a, b) => b - a)
+            .forEach(index => {
+                if (this.characters[index]) {
+                    this.characters.splice(index, 1);
+                }
+            });
+
+        // Remove slides from Swiper and update
+        this.verticalSwiper.removeSlide(indexesToRemove);
+        this.verticalSwiper.update();
+
+        // Sync current index after removal
+        this.currentCharacterIndex = this.verticalSwiper.activeIndex;
+        this.updateCurrentCharacter();
+
+        this.isPruning = false;
     }
     
     preloadNextCharacters() {
@@ -964,8 +1195,11 @@ class ExploreGallery {
             if (idx < this.characters.length) {
                 const char = this.characters[idx];
                 if (char && char.images && char.images.length > 0) {
-                    const img = new Image();
-                    img.src = char.images[0].thumbnailUrl || char.images[0].imageUrl;
+                    const preloadUrl = char.images[0].thumbnailUrl;
+                    if (preloadUrl) {
+                        const img = new Image();
+                        img.src = preloadUrl;
+                    }
                 }
             }
         });
@@ -1006,6 +1240,10 @@ class ExploreGallery {
                     modelIndicator.textContent = newImageModel || 'Unknown';
                 }
             }
+
+            // Promote active image to full resolution and demote inactive images
+            this.promoteImageToFullRes(slide, imageIndex);
+            this.demoteInactiveImages(slide, imageIndex);
         }
     }
     

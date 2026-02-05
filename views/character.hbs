@@ -465,36 +465,6 @@
                 <div class="spinner-border spinner-border-sm" role="status"></div>
             </div>
         </div>
-        
-        <!-- Filter Icons -->
-        <div class="filter-icons">
-            <div class="dropdown">
-                <button class="filter-icon-btn" data-bs-toggle="dropdown" id="gender-filter-dropdown">
-                    <i class="bi bi-gender-ambiguous"></i>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end filter-dropdown">
-                    <li><a class="dropdown-item" href="#" data-gender="female">
-                        <i class="bi bi-gender-female"></i> {{translations.sort.female}}
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" data-gender="male">
-                        <i class="bi bi-gender-male"></i> {{translations.sort.male}}
-                    </a></li>
-                    <li><a class="dropdown-item" href="#" data-gender="nonbinary">
-                        <i class="bi bi-gender-trans"></i> {{translations.sort.nonBinary}}
-                    </a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#" data-gender="">
-                        <i class="bi bi-x-circle"></i> {{translations.sort.allGenders}}
-                    </a></li>
-                </ul>
-            </div>
-            <button class="filter-icon-btn" id="popular-chats-premium" title="{{translations.sort.hidePremium}}">
-                <i class="bi bi-gem"></i>
-            </button>
-            <button class="filter-icon-btn" id="popular-chats-nsfw" title="{{translations.sort.hideNSFW}}">
-                <i class="bi bi-eye-slash"></i>
-            </button>
-        </div>
     </section>
 
     <!-- Explore Grid Gallery -->
@@ -549,18 +519,6 @@ $(document).ready(function() {
         window.loadQueryTags();
     }
     
-    // Initial load - Load recent characters gallery first
-    if (typeof window.loadLatestChats === 'function') {
-        window.loadLatestChats(1, true);
-        // Mark the "Recent" button as active after a short delay
-        setTimeout(function() {
-            $('#reload-latest-chats').addClass('active btn-primary').removeClass('btn-outline-primary');
-        }, 200);
-    } else if (typeof window.loadPopularChats === 'function') {
-        // Fallback to popular chats if loadLatestChats is not available
-        window.loadPopularChats(1, true);
-    }
-    
     // Scroll to top on page load
     window.scrollTo(0, 0);
 });
@@ -597,6 +555,15 @@ window.translations.loading = '{{translations.loading}}';
 <script src="/js/modules/latest-chats.js"></script>
 <script src="/js/modules/chat-filters.js"></script>
 <script src="/js/chat-list.js"></script>
+
+<script>
+// Initial load - Load all (popular) characters gallery after modules are loaded
+$(function() {
+    if (typeof window.loadPopularChats === 'function') {
+        window.loadPopularChats(1, true);
+    }
+});
+</script>
 
 </body>
 </html>

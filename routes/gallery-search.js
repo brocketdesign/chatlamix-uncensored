@@ -29,35 +29,61 @@ async function routes(fastify, options) {
       const db = fastify.mongo.db;
       
       // Check user's NSFW preference and subscription status
-      // Handle both string 'true' and boolean true for user.showNSFW
+      // NSFW content is only shown if:
+      // 1. User is logged in (not temporary)
+      // 2. User has an active subscription
+      // 3. User has explicitly enabled showNSFW preference
+      // 4. Client requests NSFW content (nsfw=include)
+      // Default is ALWAYS false (SFW only) for safety
+      const isLoggedIn = user && !user.isTemporary;
+      const hasActiveSubscription = user.subscriptionStatus === 'active';
       const userWantsNSFW = user.showNSFW === true || user.showNSFW === 'true';
-      const showNSFW = nsfwFilter === 'include' && 
+      const showNSFW = isLoggedIn && 
+                       hasActiveSubscription && 
                        userWantsNSFW && 
-                       user.subscriptionStatus === 'active';
+                       nsfwFilter === 'include';
       
       // Get user interaction state
       // For logged-in users: from database
       // For temporary users: accept from request body/header (with size limit)
       let userState = null;
+      let clientState = null;
       
+      // Parse client state header for both logged-in and temporary users (size-limited)
+      const clientStateHeader = request.headers['x-user-state'];
+      if (clientStateHeader) {
+        try {
+          if (clientStateHeader.length > 102400) {
+            console.warn('[gallery-search] User state too large, ignoring');
+          } else {
+            clientState = parseUserState(clientStateHeader);
+          }
+        } catch (error) {
+          console.error('[gallery-search] Error parsing client user state:', error);
+        }
+      }
+
       if (!user.isTemporary) {
         // Logged-in user - get from database
         userState = await getUserInteractionState(db, user._id);
       } else {
         // Temporary user - get from client (localStorage) with validation
-        const clientState = request.headers['x-user-state'];
         if (clientState) {
-          try {
-            // Limit size to prevent abuse (100KB max)
-            if (clientState.length > 102400) {
-              console.warn('[gallery-search] User state too large, ignoring');
-            } else {
-              userState = parseUserState(clientState);
-            }
-          } catch (error) {
-            console.error('[gallery-search] Error parsing client user state:', error);
-          }
+          userState = clientState;
         }
+      }
+
+      // Merge served characters from client state to avoid repeats within a session
+      if (clientState?.servedCharacters) {
+        if (!userState) userState = {};
+        if (!userState.seenCharacters) userState.seenCharacters = {};
+        Object.keys(clientState.servedCharacters).forEach(charId => {
+          const servedAt = clientState.servedCharacters[charId];
+          const existing = userState.seenCharacters[charId] || 0;
+          if (servedAt > existing) {
+            userState.seenCharacters[charId] = servedAt;
+          }
+        });
       }
       
       const result = await searchImagesGroupedByCharacter(db, user, queryStr, page, limit, showNSFW, userState);
@@ -151,7 +177,14 @@ async function routes(fastify, options) {
         const clientState = request.headers['x-user-state'];
         let userState = clientState ? parseUserState(clientState) : {};
         
-        userState = updateSeenState(userState, characterId, imageIds);
+        userState = updateSeenState(userState, characterId, imageIds, {
+          RECENTLY_SEEN: 30 * 60 * 1000,
+          SHORT_TERM: 6 * 60 * 60 * 1000,
+          MEDIUM_TERM: 7 * 24 * 60 * 60 * 1000,
+          FRESH_CONTENT: 7 * 24 * 60 * 60 * 1000,
+          OLD_CONTENT: 90 * 24 * 60 * 60 * 1000,
+          MIDDLE_CONTENT: 30 * 24 * 60 * 60 * 1000,
+        });
         if (tags.length > 0) {
           userState = updateTagPreferences(userState, tags, 0.5);
         }

@@ -10,6 +10,8 @@
 
   const STORAGE_KEY = 'lamix_user_discovery_state';
   const STATE_VERSION = 1;
+  const SEEN_TTL_MS = 30 * 60 * 1000; // 30 minutes for temporary users
+  const TAG_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days for tag preferences
 
   /**
    * Content Discovery State Manager
@@ -63,6 +65,7 @@
         version: STATE_VERSION,
         seenCharacters: {},
         seenImages: {},
+        servedCharacters: {},
         preferredTags: [],
         tagPreferences: {},
         lastUpdated: Date.now()
@@ -76,6 +79,7 @@
       return {
         seenCharacters: this.state.seenCharacters || {},
         seenImages: this.state.seenImages || {},
+        servedCharacters: this.state.servedCharacters || {},
         preferredTags: this.state.preferredTags || [],
         tagPreferences: this.state.tagPreferences || {}
       };
@@ -134,6 +138,23 @@
     }
 
     /**
+     * Record characters served to the user (without tagging preferences)
+     */
+    recordCharactersServed(characterIds = []) {
+      const now = Date.now();
+      if (!this.state.servedCharacters) this.state.servedCharacters = {};
+
+      characterIds.forEach(id => {
+        const charIdStr = String(id);
+        this.state.servedCharacters[charIdStr] = now;
+      });
+
+      this.state.lastUpdated = now;
+      this.cleanup();
+      this.saveState();
+    }
+
+    /**
      * Update tag preferences
      */
     updateTagPreferences(tags, strength = 1.0) {
@@ -173,19 +194,34 @@
      */
     cleanup() {
       const now = Date.now();
-      const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
-      const threshold = now - MONTH_MS;
+      const seenThreshold = now - SEEN_TTL_MS;
+      const tagThreshold = now - TAG_TTL_MS;
 
       // Clean up old seen characters
       if (this.state.seenCharacters) {
         Object.keys(this.state.seenCharacters).forEach(charId => {
-          if (this.state.seenCharacters[charId] < threshold) {
+          if (this.state.seenCharacters[charId] < seenThreshold) {
             delete this.state.seenCharacters[charId];
             if (this.state.seenImages && this.state.seenImages[charId]) {
               delete this.state.seenImages[charId];
             }
           }
         });
+      }
+
+      // Clean up served characters
+      if (this.state.servedCharacters) {
+        Object.keys(this.state.servedCharacters).forEach(charId => {
+          if (this.state.servedCharacters[charId] < seenThreshold) {
+            delete this.state.servedCharacters[charId];
+          }
+        });
+      }
+
+      // Reset tag preferences if stale
+      if (this.state.lastUpdated < tagThreshold) {
+        this.state.tagPreferences = {};
+        this.state.preferredTags = [];
       }
     }
 
@@ -256,6 +292,13 @@
      */
     trackCharacterView: function(characterId, imageIds = [], tags = []) {
       tracker.recordCharacterView(characterId, imageIds, tags);
+    },
+
+    /**
+     * Track characters served to the user (no preference updates)
+     */
+    trackCharactersServed: function(characterIds = []) {
+      tracker.recordCharactersServed(characterIds);
     },
 
     /**

@@ -3428,9 +3428,9 @@ $(document).ready(function () {
         
         let tagsHtml = '';
         
-        // Add "All" tag first (not active by default - "Recent" is now the default)
+        // Add "All" tag first (active by default)
         tagsHtml += `
-            <div class="query-tag query-tag-all badge badge-sm btn-outline-primary" 
+            <div class="query-tag query-tag-all badge badge-sm btn-primary active" 
                 style="line-height: 1.5;"
                 data-query="" 
                 onclick="loadPopularChats(1, true); setActiveQuery(''); loadStyleFilteredChats('');">
@@ -3438,13 +3438,9 @@ $(document).ready(function () {
             </div>
         `;
         
-        // Add "Recent" and "Recent Videos" buttons - "Recent" is active by default
+        // Add "Recent Videos" button
         tagsHtml += `
-            <div id="reload-latest-chats" class="query-tag badge badge-sm btn-primary active" 
-            style="line-height: 1.5;">
-                <i class="bi bi-arrow-clockwise me-1"></i>${translations.recent || 'Recent'}
-            </div>
-            <div id="reload-latest-video-chats" class="query-tag badge badge-sm btn-outline-primary" 
+            <div id="reload-latest-video-chats" class="d-none query-tag badge badge-sm btn-outline-primary" 
             style="line-height: 1.5;">
                 <i class="bi bi-film me-1"></i>${translations.recentVideos || 'Recent Videos'}
             </div>

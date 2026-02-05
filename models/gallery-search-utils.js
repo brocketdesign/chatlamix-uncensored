@@ -523,6 +523,8 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
   const chatsGalleryCollection = db.collection('gallery');
   const chatsCollection = db.collection('chats');
 
+  console.log(`[gallery-search-utils] searchImagesGroupedByCharacter - language: ${language}, requestLang: ${requestLang}, query: "${queryStr}", page: ${page}, showNSFW: ${showNSFW}`);
+
   // Prepare search words
   const queryWords = queryStr.split(' ').filter(word => word.replace(/[^\w\s]/gi, '').trim() !== '');
   const hasQuery = queryWords.length > 0;
@@ -533,9 +535,22 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
     interactionState = await getUserInteractionState(db, user._id);
   }
 
-  // Use smart sequencing for page 1 (with or without query)
-  // For pages > 1, use traditional pagination
-  const useSmartSequencing = page === 1;
+  // Build exclusion list from seen characters to prevent repeats
+  const seenEntries = interactionState?.seenCharacters
+    ? Object.entries(interactionState.seenCharacters)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 500)
+    : [];
+  const seenIdsForExclusion = seenEntries
+    .map(([id]) => id)
+    .filter(id => ObjectId.isValid(id))
+    .map(id => new ObjectId(id));
+  
+  console.log(`[gallery-search-utils] Excluding ${seenIdsForExclusion.length} seen characters, showNSFW: ${showNSFW}`);
+
+  // Use smart sequencing for all pages when no query
+  // Query results still use traditional pagination for relevance
+  const useSmartSequencing = !hasQuery;
   
   // Fetch MORE characters than needed if using smart sequencing (for better selection pool)
   const fetchLimit = useSmartSequencing ? limit * 3 : limit;
@@ -564,17 +579,53 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
     },
     { $unwind: '$chat' },
 
-    // Filter by language and public visibility
+    // Filter by public visibility - include chats with no visibility set (legacy) or public
     {
       $match: {
-        'chat.visibility': 'public',
         $or: [
-          { 'chat.language': language },
-          { 'chat.language': requestLang }
+          { 'chat.visibility': 'public' },
+          { 'chat.visibility': { $exists: false } },
+          { 'chat.visibility': null }
         ]
       }
     }
   ];
+
+  // Apply optional language filter - but don't be too strict
+  // Include chats that match language OR have no language set
+  pipeline.push({
+    $match: {
+      $or: [
+        { 'chat.language': language },
+        { 'chat.language': requestLang },
+        { 'chat.language': { $exists: false } },
+        { 'chat.language': null },
+        { 'chat.language': '' }
+      ]
+    }
+  });
+
+  // NSFW filtering at the image level - if user doesn't want NSFW, filter out NSFW images early
+  // This ensures characters with only NSFW content are not returned to SFW users
+  if (!showNSFW) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { 'images.nsfw': { $exists: false } },
+          { 'images.nsfw': null },
+          { 'images.nsfw': false },
+          { 'images.nsfw': 'false' },
+          { 'images.nsfw': '' }
+        ]
+      }
+    });
+  }
+
+  if (seenIdsForExclusion.length > 0) {
+    pipeline.push({
+      $match: { chatId: { $nin: seenIdsForExclusion } }
+    });
+  }
 
   // Add search scoring if query exists
   if (hasQuery) {
@@ -645,18 +696,21 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
     }
   });
 
-  // Sort by relevance (if query) or by latest image date
+  // Sort by relevance (if query) or by randomized order for diversity
   if (hasQuery) {
     pipeline.push({ $sort: { totalScore: -1, latestImage: -1 } });
   } else {
-    pipeline.push({ $sort: { latestImage: -1 } });
+    pipeline.push({ $addFields: { rand: { $rand: {} } } });
+    pipeline.push({ $sort: { rand: 1, latestImage: -1 } });
   }
 
   // Pagination
   pipeline.push({ $skip: skip });
   pipeline.push({ $limit: fetchLimit });
 
-  // Balance SFW and NSFW images using $filter
+  // Filter images based on NSFW preference
+  // If showNSFW is false, only return SFW images
+  // If showNSFW is true, return both SFW and NSFW images
   pipeline.push({
     $addFields: {
       sfwImages: {
@@ -674,7 +728,9 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
     }
   });
 
-  // Final projection: take up to 10 SFW + 10 NSFW for balanced mix
+  // Final projection: filter images based on NSFW preference
+  // SFW mode: only SFW images (up to 20)
+  // NSFW mode: mix of SFW and NSFW images (up to 10 each)
   pipeline.push({
     $project: {
       _id: 0,
@@ -687,13 +743,17 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
       gender: { $ifNull: ['$gender', 'unknown'] },
       chatCreatedAt: 1,
       imageCount: 1,
-      images: {
-        $concatArrays: [
-          { $slice: ['$sfwImages', 10] },
-          { $slice: ['$nsfwImages', 10] }
-        ]
-      },
+      images: showNSFW 
+        ? { $concatArrays: [{ $slice: ['$sfwImages', 10] }, { $slice: ['$nsfwImages', 10] }] }
+        : { $slice: ['$sfwImages', 20] },
       latestImage: 1
+    }
+  });
+
+  // Filter out characters with no images after NSFW filtering
+  pipeline.push({
+    $match: {
+      'images.0': { $exists: true }
     }
   });
 
@@ -712,14 +772,47 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
     { $unwind: '$chat' },
     {
       $match: {
-        'chat.visibility': 'public',
+        $or: [
+          { 'chat.visibility': 'public' },
+          { 'chat.visibility': { $exists: false } },
+          { 'chat.visibility': null }
+        ]
+      }
+    },
+    // Match language filter same as main pipeline
+    {
+      $match: {
         $or: [
           { 'chat.language': language },
-          { 'chat.language': requestLang }
+          { 'chat.language': requestLang },
+          { 'chat.language': { $exists: false } },
+          { 'chat.language': null },
+          { 'chat.language': '' }
         ]
       }
     }
   ];
+
+  // NSFW filtering for count pipeline - must match main pipeline
+  if (!showNSFW) {
+    countPipeline.push({
+      $match: {
+        $or: [
+          { 'images.nsfw': { $exists: false } },
+          { 'images.nsfw': null },
+          { 'images.nsfw': false },
+          { 'images.nsfw': 'false' },
+          { 'images.nsfw': '' }
+        ]
+      }
+    });
+  }
+
+  if (seenIdsForExclusion.length > 0) {
+    countPipeline.push({
+      $match: { chatId: { $nin: seenIdsForExclusion } }
+    });
+  }
 
   // Add search scoring to count pipeline if query exists
   if (hasQuery) {
@@ -763,17 +856,159 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
   countPipeline.push({ $group: { _id: '$chatId' } });
   countPipeline.push({ $count: 'total' });
 
-  try {
-    const [characters, countResult] = await Promise.all([
-      chatsGalleryCollection.aggregate(pipeline).toArray(),
+  // Helper function to run the pipeline with optional fallback
+  async function runPipelineWithFallback(mainPipeline, countPipeline, excludedSeenChars) {
+    let [characters, countResult] = await Promise.all([
+      chatsGalleryCollection.aggregate(mainPipeline).toArray(),
       chatsGalleryCollection.aggregate(countPipeline).toArray()
     ]);
 
-    const totalCharacters = countResult.length ? countResult[0].total : 0;
+    // FALLBACK: If no results found and we excluded seen characters, try again without exclusion
+    if (characters.length === 0 && excludedSeenChars) {
+      console.log('[gallery-search-utils] No results with seen exclusion, retrying without exclusion filter');
+      
+      // Remove the $nin exclusion stage from both pipelines
+      const pipelineWithoutExclusion = mainPipeline.filter(stage => {
+        if (stage.$match && stage.$match.chatId && stage.$match.chatId.$nin) {
+          return false;
+        }
+        return true;
+      });
+      const countPipelineWithoutExclusion = countPipeline.filter(stage => {
+        if (stage.$match && stage.$match.chatId && stage.$match.chatId.$nin) {
+          return false;
+        }
+        return true;
+      });
+      
+      [characters, countResult] = await Promise.all([
+        chatsGalleryCollection.aggregate(pipelineWithoutExclusion).toArray(),
+        chatsGalleryCollection.aggregate(countPipelineWithoutExclusion).toArray()
+      ]);
+      console.log(`[gallery-search-utils] Fallback query returned ${characters.length} characters`);
+    }
+
+    return { characters, countResult };
+  }
+
+  try {
+    const { characters, countResult } = await runPipelineWithFallback(
+      pipeline, 
+      countPipeline, 
+      seenIdsForExclusion.length > 0
+    );
+
+    console.log(`[gallery-search-utils] Query returned ${characters.length} characters, totalCount: ${countResult.length ? countResult[0].total : 0}`);
+
+    // ADDITIONAL FALLBACK: If still no results, try without language filter at all
+    let finalCharacters = characters;
+    let finalTotalCharacters = countResult.length ? countResult[0].total : 0;
+    
+    if (characters.length === 0) {
+      console.log('[gallery-search-utils] No results even after fallback, trying without language filter');
+      
+      // Build a minimal pipeline without language restrictions and permissive visibility
+      const minimalPipeline = [
+        { $unwind: '$images' },
+        { $match: { 'images.imageUrl': { $exists: true, $ne: null } } }
+      ];
+      
+      // NSFW filtering in minimal pipeline - respect user preference
+      if (!showNSFW) {
+        minimalPipeline.push({
+          $match: {
+            $or: [
+              { 'images.nsfw': { $exists: false } },
+              { 'images.nsfw': null },
+              { 'images.nsfw': false },
+              { 'images.nsfw': 'false' },
+              { 'images.nsfw': '' }
+            ]
+          }
+        });
+      }
+      
+      minimalPipeline.push(
+        {
+          $lookup: {
+            from: 'chats',
+            localField: 'chatId',
+            foreignField: '_id',
+            as: 'chat'
+          }
+        },
+        { $unwind: '$chat' },
+        // Accept public visibility OR no visibility field (legacy chats)
+        { 
+          $match: { 
+            $or: [
+              { 'chat.visibility': 'public' },
+              { 'chat.visibility': { $exists: false } },
+              { 'chat.visibility': null }
+            ]
+          } 
+        },
+        {
+          $group: {
+            _id: '$chatId',
+            chatId: { $first: '$chatId' },
+            chatName: { $first: '$chat.name' },
+            chatSlug: { $first: '$chat.slug' },
+            chatImageUrl: { $first: '$chat.chatImageUrl' },
+            chatTags: { $first: '$chat.tags' },
+            description: { $first: '$chat.description' },
+            gender: { $first: '$chat.gender' },
+            chatCreatedAt: { $first: '$chat.createdAt' },
+            images: {
+              $push: {
+                _id: '$images._id',
+                imageUrl: '$images.imageUrl',
+                thumbnailUrl: '$images.thumbnailUrl',
+                prompt: '$images.prompt',
+                title: '$images.title',
+                nsfw: '$images.nsfw',
+                createdAt: '$images.createdAt',
+                imageModelId: '$images.imageModelId'
+              }
+            },
+            imageCount: { $sum: 1 },
+            latestImage: { $max: '$images.createdAt' }
+          }
+        },
+        { $addFields: { rand: { $rand: {} } } },
+        { $sort: { rand: 1, latestImage: -1 } },
+        { $limit: limit * 3 },
+        {
+          $project: {
+            _id: 0,
+            chatId: 1,
+            chatName: 1,
+            chatSlug: 1,
+            chatImageUrl: { $ifNull: ['$chatImageUrl', '/img/default-thumbnail.png'] },
+            chatTags: { $ifNull: ['$chatTags', []] },
+            description: 1,
+            gender: { $ifNull: ['$gender', 'unknown'] },
+            chatCreatedAt: 1,
+            imageCount: 1,
+            images: { $slice: ['$images', 20] },
+            latestImage: 1
+          }
+        }
+      );
+      
+      const minimalResults = await chatsGalleryCollection.aggregate(minimalPipeline).toArray();
+      console.log(`[gallery-search-utils] Minimal pipeline (no language filter) returned ${minimalResults.length} characters`);
+      
+      if (minimalResults.length > 0) {
+        finalCharacters = minimalResults.slice(0, limit);
+        finalTotalCharacters = minimalResults.length;
+      }
+    }
+
+    const totalCharacters = finalTotalCharacters;
     
     // Apply smart sequencing for page 1 without query
-    let finalCharacters = characters;
-    if (useSmartSequencing && characters.length > 0) {
+    if (useSmartSequencing && finalCharacters.length > 0) {
       // Get user preferences from nightly analysis cache (for logged-in users)
       let userPreferences = null;
       if (user && !user.isTemporary) {
@@ -781,11 +1016,21 @@ async function searchImagesGroupedByCharacter(db, user, queryStr = '', page = 1,
       }
       
       // Apply weighted randomness, diversity, and personalization
-      finalCharacters = await sequenceCharacters(characters, interactionState, {
+      const sequencingTimeConstants = user && user.isTemporary ? {
+        RECENTLY_SEEN: 30 * 60 * 1000,      // 30 minutes
+        SHORT_TERM: 6 * 60 * 60 * 1000,     // 6 hours
+        MEDIUM_TERM: 7 * 24 * 60 * 60 * 1000, // 1 week
+        FRESH_CONTENT: 7 * 24 * 60 * 60 * 1000,
+        OLD_CONTENT: 90 * 24 * 60 * 60 * 1000,
+        MIDDLE_CONTENT: 30 * 24 * 60 * 60 * 1000,
+      } : undefined;
+
+      finalCharacters = await sequenceCharacters(finalCharacters, interactionState, {
         limit,
         excludeRecent: true,
         useDiversity: true,
-        userPreferences
+        userPreferences,
+        timeConstants: sequencingTimeConstants
       });
     }
     
