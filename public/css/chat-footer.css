@@ -442,6 +442,12 @@
     overflow: hidden;
 }
 
+#language-settings {
+    position: relative;
+    z-index: 5;
+    overflow: visible;
+}
+
 .settings-section:hover {
     border-color: rgba(110, 32, 244, 0.15);
     box-shadow: 0 2px 8px rgba(110, 32, 244, 0.08);
@@ -659,7 +665,7 @@
     box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
     max-height: 280px;
     overflow-y: auto;
-    z-index: 100;
+    z-index: 1200;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px);
