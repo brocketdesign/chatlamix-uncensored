@@ -460,81 +460,87 @@
                     <div class="settings-section-title">
                         <i class="bi bi-translate me-2"></i>
                         {{chatToolSettingsTranslations.chatLanguageSettings}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.chatLanguageDescription}}" aria-label="{{chatToolSettingsTranslations.chatLanguageDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.chatLanguageDescription}}
                 </div>
                 
                 <div class="settings-field">
                     <label class="settings-label fw-semibold">
                         {{chatToolSettingsTranslations.preferredChatLanguage}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.chatLanguageHint}}" aria-label="{{chatToolSettingsTranslations.chatLanguageHint}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </label>
-                    <div class="settings-language-grid-0 row mt-3" id="chat-language-grid">
-                        <div class="language-option col-6 col-md-4" data-lang="english">
-                            <span class="lang-flag">🇬🇧</span>
-                            <span class="lang-name">English</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
+                    <div class="language-dropdown-wrapper" id="language-dropdown-wrapper">
+                        <button type="button" class="language-dropdown-trigger" id="language-dropdown-trigger">
+                            <span class="lang-flag" id="selected-lang-flag">🇬🇧</span>
+                            <span class="lang-name" id="selected-lang-name">English</span>
+                            <i class="bi bi-chevron-down dropdown-chevron"></i>
+                        </button>
+                        <div class="language-dropdown-menu" id="language-dropdown-menu">
+                            <div class="language-dropdown-item" data-lang="english">
+                                <span class="lang-flag">🇬🇧</span>
+                                <span class="lang-name">English</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="japanese">
+                                <span class="lang-flag">🇯🇵</span>
+                                <span class="lang-name">日本語</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="french">
+                                <span class="lang-flag">🇫🇷</span>
+                                <span class="lang-name">Français</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="portuguese">
+                                <span class="lang-flag">🇧🇷</span>
+                                <span class="lang-name">Português</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="spanish">
+                                <span class="lang-flag">🇪🇸</span>
+                                <span class="lang-name">Español</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="chinese">
+                                <span class="lang-flag">🇨🇳</span>
+                                <span class="lang-name">中文</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="korean">
+                                <span class="lang-flag">🇰🇷</span>
+                                <span class="lang-name">한국어</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="thai">
+                                <span class="lang-flag">🇹🇭</span>
+                                <span class="lang-name">ไทย</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="german">
+                                <span class="lang-flag">🇩🇪</span>
+                                <span class="lang-name">Deutsch</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="italian">
+                                <span class="lang-flag">🇮🇹</span>
+                                <span class="lang-name">Italiano</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="russian">
+                                <span class="lang-flag">🇷🇺</span>
+                                <span class="lang-name">Русский</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
+                            <div class="language-dropdown-item" data-lang="hindi">
+                                <span class="lang-flag">🇮🇳</span>
+                                <span class="lang-name">हिन्दी</span>
+                                <i class="bi bi-check check-icon"></i>
+                            </div>
                         </div>
-                        <div class="language-option col-6 col-md-4" data-lang="japanese">
-                            <span class="lang-flag">🇯🇵</span>
-                            <span class="lang-name">日本語</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="french">
-                            <span class="lang-flag">🇫🇷</span>
-                            <span class="lang-name">Français</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="portuguese">
-                            <span class="lang-flag">🇧🇷</span>
-                            <span class="lang-name">Português</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="spanish">
-                            <span class="lang-flag">🇪🇸</span>
-                            <span class="lang-name">Español</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="chinese">
-                            <span class="lang-flag">🇨🇳</span>
-                            <span class="lang-name">中文</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="korean">
-                            <span class="lang-flag">🇰🇷</span>
-                            <span class="lang-name">한국어</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="thai">
-                            <span class="lang-flag">🇹🇭</span>
-                            <span class="lang-name">ไทย</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="german">
-                            <span class="lang-flag">🇩🇪</span>
-                            <span class="lang-name">Deutsch</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="italian">
-                            <span class="lang-flag">🇮🇹</span>
-                            <span class="lang-name">Italiano</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="russian">
-                            <span class="lang-flag">🇷🇺</span>
-                            <span class="lang-name">Русский</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                        <div class="language-option col-6 col-md-4" data-lang="hindi">
-                            <span class="lang-flag">🇮🇳</span>
-                            <span class="lang-name">हिन्दी</span>
-                            <div class="check-badge"><i class="bi bi-check"></i></div>
-                        </div>
-                    </div>
-                    <div class="settings-description text-muted small mt-3">
-                        <i class="bi bi-info-circle me-1"></i>
-                        {{chatToolSettingsTranslations.chatLanguageHint}}
                     </div>
                 </div>
             </div>
@@ -551,10 +557,10 @@
                 <div class="settings-field">
                     <label class="settings-label fw-semibold" for="min-images-range">
                         {{chatToolSettingsTranslations.minImagesToSend}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.imageSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.imageSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </label>
-                    <div class="settings-description text-muted mb-3">
-                        {{chatToolSettingsTranslations.imageSettingsDescription}}
-                    </div>
                     <div class="settings-range-container">
                         <input type="range" id="min-images-range" class="settings-range" 
                                min="1" max="5" value="1" step="1">
@@ -566,32 +572,32 @@
                 <div class="settings-field">
                     <label class="settings-label fw-semibold">
                         {{chatToolSettingsTranslations.defaultImageRatio}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.defaultImageRatioDescription}}" aria-label="{{chatToolSettingsTranslations.defaultImageRatioDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </label>
-                    <div class="settings-description text-muted mb-3">
-                        {{chatToolSettingsTranslations.defaultImageRatioDescription}}
-                    </div>
-                    <div class="settings-ratio-grid row" id="image-ratio-grid">
-                        <div class="ratio-option col-4" data-ratio="1:1">
+                    <div class="settings-ratio-scroll" id="image-ratio-grid">
+                        <div class="ratio-option" data-ratio="1:1">
                             <div class="ratio-preview ratio-1-1"></div>
                             <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[1:1]}}</span>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
-                        <div class="ratio-option col-4" data-ratio="16:9">
+                        <div class="ratio-option" data-ratio="16:9">
                             <div class="ratio-preview ratio-16-9"></div>
                             <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[16:9]}}</span>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
-                        <div class="ratio-option col-4" data-ratio="9:16">
+                        <div class="ratio-option" data-ratio="9:16">
                             <div class="ratio-preview ratio-9-16"></div>
                             <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[9:16]}}</span>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
-                        <div class="ratio-option col-4" data-ratio="4:3">
+                        <div class="ratio-option" data-ratio="4:3">
                             <div class="ratio-preview ratio-4-3"></div>
                             <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[4:3]}}</span>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
-                        <div class="ratio-option col-4" data-ratio="3:4">
+                        <div class="ratio-option" data-ratio="3:4">
                             <div class="ratio-preview ratio-3-4"></div>
                             <span class="ratio-label">{{chatToolSettingsTranslations.imageRatios.[3:4]}}</span>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
@@ -605,6 +611,9 @@
                         <label class="settings-label fw-semibold mb-0">
                             {{chatToolSettingsTranslations.autoMergeFace}}
                             <i class="bi bi-crown-fill premium-icon ms-1 text-warning" id="auto-merge-premium-icon" style="display: none;"></i>
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.autoMergeFaceDescription}}" aria-label="{{chatToolSettingsTranslations.autoMergeFaceDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
                         </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
@@ -612,9 +621,6 @@
                                 <span class="settings-switch-slider"></span>
                             </label>
                         </div>
-                    </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{chatToolSettingsTranslations.autoMergeFaceDescription}}
                     </div>
                     <div id="auto-merge-premium-indicator" class="premium-feature-indicator" style="display: none;">
                         <small class="text-warning d-block mt-2">
@@ -630,6 +636,9 @@
                         <label class="settings-label fw-semibold mb-0">
                             {{chatToolSettingsTranslations.autoImageGeneration}}
                             <i class="bi bi-crown-fill premium-icon ms-1 text-warning" id="auto-image-premium-icon" style="display: none;"></i>
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.autoImageGenerationDescription}}" aria-label="{{chatToolSettingsTranslations.autoImageGenerationDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
                         </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
@@ -637,9 +646,6 @@
                                 <span class="settings-switch-slider"></span>
                             </label>
                         </div>
-                    </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{chatToolSettingsTranslations.autoImageGenerationDescription}}
                     </div>
                     <div id="auto-image-premium-indicator" class="premium-feature-indicator" style="display: none;">
                         <small class="text-warning d-block mt-2">
@@ -656,10 +662,10 @@
                     <div class="settings-section-title">
                         <i class="bi bi-image me-2"></i>
                         {{translations.customPromptSettings.tabTitle}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{translations.customPromptSettings.description}}" aria-label="{{translations.customPromptSettings.description}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{translations.customPromptSettings.description}}
                 </div>
 
                 <!-- Enable Custom Prompts Switch -->
@@ -667,6 +673,9 @@
                     <div class="settings-field-header">
                         <label class="settings-label fw-semibold mb-0">
                             {{translations.customPromptSettings.enableCustomPrompts}}
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{translations.customPromptSettings.enableCustomPromptsDescription}}" aria-label="{{translations.customPromptSettings.enableCustomPromptsDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
                         </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
@@ -675,9 +684,6 @@
                             </label>
                         </div>
                     </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{translations.customPromptSettings.enableCustomPromptsDescription}}
-                    </div>
                 </div>
 
                 <!-- Use Default Description Switch -->
@@ -685,6 +691,9 @@
                     <div class="settings-field-header">
                         <label class="settings-label fw-semibold mb-0">
                             {{translations.customPromptSettings.useDefaultDescription}}
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{translations.customPromptSettings.useDefaultDescriptionDescription}}" aria-label="{{translations.customPromptSettings.useDefaultDescriptionDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
                         </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
@@ -693,19 +702,16 @@
                             </label>
                         </div>
                     </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{translations.customPromptSettings.useDefaultDescriptionDescription}}
-                    </div>
                 </div>
 
                 <!-- Default Description Textarea -->
                 <div class="settings-field">
                     <label class="settings-label fw-semibold" for="default-description-textarea">
                         {{translations.customPromptSettings.defaultDescriptionLabel}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{translations.customPromptSettings.defaultDescriptionHelp}}" aria-label="{{translations.customPromptSettings.defaultDescriptionHelp}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </label>
-                    <div class="settings-description text-muted mb-3">
-                        {{translations.customPromptSettings.defaultDescriptionHelp}}
-                    </div>
                     <textarea class="form-control" id="default-description-textarea" style="min-height: 90px;" rows="8" maxlength="500" placeholder="{{translations.customPromptSettings.defaultDescriptionPlaceholder}}"></textarea>
                     <div class="form-text">
                         <span id="default-desc-char-count">0</span>/500 {{translations.customPromptSettings.characters}}
@@ -720,10 +726,10 @@
                         <i class="bi bi-camera-video me-2"></i>
                         {{chatToolSettingsTranslations.videoSettings}}
                         <i class="bi bi-crown-fill premium-icon ms-2 text-warning"></i>
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.videoSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.videoSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.videoSettingsDescription}}
                 </div>
                 <div class="settings-field">
                     <label class="settings-label fw-semibold" for="video-prompt">
@@ -747,10 +753,10 @@
                     <div class="settings-section-title">
                         <i class="bi bi-mic me-2"></i>
                         {{chatToolSettingsTranslations.voiceSettings}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.voiceSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.voiceSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.voiceSettingsDescription}}
                 </div>
                 
                 <!-- Voice Provider Switch -->
@@ -777,7 +783,7 @@
                     <div class="settings-voice-grid-0 row mt-3">
                         <div class="voice-card settings-voice-option selected col-12 col-md-6" data-voice="nova">
                             <div class="voice-card-content">
-                                <div class="voice-icon">
+                                <div class="voice-icon" title="{{chatToolSettingsTranslations.playSample}}">
                                     <i class="bi bi-soundwave"></i>
                                 </div>
                                 <div class="voice-info">
@@ -785,15 +791,11 @@
                                     <span class="voice-description">{{chatToolSettingsTranslations.voices.nova.description}}</span>
                                 </div>
                             </div>
-                            <button type="button" class="play-sample-btn" data-voice="nova" data-provider="openai">
-                                <i class="bi bi-play-fill"></i>
-                                <span>{{chatToolSettingsTranslations.playSample}}</span>
-                            </button>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
                         <div class="voice-card settings-voice-option col-12 col-md-6" data-voice="alloy">
                             <div class="voice-card-content">
-                                <div class="voice-icon">
+                                <div class="voice-icon" title="{{chatToolSettingsTranslations.playSample}}">
                                     <i class="bi bi-soundwave"></i>
                                 </div>
                                 <div class="voice-info">
@@ -801,15 +803,11 @@
                                     <span class="voice-description">{{chatToolSettingsTranslations.voices.alloy.description}}</span>
                                 </div>
                             </div>
-                            <button type="button" class="play-sample-btn" data-voice="alloy" data-provider="openai">
-                                <i class="bi bi-play-fill"></i>
-                                <span>{{chatToolSettingsTranslations.playSample}}</span>
-                            </button>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
                         <div class="voice-card settings-voice-option col-12 col-md-6" data-voice="shimmer">
                             <div class="voice-card-content">
-                                <div class="voice-icon">
+                                <div class="voice-icon" title="{{chatToolSettingsTranslations.playSample}}">
                                     <i class="bi bi-soundwave"></i>
                                 </div>
                                 <div class="voice-info">
@@ -817,15 +815,11 @@
                                     <span class="voice-description">{{chatToolSettingsTranslations.voices.shimmer.description}}</span>
                                 </div>
                             </div>
-                            <button type="button" class="play-sample-btn" data-voice="shimmer" data-provider="openai">
-                                <i class="bi bi-play-fill"></i>
-                                <span>{{chatToolSettingsTranslations.playSample}}</span>
-                            </button>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
                         <div class="voice-card settings-voice-option col-12 col-md-6" data-voice="fable">
                             <div class="voice-card-content">
-                                <div class="voice-icon">
+                                <div class="voice-icon" title="{{chatToolSettingsTranslations.playSample}}">
                                     <i class="bi bi-soundwave"></i>
                                 </div>
                                 <div class="voice-info">
@@ -833,10 +827,6 @@
                                     <span class="voice-description">{{chatToolSettingsTranslations.voices.fable.description}}</span>
                                 </div>
                             </div>
-                            <button type="button" class="play-sample-btn" data-voice="fable" data-provider="openai">
-                                <i class="bi bi-play-fill"></i>
-                                <span>{{chatToolSettingsTranslations.playSample}}</span>
-                            </button>
                             <div class="check-badge"><i class="bi bi-check"></i></div>
                         </div>
                     </div>
@@ -872,16 +862,21 @@
                     <div class="settings-section-title">
                         <i class="bi bi-mic-fill me-2"></i>
                         {{speechToTextTranslations.settings.title}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{speechToTextTranslations.settings.description}}" aria-label="{{speechToTextTranslations.settings.description}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{speechToTextTranslations.settings.description}}
                 </div>
                 
                 <!-- Enable Speech Recognition Switch -->
                 <div class="settings-field">
                     <div class="settings-field-header">
-                        <label class="settings-label fw-semibold mb-0">{{speechToTextTranslations.settings.enabled}}</label>
+                        <label class="settings-label fw-semibold mb-0">
+                            {{speechToTextTranslations.settings.enabled}}
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{speechToTextTranslations.settings.enabledDescription}}" aria-label="{{speechToTextTranslations.settings.enabledDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
                                 <input type="checkbox" id="speech-recognition-enable-switch" checked>
@@ -889,24 +884,23 @@
                             </label>
                         </div>
                     </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{speechToTextTranslations.settings.enabledDescription}}
-                    </div>
                 </div>
 
                 <!-- Auto Send Messages Switch -->
                 <div class="settings-field">
                     <div class="settings-field-header">
-                        <label class="settings-label fw-semibold mb-0">{{speechToTextTranslations.settings.autoSend}}</label>
+                        <label class="settings-label fw-semibold mb-0">
+                            {{speechToTextTranslations.settings.autoSend}}
+                            <span class="settings-tooltip" tabindex="0" data-tooltip="{{speechToTextTranslations.settings.autoSendDescription}}" aria-label="{{speechToTextTranslations.settings.autoSendDescription}}">
+                                <i class="bi bi-info-circle"></i>
+                            </span>
+                        </label>
                         <div class="settings-switch-container">
                             <label class="settings-switch">
                                 <input type="checkbox" id="speech-auto-send-switch">
                                 <span class="settings-switch-slider"></span>
                             </label>
                         </div>
-                    </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{speechToTextTranslations.settings.autoSendDescription}}
                     </div>
                 </div>
 
@@ -925,14 +919,19 @@
                     <div class="settings-section-title">
                         <i class="bi bi-lightbulb me-2"></i>
                         {{chatToolSettingsTranslations.suggestionsSettings}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.suggestionsSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.suggestionsSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.suggestionsSettingsDescription}}
                 </div>
                 
                 <div class="settings-field">
-                    <label class="settings-label fw-semibold mb-2">{{chatToolSettingsTranslations.suggestionPresetLabel}}</label>
+                    <label class="settings-label fw-semibold mb-2">
+                        {{chatToolSettingsTranslations.suggestionPresetLabel}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.suggestionPresetDescription}}" aria-label="{{chatToolSettingsTranslations.suggestionPresetDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
+                    </label>
                     <div class="suggestion-preset-grid">
                         <label class="suggestion-preset-option">
                             <input type="radio" name="suggestion-preset" value="flirty">
@@ -963,9 +962,6 @@
                             <span class="preset-pill">💬 {{chatToolSettingsTranslations.suggestionPresetNeutral}}</span>
                         </label>
                     </div>
-                    <div class="settings-description text-muted small mt-2">
-                        {{chatToolSettingsTranslations.suggestionPresetDescription}}
-                    </div>
                 </div>
 
                 <!-- Enable Suggestions Switch -->
@@ -988,10 +984,10 @@
                     <div class="settings-section-title">
                         <i class="bi bi-film me-2"></i>
                         {{chatToolSettingsTranslations.scenariosSettings}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.scenariosSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.scenariosSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.scenariosSettingsDescription}}
                 </div>
                 
                 <!-- Enable Scenarios Switch -->
@@ -1014,10 +1010,10 @@
                     <div class="settings-section-title">
                         <i class="bi bi-cpu me-2"></i>
                         {{chatToolSettingsTranslations.modelSettings}}
+                        <span class="settings-tooltip" tabindex="0" data-tooltip="{{chatToolSettingsTranslations.modelSettingsDescription}}" aria-label="{{chatToolSettingsTranslations.modelSettingsDescription}}">
+                            <i class="bi bi-info-circle"></i>
+                        </span>
                     </div>
-                </div>
-                <div class="settings-description text-muted mb-4">
-                    {{chatToolSettingsTranslations.modelSettingsDescription}}
                 </div>
                 
                 <!-- Dynamic Model Grid -->

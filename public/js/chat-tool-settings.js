@@ -135,8 +135,21 @@ class ChatToolSettings {
 
         // Voice selection - Use event delegation for voice cards
         document.addEventListener('click', (e) => {
+            // Handle voice icon click for playing sample
+            const voiceIcon = e.target.closest('.voice-icon');
+            if (voiceIcon) {
+                const voiceCard = voiceIcon.closest('.voice-card');
+                if (voiceCard) {
+                    e.stopPropagation();
+                    const voiceKey = voiceCard.dataset.voice;
+                    const provider = voiceCard.classList.contains('settings-premium-voice-option') ? 'minimax' : 'openai';
+                    this.playVoiceSample(voiceKey, provider, voiceIcon);
+                    return;
+                }
+            }
+            
             const voiceCard = e.target.closest('.voice-card');
-            if (voiceCard && !e.target.closest('.play-sample-btn')) {
+            if (voiceCard && !e.target.closest('.play-sample-btn') && !e.target.closest('.voice-icon')) {
                 if (voiceCard.classList.contains('settings-premium-voice-option')) {
                     this.selectPremiumVoice(voiceCard);
                 } else {
@@ -339,11 +352,36 @@ class ChatToolSettings {
             });
         }
 
-        // Language selection - Use event delegation for language options
+        // Language selection - Handle dropdown
         document.addEventListener('click', (e) => {
+            // Handle dropdown toggle
+            const trigger = e.target.closest('#language-dropdown-trigger');
+            if (trigger) {
+                const wrapper = document.getElementById('language-dropdown-wrapper');
+                if (wrapper) {
+                    wrapper.classList.toggle('open');
+                }
+                return;
+            }
+            
+            // Handle dropdown item selection
+            const dropdownItem = e.target.closest('.language-dropdown-item');
+            if (dropdownItem) {
+                this.selectLanguageFromDropdown(dropdownItem);
+                return;
+            }
+            
+            // Handle legacy language option (backwards compatibility)
             const langOption = e.target.closest('.language-option');
             if (langOption && langOption.closest('#chat-language-grid')) {
                 this.selectLanguage(langOption);
+                return;
+            }
+            
+            // Close dropdown when clicking outside
+            const wrapper = document.getElementById('language-dropdown-wrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                wrapper.classList.remove('open');
             }
         });
 
@@ -354,6 +392,35 @@ class ChatToolSettings {
                 this.selectImageRatio(ratioOption);
             }
         });
+    }
+
+    selectLanguageFromDropdown(item) {
+        const lang = item.dataset.lang;
+        if (!lang) return;
+
+        // Update dropdown UI
+        document.querySelectorAll('.language-dropdown-item').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+        item.classList.add('selected');
+        
+        // Update trigger display
+        const flag = item.querySelector('.lang-flag').textContent;
+        const name = item.querySelector('.lang-name').textContent;
+        document.getElementById('selected-lang-flag').textContent = flag;
+        document.getElementById('selected-lang-name').textContent = name;
+        
+        // Close dropdown
+        const wrapper = document.getElementById('language-dropdown-wrapper');
+        if (wrapper) wrapper.classList.remove('open');
+
+        // Update settings
+        this.settings.preferredChatLanguage = lang;
+        localStorage.setItem('preferredChatLanguage', lang);
+        
+        if (typeof window.clearNsfwUpsellTranslationCache === 'function') {
+            window.clearNsfwUpsellTranslationCache();
+        }
     }
 
     selectLanguage(option) {
@@ -953,7 +1020,7 @@ class ChatToolSettings {
 
             voiceCard.innerHTML = `
                 <div class="voice-card-content">
-                    <div class="voice-icon">
+                    <div class="voice-icon" title="${this.t('playSample', 'Play Sample')}">
                         <i class="bi bi-soundwave"></i>
                     </div>
                     <div class="voice-info">
@@ -961,10 +1028,6 @@ class ChatToolSettings {
                         <span class="voice-description">${voiceTranslation.description || ''}</span>
                     </div>
                 </div>
-                <button type="button" class="play-sample-btn" data-voice="${voice.key}" data-provider="minimax">
-                    <i class="bi bi-play-fill"></i>
-                    <span>${this.t('playSample', 'Play Sample')}</span>
-                </button>
                 <div class="check-badge"><i class="bi bi-check"></i></div>
             `;
             
@@ -1025,7 +1088,7 @@ class ChatToolSettings {
     /**
      * Play a voice sample
      */
-    async playVoiceSample(voiceKey, provider = 'minimax') {
+    async playVoiceSample(voiceKey, provider = 'minimax', iconElement = null) {
         if (!this.audioPlayer) return;
         
         // If clicking the same voice that's currently playing, pause it
@@ -1055,7 +1118,15 @@ class ChatToolSettings {
             sampleUrl = `/audio/voice-samples/${this.lang}/${voiceKey}_${this.lang}.mp3`;
         }
         
-        // Update UI to show playing state
+        // Update UI to show playing state - use voice icon
+        const voiceCard = document.querySelector(`.voice-card[data-voice="${voiceKey}"]`);
+        const voiceIcon = voiceCard ? voiceCard.querySelector('.voice-icon') : null;
+        if (voiceIcon) {
+            voiceIcon.classList.add('playing');
+            voiceIcon.innerHTML = '<i class="bi bi-pause-fill"></i>';
+        }
+        
+        // Legacy support for play-sample-btn
         const btn = document.querySelector(`.play-sample-btn[data-voice="${voiceKey}"][data-provider="${provider}"]`);
         if (btn) {
             btn.innerHTML = `<i class="bi bi-pause-fill"></i><span>${this.t('playing', 'Playing...')}</span>`;
@@ -1080,6 +1151,14 @@ class ChatToolSettings {
         if (this.audioPlayer && !this.audioPlayer.paused) {
             this.audioPlayer.pause();
             
+            // Reset voice icon
+            const voiceCard = document.querySelector(`.voice-card[data-voice="${this.currentPlayingVoice}"]`);
+            const voiceIcon = voiceCard ? voiceCard.querySelector('.voice-icon') : null;
+            if (voiceIcon) {
+                voiceIcon.classList.remove('playing');
+                voiceIcon.innerHTML = '<i class="bi bi-soundwave"></i>';
+            }
+            
             const btn = document.querySelector(`.play-sample-btn[data-voice="${this.currentPlayingVoice}"]`);
             if (btn) {
                 btn.innerHTML = `<i class="bi bi-play-fill"></i><span>${this.t('playSample', 'Play Sample')}</span>`;
@@ -1097,6 +1176,14 @@ class ChatToolSettings {
                 console.error('[ChatToolSettings] Failed to resume voice sample:', error);
                 this.onAudioEnded();
             });
+            
+            // Animate voice icon
+            const voiceCard = document.querySelector(`.voice-card[data-voice="${this.currentPlayingVoice}"]`);
+            const voiceIcon = voiceCard ? voiceCard.querySelector('.voice-icon') : null;
+            if (voiceIcon) {
+                voiceIcon.classList.add('playing');
+                voiceIcon.innerHTML = '<i class="bi bi-pause-fill"></i>';
+            }
             
             const btn = document.querySelector(`.play-sample-btn[data-voice="${this.currentPlayingVoice}"]`);
             if (btn) {
@@ -1122,6 +1209,14 @@ class ChatToolSettings {
      */
     onAudioEnded() {
         if (this.currentPlayingVoice) {
+            // Reset voice icon
+            const voiceCard = document.querySelector(`.voice-card[data-voice="${this.currentPlayingVoice}"]`);
+            const voiceIcon = voiceCard ? voiceCard.querySelector('.voice-icon') : null;
+            if (voiceIcon) {
+                voiceIcon.classList.remove('playing');
+                voiceIcon.innerHTML = '<i class="bi bi-soundwave"></i>';
+            }
+            
             // Try to find button with any provider (openai or minimax)
             let btn = document.querySelector(`.play-sample-btn[data-voice="${this.currentPlayingVoice}"]`);
             if (btn) {
@@ -1558,9 +1653,25 @@ class ChatToolSettings {
         // Apply initial speech button state
         this.toggleSpeechButton();
 
-        // Update language selection
+        // Update language selection (dropdown version)
         const selectedLang = this.settings.preferredChatLanguage;
         if (selectedLang) {
+            // Update dropdown UI
+            document.querySelectorAll('.language-dropdown-item').forEach(opt => {
+                const isSelected = opt.dataset.lang === selectedLang;
+                opt.classList.toggle('selected', isSelected);
+                if (isSelected) {
+                    // Update trigger display
+                    const flag = opt.querySelector('.lang-flag')?.textContent;
+                    const name = opt.querySelector('.lang-name')?.textContent;
+                    const selectedFlag = document.getElementById('selected-lang-flag');
+                    const selectedName = document.getElementById('selected-lang-name');
+                    if (selectedFlag && flag) selectedFlag.textContent = flag;
+                    if (selectedName && name) selectedName.textContent = name;
+                }
+            });
+            
+            // Legacy grid support
             document.querySelectorAll('#chat-language-grid .language-option').forEach(opt => {
                 opt.classList.toggle('selected', opt.dataset.lang === selectedLang);
             });
