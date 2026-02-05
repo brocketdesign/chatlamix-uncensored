@@ -17,7 +17,8 @@ async function getChatScenarioData(db, userChatId) {
                     currentScenario: 1, 
                     availableScenarios: 1, 
                     scenarioHistory: 1,
-                    scenarioCreatedAt: 1 
+                    scenarioCreatedAt: 1,
+                    scenarioProgress: 1  // Track progress through thresholds
                 } 
             }
         );
@@ -30,7 +31,8 @@ async function getChatScenarioData(db, userChatId) {
             currentScenario: userData.currentScenario || null,
             availableScenarios: userData.availableScenarios || [],
             scenarioHistory: userData.scenarioHistory || [],
-            scenarioCreatedAt: userData.scenarioCreatedAt || null
+            scenarioCreatedAt: userData.scenarioCreatedAt || null,
+            scenarioProgress: userData.scenarioProgress || 0
         };
     } catch (error) {
         console.error('Error getting chat scenario data:', error);
@@ -174,8 +176,61 @@ function formatScenarioForUI(scenario) {
         description: scenario.scenario_description,
         emotionalTone: scenario.emotional_tone,
         conversationDirection: scenario.conversation_direction,
-        systemPromptAddition: scenario.system_prompt_addition
+        systemPromptAddition: scenario.system_prompt_addition,
+        // New guided scenario fields
+        initialSituation: scenario.initial_situation || null,
+        goal: scenario.goal || null,
+        thresholds: scenario.thresholds || null,
+        finalQuote: scenario.final_quote || null,
+        isPremiumOnly: scenario.is_premium_only || false,
+        isAlertOriented: scenario.is_alert_oriented || false,
+        icon: scenario.icon || null,
+        category: scenario.category || null
     };
+}
+
+/**
+ * Update scenario progress for a user chat
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userChatId - User chat ID
+ * @param {number} progress - Progress value (0-100)
+ */
+async function updateScenarioProgress(db, userChatId, progress) {
+    try {
+        const userChatCollection = db.collection('userChat');
+        
+        await userChatCollection.updateOne(
+            { _id: new ObjectId(userChatId) },
+            { $set: { scenarioProgress: Math.min(100, Math.max(0, progress)) } }
+        );
+        
+        return true;
+    } catch (error) {
+        console.error('Error updating scenario progress:', error);
+        throw error;
+    }
+}
+
+/**
+ * Get current scenario progress
+ * @param {Object} db - MongoDB database instance
+ * @param {string} userChatId - User chat ID
+ * @returns {number} Progress value (0-100)
+ */
+async function getScenarioProgress(db, userChatId) {
+    try {
+        const userChatCollection = db.collection('userChat');
+        
+        const userData = await userChatCollection.findOne(
+            { _id: new ObjectId(userChatId) },
+            { projection: { scenarioProgress: 1 } }
+        );
+        
+        return userData?.scenarioProgress || 0;
+    } catch (error) {
+        console.error('Error getting scenario progress:', error);
+        return 0;
+    }
 }
 
 module.exports = {
@@ -184,5 +239,7 @@ module.exports = {
     getUserScenariosHistory,
     selectScenario,
     shouldGenerateScenarios,
-    formatScenarioForUI
+    formatScenarioForUI,
+    updateScenarioProgress,
+    getScenarioProgress
 };

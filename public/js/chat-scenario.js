@@ -238,7 +238,7 @@ window.ChatScenarioModule = (function() {
 
 
     /**
-     * Create a scenario card element
+     * Create a scenario card element with enhanced guided scenario design
      */
     function createScenarioCard(scenario, index) {
         const card = document.createElement('div');
@@ -250,16 +250,74 @@ window.ChatScenarioModule = (function() {
             card.classList.add('selected');
         }
         
+        // Add premium and alert badges if applicable
+        const isPremium = scenario.isPremiumOnly;
+        const isAlert = scenario.isAlertOriented;
+        
+        // Build thresholds preview (show first 2 thresholds)
+        let thresholdsHtml = '';
+        if (scenario.thresholds && scenario.thresholds.length > 0) {
+            const previewThresholds = scenario.thresholds.slice(0, 2);
+            thresholdsHtml = `
+                <div class="scenario-thresholds-preview">
+                    ${previewThresholds.map(t => `
+                        <div class="threshold-item">
+                            <span class="threshold-dot"></span>
+                            <span class="threshold-name">${escapeHtml(t.name)}</span>
+                        </div>
+                    `).join('')}
+                    ${scenario.thresholds.length > 2 ? `<span class="threshold-more">+${scenario.thresholds.length - 2} more</span>` : ''}
+                </div>
+            `;
+        }
+        
+        // Build goal section
+        let goalHtml = '';
+        if (scenario.goal) {
+            goalHtml = `
+                <div class="scenario-goal">
+                    <span class="goal-icon">🎯</span>
+                    <span class="goal-text">${escapeHtml(scenario.goal)}</span>
+                </div>
+            `;
+        }
+        
+        // Build icon and badges row
+        const iconDisplay = scenario.icon || '📖';
+        
         card.innerHTML = `
+            <div class="scenario-card-badges">
+                ${isAlert ? '<span class="scenario-badge-alert">🚨 URGENT</span>' : ''}
+                ${isPremium ? '<span class="scenario-badge-premium">⭐ PREMIUM</span>' : ''}
+            </div>
+            <div class="scenario-card-icon">${iconDisplay}</div>
             <div class="scenario-card-header">
-                <h3 class="scenario-title">${escapeHtml(scenario.title)}</h3>
+                <h3 class="scenario-title">${escapeHtml(scenario.title.replace(/^[^\s]+\s/, ''))}</h3>
                 ${isSelected ? '<span class="scenario-badge-selected">✓ ' + 
                     (window.chatScenariosTranslations?.selected || 'Selected') + '</span>' : ''}
             </div>
             <p class="scenario-description">${escapeHtml(scenario.description)}</p>
+            ${goalHtml}
+            ${thresholdsHtml}
+            <div class="scenario-tone">
+                <span class="tone-label">${window.chatScenariosTranslations?.emotional_tone || 'Tone'}:</span>
+                <span class="tone-value">${escapeHtml(scenario.emotionalTone || 'Dynamic')}</span>
+            </div>
+            <button class="scenario-select-btn">
+                ${window.chatScenariosTranslations?.choose_scenario || 'Start This Adventure'}
+            </button>
         `;
         
-        // Add click event listener to entire card
+        // Add click event listener to select button
+        const selectBtn = card.querySelector('.scenario-select-btn');
+        if (selectBtn) {
+            selectBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectScenario(scenario.id);
+            });
+        }
+        
+        // Also add click to card
         card.addEventListener('click', () => {
             selectScenario(scenario.id);
         });
@@ -275,11 +333,20 @@ window.ChatScenarioModule = (function() {
     function convertScenarioToExpectedFormat(apiScenario) {
         return {
             id: apiScenario.id || apiScenario._id, // Prefer 'id', fallback to '_id'
-            title: apiScenario.scenario_title,
-            description: apiScenario.scenario_description,
-            emotionalTone: apiScenario.emotional_tone,
-            conversationDirection: apiScenario.conversation_direction,
-            system_prompt_addition: apiScenario.system_prompt_addition
+            title: apiScenario.scenario_title || apiScenario.title,
+            description: apiScenario.scenario_description || apiScenario.description,
+            emotionalTone: apiScenario.emotional_tone || apiScenario.emotionalTone,
+            conversationDirection: apiScenario.conversation_direction || apiScenario.conversationDirection,
+            system_prompt_addition: apiScenario.system_prompt_addition || apiScenario.systemPromptAddition,
+            // New guided scenario fields
+            initialSituation: apiScenario.initial_situation || apiScenario.initialSituation,
+            goal: apiScenario.goal,
+            thresholds: apiScenario.thresholds,
+            finalQuote: apiScenario.final_quote || apiScenario.finalQuote,
+            isPremiumOnly: apiScenario.is_premium_only || apiScenario.isPremiumOnly,
+            isAlertOriented: apiScenario.is_alert_oriented || apiScenario.isAlertOriented,
+            icon: apiScenario.icon,
+            category: apiScenario.category
         };
     }
 
@@ -306,37 +373,131 @@ window.ChatScenarioModule = (function() {
         // Remove existing selected scenario display if any
         removeSelectedScenarioDisplay();
         
-        // Create selected scenario display element with all details
+        // Create selected scenario display element with enhanced guided scenario info
         const displayDiv = document.createElement('div');
         displayDiv.className = 'selected-scenario-display';
         displayDiv.id = 'selected-scenario-badge';
+        
+        // Build goal section
+        let goalHtml = '';
+        if (currentScenario.goal) {
+            goalHtml = `
+                <div class="selected-scenario-goal">
+                    <span class="goal-icon">🎯</span>
+                    <span class="goal-label">Your Goal:</span>
+                    <span class="goal-text">${escapeHtml(currentScenario.goal)}</span>
+                </div>
+            `;
+        }
+        
+        // Build progress bar (if thresholds exist)
+        let progressHtml = '';
+        if (currentScenario.thresholds && currentScenario.thresholds.length > 0) {
+            progressHtml = `
+                <div class="scenario-progress-container" id="scenario-progress">
+                    <div class="progress-bar-wrapper">
+                        <div class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-thresholds">
+                        ${currentScenario.thresholds.map(t => `
+                            <div class="progress-threshold" data-progress="${t.progress}" title="${escapeHtml(t.name)}">
+                                <div class="threshold-marker"></div>
+                                <span class="threshold-label">${escapeHtml(t.name)}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Build initial situation display
+        let situationHtml = '';
+        if (currentScenario.initialSituation) {
+            situationHtml = `
+                <div class="scenario-situation">
+                    <strong>📍 The Scene:</strong>
+                    <p>${escapeHtml(currentScenario.initialSituation)}</p>
+                </div>
+            `;
+        }
+        
+        const iconDisplay = currentScenario.icon || '📖';
+        
         displayDiv.innerHTML = `
             <div class="scenario-info">
                 <div class="scenario-header">
+                    <span class="scenario-icon">${iconDisplay}</span>
                     <div class="scenario-name">${escapeHtml(currentScenario.title)}</div>
-                    <div class="scenario-meta">
-                        <span class="scenario-meta-item">
-                            <strong>Tone:</strong> ${escapeHtml(currentScenario.emotionalTone)}
-                        </span>
-                        <span class="scenario-meta-item">
-                            <strong>Direction:</strong> ${escapeHtml(currentScenario.conversationDirection)}
-                        </span>
-                    </div>
+                    ${currentScenario.isAlertOriented ? '<span class="badge-alert-small">🚨 URGENT</span>' : ''}
                 </div>
-                <div class="scenario-description">
-                    <p>${escapeHtml(currentScenario.description)}</p>
+                ${goalHtml}
+                ${situationHtml}
+                ${progressHtml}
+                <div class="scenario-meta">
+                    <span class="scenario-meta-item">
+                        <strong>Tone:</strong> ${escapeHtml(currentScenario.emotionalTone || 'Dynamic')}
+                    </span>
                 </div>
-                ${currentScenario.system_prompt_addition ? `
-                <div class="scenario-prompt">
-                    <strong>Scenario Instructions:</strong>
-                    <p>${escapeHtml(currentScenario.system_prompt_addition)}</p>
-                </div>
-                ` : ''}
             </div>
         `;
         
         // Insert at the beginning of chat container
         chatContainer.insertBefore(displayDiv, chatContainer.firstChild);
+    }
+
+    /**
+     * Update scenario progress bar
+     * @param {number} progress - Progress value (0-100)
+     */
+    function updateProgressBar(progress) {
+        const progressBar = document.querySelector('#scenario-progress .progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${Math.min(100, Math.max(0, progress))}%`;
+        }
+        
+        // Update threshold markers
+        const markers = document.querySelectorAll('.progress-threshold');
+        markers.forEach(marker => {
+            const thresholdProgress = parseInt(marker.dataset.progress);
+            if (progress >= thresholdProgress) {
+                marker.classList.add('achieved');
+            } else {
+                marker.classList.remove('achieved');
+            }
+        });
+    }
+
+    /**
+     * Display goal achieved message with final quote
+     * @param {string} finalQuote - The final quote to display
+     */
+    function displayGoalAchieved(finalQuote) {
+        const chatContainer = document.getElementById(chatContainerId);
+        if (!chatContainer) return;
+        
+        // Remove existing goal achieved display if any
+        const existing = document.getElementById('goal-achieved-display');
+        if (existing) existing.remove();
+        
+        const achievedDiv = document.createElement('div');
+        achievedDiv.className = 'goal-achieved-display';
+        achievedDiv.id = 'goal-achieved-display';
+        achievedDiv.innerHTML = `
+            <div class="goal-achieved-content">
+                <div class="goal-achieved-icon">🎉</div>
+                <h3 class="goal-achieved-title">Goal Achieved!</h3>
+                ${finalQuote ? `<blockquote class="final-quote">"${escapeHtml(finalQuote)}"</blockquote>` : ''}
+                <p class="goal-achieved-message">Congratulations! You've completed this scenario.</p>
+            </div>
+        `;
+        
+        // Insert after scenario display
+        const scenarioDisplay = document.getElementById('selected-scenario-badge');
+        if (scenarioDisplay && scenarioDisplay.nextSibling) {
+            chatContainer.insertBefore(achievedDiv, scenarioDisplay.nextSibling);
+        } else {
+            chatContainer.appendChild(achievedDiv);
+        }
     }
 
     /**
@@ -346,6 +507,10 @@ window.ChatScenarioModule = (function() {
         const display = document.getElementById('selected-scenario-badge');
         if (display) {
             display.remove();
+        }
+        const goalDisplay = document.getElementById('goal-achieved-display');
+        if (goalDisplay) {
+            goalDisplay.remove();
         }
     }
 
@@ -552,7 +717,9 @@ window.ChatScenarioModule = (function() {
         hide,
         getCurrentScenario,
         getScenarios,
-        clearScenarios
+        clearScenarios,
+        updateProgressBar,
+        displayGoalAchieved
     };
 })();
 

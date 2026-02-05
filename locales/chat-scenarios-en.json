@@ -1,19 +1,27 @@
 {
-  "scenarios_title": "Conversation Scenarios",
-  "scenarios_loading": "Generating scenarios...",
+  "scenarios_title": "Choose Your Adventure",
+  "scenarios_loading": "Preparing your scenarios",
   "scenarios_empty": "No scenarios available",
   "scenarios_error": "Unable to load scenarios",
   "scenarios_close": "Close scenarios",
   "no_scenarios_available": "No scenarios available",
-  "choose_scenario": "Choose This Scenario",
+  "choose_scenario": "Start This Adventure",
   "selected": "Selected",
-  "emotional_tone": "Emotional Tone",
+  "emotional_tone": "Mood",
   "conversation_direction": "Conversation Direction",
-  "scenario_selected": "Scenario selected!",
+  "scenario_selected": "Adventure begins!",
   "scenario_selection_failed": "Failed to select scenario",
+  "your_goal": "Your Goal",
+  "the_scene": "The Scene",
+  "progress": "Progress",
+  "goal_achieved": "Goal Achieved!",
+  "congratulations": "Congratulations! You've completed this scenario.",
+  "premium_only": "Premium Only",
+  "urgent": "Urgent",
+  "thresholds": "Milestones",
   "settings": {
     "scenariosSettings": "Scenarios Settings",
     "enableScenarios": "Enable Chat Scenarios",
-    "scenariosDescription": "Choose the emotional tone and direction for your conversation"
+    "scenariosDescription": "Choose immersive guided adventures with goals and milestones"
   }
 }

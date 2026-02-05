@@ -1,19 +1,27 @@
 {
-  "scenarios_title": "シナリオを選択",
-  "scenarios_loading": "シナリオを生成中...",
+  "scenarios_title": "アドベンチャーを選ぶ",
+  "scenarios_loading": "シナリオを準備中",
   "scenarios_empty": "利用可能なシナリオがありません",
   "scenarios_error": "シナリオを読み込めません",
   "scenarios_close": "シナリオを閉じる",
   "no_scenarios_available": "利用可能なシナリオがありません",
-  "choose_scenario": "このシナリオを選択する",
+  "choose_scenario": "このアドベンチャーを始める",
   "selected": "選択済み",
-  "emotional_tone": "感情的なトーン",
+  "emotional_tone": "ムード",
   "conversation_direction": "会話の方向性",
-  "scenario_selected": "シナリオが選択されました！",
+  "scenario_selected": "アドベンチャーが始まります！",
   "scenario_selection_failed": "シナリオの選択に失敗しました",
+  "your_goal": "あなたの目標",
+  "the_scene": "シーン",
+  "progress": "進捗",
+  "goal_achieved": "目標達成！",
+  "congratulations": "おめでとうございます！このシナリオを完了しました。",
+  "premium_only": "プレミアム限定",
+  "urgent": "緊急",
+  "thresholds": "マイルストーン",
   "settings": {
     "scenariosSettings": "シナリオ設定",
     "enableScenarios": "チャットシナリオを有効にする",
-    "scenariosDescription": "会話の感情的なトーンと方向性を選択してください"
+    "scenariosDescription": "目標とマイルストーンのある没入型ガイド付きアドベンチャーを選択"
   }
 }
