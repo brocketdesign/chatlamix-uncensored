@@ -49,6 +49,21 @@ const {
 const {
     evaluateScenarioProgress
 } = require('../models/chat-scenario-utils');
+
+/**
+ * Background task processor - runs tasks without blocking the main response
+ * @param {Function} taskFn - Async function to execute in background
+ * @param {string} taskName - Name for logging purposes
+ */
+function runInBackground(taskFn, taskName = 'background-task') {
+    setImmediate(async () => {
+        try {
+            await taskFn();
+        } catch (error) {
+            console.error(`[${taskName}] Background task error:`, error.message);
+        }
+    });
+}
 // Fetches chat document from 'chats' collection
 async function getChatDocument(request, db, chatId) {
     let chatdoc = await db.collection('chats').findOne({ _id: new ObjectId(chatId) });
@@ -262,13 +277,16 @@ async function routes(fastify, options) {
                 userId = user._id;
             }
 
-            // Fetch user information and settings
-            const userInfo = await getUserInfo(db, userId);
+            // ========================================================================
+            // PHASE 1: Parallel fetch of essential data (optimize for speed)
+            // ========================================================================
+            const [userInfo, userSettings, userData] = await Promise.all([
+                getUserInfo(db, userId),
+                getUserChatToolSettings(fastify.mongo.db, userId, chatId),
+                getUserChatData(db, userId, userChatId)
+            ]);
             
-            const userSettings = await getUserChatToolSettings(fastify.mongo.db, userId, chatId);
-            
-            let userData = await getUserChatData(db, userId, userChatId);
-            const subscriptionStatus = userInfo.subscriptionStatus == 'active' ? true : false;
+            const subscriptionStatus = userInfo?.subscriptionStatus == 'active' ? true : false;
             
             if (!userData) {
                 console.error(`[openai-chat-completion:${requestId}] ERROR - User data not found for userChatId: ${userChatId}`);
@@ -285,41 +303,62 @@ async function routes(fastify, options) {
                 messageTypes[key] = (messageTypes[key] || 0) + 1;
             });
 
-            const isAdmin = await checkUserAdmin(fastify, userId);
-            
+            // ========================================================================
+            // PHASE 2: Parallel fetch of chat document, language, admin status, etc.
+            // ========================================================================
             let chatDocument;
+            let characterDescription;
+            let preferredLang;
+            let isAdmin;
+            
             try {
-                chatDocument = await getChatDocument(request, db, chatId);
+                // These can all run in parallel
+                const [chatDocResult, isAdminResult, preferredLangResult] = await Promise.all([
+                    getChatDocument(request, db, chatId),
+                    checkUserAdmin(fastify, userId),
+                    getPreferredChatLanguage(db, userId, chatId)
+                ]);
+                
+                chatDocument = chatDocResult;
+                isAdmin = isAdminResult;
+                preferredLang = preferredLangResult;
+                
+                if (!chatDocument) {
+                    console.error(`[openai-chat-completion:${requestId}] ERROR - Chat document is null or undefined for chatId: ${chatId}`);
+                    return reply.status(400).send({ error: 'Chat document not found' });
+                }
+                
+                // Get character description (depends on chatDocument)
+                characterDescription = await checkImageDescription(db, chatId, chatDocument);
+                
             } catch (error) {
                 console.error(`[openai-chat-completion:${requestId}] ERROR fetching chat document:`, error);
                 console.error(`[openai-chat-completion:${requestId}] Stack trace:`, error.stack);
                 return reply.status(400).send({ error: 'Failed to fetch chat document', details: error.message });
             }
             
-            if (!chatDocument) {
-                console.error(`[openai-chat-completion:${requestId}] ERROR - Chat document is null or undefined for chatId: ${chatId}`);
-                return reply.status(400).send({ error: 'Chat document not found' });
-            }
-            
             const nsfw = chatDocument?.nsfw || false;
             const characterNsfw = chatDocument?.nsfw || false;
             const chatDescription = chatDataToString(chatDocument);
-            
-            const characterDescription = await checkImageDescription(db, chatId, chatDocument);
-            
-            // Get preferred chat language: settings > user profile > interface language
-            const preferredLang = await getPreferredChatLanguage(db, userId, chatId);
             const language = preferredLang || getLanguageName(userInfo.lang);
+            
+            // Debug: Log language detection for chat completion
+            console.log(`🌐 [chat-completion:${requestId}] LANGUAGE DEBUG:`);
+            console.log(`   - preferredChatLanguage (from settings): "${preferredLang || 'NOT SET'}"`); 
+            console.log(`   - userInfo.lang (user profile): "${userInfo?.lang || 'NOT SET'}"`); 
+            console.log(`   - getLanguageName(userInfo.lang): "${getLanguageName(userInfo?.lang) || 'NOT SET'}"`); 
+            console.log(`   - FINAL language used for completion: "${language}"`);
 
-            // Handle chat scenarios - Generate scenarios at the start of a new chat ONLY if:
-            // 1. Not already generated (check for scenarioGenerated flag)
-            // 2. Scenarios are enabled in settings
-            // 3. No scenario has been selected yet (currentScenario is null)
+            // Handle chat scenarios - Generate scenarios in background (non-blocking)
+            // Only if: 1. Not already generated, 2. Scenarios enabled, 3. No scenario selected
             const scenariosAlreadyGenerated = userData.scenarioGenerated === true;
             const hasSelectedScenario = userData.currentScenario !== null && userData.currentScenario !== undefined;
-            const scenariosEnabled = userSettings.scenariosEnabled === true ? true : false; // Default to false if not explicitly enabled
+            const scenariosEnabled = userSettings.scenariosEnabled === true ? true : false;
+            
             if (!scenariosAlreadyGenerated && !hasSelectedScenario && scenariosEnabled) {
-                    console.log(`[DEBUG] Entering scenario generation for userChatId: ${userChatId}`);
+                // Run scenario generation in background - don't block chat completion
+                runInBackground(async () => {
+                    console.log(`[DEBUG] Background scenario generation for userChatId: ${userChatId}`);
                 try {
                     // Get persona if available
                     let personaInfo = null;
@@ -353,11 +392,11 @@ async function routes(fastify, options) {
                             }))
                         });
                         
-                    } else {
                     }
                 } catch (error) {
-                    // Don't block chat completion if scenario generation fails
+                    console.error(`[openai-chat-completion:${requestId}] Background scenario generation error:`, error.message);
                 }
+                }, `scenario-generation-${requestId}`);
             }
             
             // Get the last non-context message (skip hidden scenario context messages)
@@ -373,7 +412,6 @@ async function routes(fastify, options) {
                 };
                 userData.messages.push(lastUserMessage);
                 lastMsgIndex = userData.messages.length - 1;
-                //return reply.status(400).send({ error: 'No messages in chat' });
             }
             
             const lastAssistantRelation = userData.messages
@@ -386,35 +424,33 @@ async function routes(fastify, options) {
 
             // Transform messages for completion (excluding the last message which we handle separately)
             const userMessages = transformUserMessages(userData.messages, request.translations);
-            //console.log(`[/api/openai-chat-completion] Transformed user messages:`, userMessages);
             
-            // Handle image generation with the last message
-            const imageGenResult = await handleImageGeneration(
-                db, lastUserMessage, lastUserMessage, genImage, userData, 
-                userInfo, isAdmin, characterDescription, characterNsfw, userChatId, chatId, 
-                userId, request.translations, fastify
-            );
+            // ========================================================================
+            // PHASE 3: Parallel fetch of persona, points, tasks, and image handling
+            // ========================================================================
+            const personaId = userData?.persona || null;
+            
+            // Run these in parallel since they're independent
+            const [imageGenResult, personaInfo, userPoints, all_tasks, userChatCustomizations] = await Promise.all([
+                handleImageGeneration(
+                    db, lastUserMessage, lastUserMessage, genImage, userData, 
+                    userInfo, isAdmin, characterDescription, characterNsfw, userChatId, chatId, 
+                    userId, request.translations, fastify
+                ),
+                personaId ? getPersonaById(db, personaId) : Promise.resolve(null),
+                getUserPoints(fastify.mongo.db, userId),
+                getTasks(db, null, userId),
+                getUserChatCustomizations(fastify.mongo.db, userId, chatId)
+            ]);
             
             genImage = imageGenResult.genImage;
             const imgMessage = imageGenResult.imgMessage;
-
-            // Handle persona information
-            let personaInfo = null;
-            try {
-                const personaId = userData?.persona || null;
-                personaInfo = personaId ? await getPersonaById(db, personaId) : null;
-            } catch (error) {
-            }
-            
             const userInfo_or_persona = personaInfo || userInfo;
 
-            
-            // Handle chat goals - Update this section
+            // Handle chat goals - Run only if enabled (can involve AI calls, so run after parallel batch)
             let chatGoal = null;
             let goalCompletion = null;
-            
-            // Check if goals are enabled for this chat
-            const goalsEnabled = userSettings.goalsEnabled === true; // Default to false if not set
+            const goalsEnabled = userSettings.goalsEnabled === true;
             
             if (goalsEnabled) {
                 const goalResult = await handleChatGoals(
@@ -425,11 +461,7 @@ async function routes(fastify, options) {
                 goalCompletion = goalResult.goalCompletion;
             }
 
-            // Check the user's points balance after handling goals in case the user completed a goal
-            const userPoints = await getUserPoints(fastify.mongo.db, userId);
-            const all_tasks = await getTasks(db, null, userId);
-
-            // Generate system content
+            // Generate system content (fast, no external calls)
             let enhancedSystemContent = await completionSystemContent(
                 chatDocument,
                 chatDescription,
@@ -439,9 +471,6 @@ async function routes(fastify, options) {
                 all_tasks,
                 subscriptionStatus
             );
-
-            // Get user-specific character customizations from userChat document
-            const userChatCustomizations = await getUserChatCustomizations(fastify.mongo.db, userId, chatId);
 
             // Apply user settings and character data to system prompt (including user customizations)
             enhancedSystemContent = await applyUserSettingsToPrompt(fastify.mongo.db, userId, chatId, enhancedSystemContent, chatDocument, userChatCustomizations);
@@ -527,44 +556,61 @@ async function routes(fastify, options) {
             const selectedModel = userSettings.selectedModel || customModel;
             const isPremium = subscriptionStatus;
             
-            if(process.env.NODE_ENV !== 'production') {
-                //console.log(`[/api/openai-chat-completion] Using model: ${selectedModel}, Language: ${language}, Premium: ${isPremium}`);
-                //console.log(`[/api/openai-chat-completion] System message:`, messagesForCompletion[0]);
-                //console.log(`[/api/openai-chat-completion] Messages for completion:`, messagesForCompletion.slice(1,messagesForCompletion.length)); // Exclude system message from log
+            // ========================================================================
+            // PHASE 4: Generate completion and return immediately
+            // ========================================================================
+            const completion = await generateCompletion(messagesForCompletion, 600, selectedModel, language, selectedModel, isPremium);
+            
+            if (!completion) {
+                console.error(`[openai-chat-completion:${requestId}] ERROR - No completion received from generateCompletion`);
+                fastify.sendNotificationToUser(userId, 'hideCompletionMessage', { uniqueId });
+                return reply.status(200).send({ success: false, error: 'No completion generated' });
             }
             
-            generateCompletion(messagesForCompletion, 600, selectedModel, language, selectedModel, isPremium)
-            .then(async (completion) => {
-                if (completion) {
-                    fastify.sendNotificationToUser(userId, 'displayCompletionMessage', { message: completion, uniqueId });
-                    
-                    const newAssistantMessage = { 
-                        role: 'assistant', 
-                        content: completion, 
-                        timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
-                        createdAt: new Date(),
-                        custom_relation: custom_relation ? custom_relation : 'Casual' 
-                    };
-                    
-                    // DO NOT copy 'context' name from lastUserMessage to assistant
-                    // Only copy name if it's NOT 'context'
-                    if (lastUserMessage && lastUserMessage.name && lastUserMessage.name !== 'context') {
-                        newAssistantMessage.name = lastUserMessage.name;
-                    }
-                    if (genImage?.image_request) {
-                        newAssistantMessage.image_request = true;
-                    }
-                    
+            // Send completion to user IMMEDIATELY via WebSocket
+            fastify.sendNotificationToUser(userId, 'displayCompletionMessage', { message: completion, uniqueId });
+            
+            // Prepare the new assistant message
+            const newAssistantMessage = { 
+                role: 'assistant', 
+                content: completion, 
+                timestamp: new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' }),
+                createdAt: new Date(),
+                custom_relation: custom_relation ? custom_relation : 'Casual' 
+            };
+            
+            // Copy name if not 'context'
+            if (lastUserMessage && lastUserMessage.name && lastUserMessage.name !== 'context') {
+                newAssistantMessage.name = lastUserMessage.name;
+            }
+            if (genImage?.image_request) {
+                newAssistantMessage.image_request = true;
+            }
+            
+            // Return response immediately - don't wait for background tasks
+            reply.status(200).send({ success: true, message: 'Completion sent' });
+            
+            // ========================================================================
+            // PHASE 5: Background post-completion processing (non-blocking)
+            // ========================================================================
+            runInBackground(async () => {
+                try {
+                    // Add the new message to userData
                     userData.messages.push(newAssistantMessage);
                     userData.updatedAt = new Date().toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
                     
-                    await updateMessagesCount(db, chatId);
-                    await updateChatLastMessage(db, chatId, userId, completion, userData.updatedAt);
-                    await updateUserChat(db, userId, userChatId, userData.messages, userData.updatedAt);
+                    // Update database records in parallel
+                    await Promise.all([
+                        updateMessagesCount(db, chatId),
+                        updateChatLastMessage(db, chatId, userId, completion, userData.updatedAt),
+                        updateUserChat(db, userId, userChatId, userData.messages, userData.updatedAt)
+                    ]);
 
-                    // Check if the assistant's new message was an image request - Detection enabled for ALL users
-                    const newUserPointsBalance = await getUserPoints(db, userId);
-                    const autoImageGenerationEnabled = await getAutoImageGenerationSetting(db, userId, chatId);
+                    // Check if the assistant's new message was an image request
+                    const [newUserPointsBalance, autoImageGenerationEnabled] = await Promise.all([
+                        getUserPoints(db, userId),
+                        getAutoImageGenerationSetting(db, userId, chatId)
+                    ]);
                     
                     // Run image detection for all users (regardless of autoImageGenerationEnabled setting)
                     if (messagesForCompletion.length > 2 && newUserPointsBalance >= 50) {
@@ -582,10 +628,7 @@ async function routes(fastify, options) {
                             if (isPremium && autoImageGenerationEnabled) {
                                 // Premium user with auto-generation enabled: proceed with image generation
                                 lastUserMessage.content += ' ' + newAssistantMessage.content;
-                                // [OVERWRITE] Use the character nsfw setting for auto image generation
-                                // assistantImageRequest.nsfw = nsfw;
 
-                                // [FIND FIX] Duplication of the parameters assistantImageRequest; it should be currentUserMessage
                                 const imageResult = await handleImageGeneration(
                                     db, assistantImageRequest, lastUserMessage, assistantImageRequest, userData,
                                     userInfo, isAdmin, characterDescription, nsfw, userChatId, chatId, userId, request.translations, fastify
@@ -610,31 +653,27 @@ async function routes(fastify, options) {
                     if (!isPremium && messagesForCompletion.length >= 3) {
                         try {
                             // Check if we've already shown upsell recently to avoid being too aggressive
-                            const recentUpsellCount = await getRecentUpsellCount(db, userId, 1); // Last 1 hour
-                            const recentDismissal = await hasRecentDismissal(db, userId, 30); // Last 30 minutes
+                            const [recentUpsellCount, recentDismissal] = await Promise.all([
+                                getRecentUpsellCount(db, userId, 1),
+                                hasRecentDismissal(db, userId, 30)
+                            ]);
                             
                             // Only check if user hasn't dismissed recently and hasn't seen too many upsells
                             if (recentUpsellCount < 2 && !recentDismissal) {
                                 // Get recent messages for NSFW analysis
-                                const recentMessages = messagesForCompletion.slice(-6); // Last 6 messages
+                                const recentMessages = messagesForCompletion.slice(-6);
                                 const nsfwResult = await checkNsfwPush(recentMessages);
                                 
                                 console.log(`🔥 [openai-chat-completion:${requestId}] NSFW push detection result:`, nsfwResult);
                                 
-                                // Trigger upsell if NSFW push detected with sufficient confidence
-                                // Thresholds: nsfw_score >= 60 (moderate to explicit content), confidence >= 70 (reasonably confident detection)
-                                // These values balance false positive avoidance while capturing monetizable moments
-                                // Based on industry standards from similar AI companion apps (Candy.ai, Nastia, etc.)
-                                const NSFW_SCORE_THRESHOLD = 60;  // 0-100, where 60+ indicates clearly explicit intent
-                                const CONFIDENCE_THRESHOLD = 70;  // 0-100, where 70+ ensures reliable detection
+                                const NSFW_SCORE_THRESHOLD = 60;
+                                const CONFIDENCE_THRESHOLD = 70;
                                 
                                 if (nsfwResult.is_nsfw_push && nsfwResult.nsfw_score >= NSFW_SCORE_THRESHOLD && nsfwResult.confidence >= CONFIDENCE_THRESHOLD) {
                                     console.log(`🔥💰 [openai-chat-completion:${requestId}] NSFW push detected for free user - triggering upsell`);
                                     
-                                    // Record the event for analytics
                                     await recordNsfwPushEvent(db, userId, chatId, nsfwResult, isPremium, true);
                                     
-                                    // Send NSFW upsell notification
                                     fastify.sendNotificationToUser(userId, 'nsfwUpsellTrigger', { 
                                         message: request.translations?.websocket?.nsfwUpsellMessage || 'Unlock uncensored mode for unlimited conversations without limits! 🔥',
                                         nsfwCategory: nsfwResult.nsfw_category,
@@ -643,7 +682,6 @@ async function routes(fastify, options) {
                                         userChatId
                                     });
                                 } else if (nsfwResult.is_nsfw_push) {
-                                    // Record the event but don't show upsell (score/confidence too low)
                                     await recordNsfwPushEvent(db, userId, chatId, nsfwResult, isPremium, false);
                                 }
                             }
@@ -653,6 +691,8 @@ async function routes(fastify, options) {
                     }
 
                     // Evaluate scenario progress if a scenario is active
+                    // Re-fetch latest user data to get current scenario
+                    const latestUserData = await getUserChatData(db, userId, userChatId);
                     if (latestUserData?.currentScenario) {
                         try {
                             const progressResult = await evaluateScenarioProgress(
@@ -665,7 +705,6 @@ async function routes(fastify, options) {
                             if (progressResult.updated) {
                                 console.log(`🎯 [openai-chat-completion:${requestId}] Scenario progress updated: ${progressResult.previousProgress}% → ${progressResult.progress}%`);
                                 
-                                // Notify frontend of progress update
                                 fastify.sendNotificationToUser(userId, 'scenarioProgressUpdated', {
                                     progress: progressResult.progress,
                                     previousProgress: progressResult.previousProgress,
@@ -676,7 +715,6 @@ async function routes(fastify, options) {
                                     userChatId
                                 });
                                 
-                                // Special notification if goal was just achieved
                                 if (progressResult.goalAchieved && progressResult.previousProgress < 100) {
                                     console.log(`🎉 [openai-chat-completion:${requestId}] Scenario goal achieved!`);
                                     fastify.sendNotificationToUser(userId, 'scenarioGoalAchieved', {
@@ -690,15 +728,14 @@ async function routes(fastify, options) {
                             console.error(`🎯 [openai-chat-completion:${requestId}] Scenario progress evaluation error:`, progressError.message);
                         }
                     }
-                } else {
-                    console.error(`[openai-chat-completion:${requestId}] ERROR - No completion received from generateCompletion`);
-                    console.log(`[openai-chat-completion] Hide message: `, uniqueId);
-                    fastify.sendNotificationToUser(userId, 'hideCompletionMessage', { uniqueId });
+                    
+                    // Handle sendImage from gallery on startup
+                    await handleGalleryImage(db, lastUserMessage, userData, userChatId, userId, fastify);
+                    
+                } catch (bgError) {
+                    console.error(`[openai-chat-completion:${requestId}] Background processing error:`, bgError.message);
                 }
-                
-                // Handle sendImage from gallery on startup
-                await handleGalleryImage(db, lastUserMessage, userData, userChatId, userId, fastify);
-            });
+            }, `post-completion-${requestId}`);
 
         } catch (err) {
             console.error(`[openai-chat-completion:${requestId}] === FATAL ERROR ===`);

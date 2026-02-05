@@ -98,22 +98,45 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
         5. Be brief (max 15 words each)
         6. Feel natural and human-like
         7. Avoid generric and boring responses; focus on being specific and interesting.
+        8. IMPORTANT: Generate suggestions in ${language} language only. Do NOT use any other language.
 
         Recent conversation:
         ${conversationContext}
 
-        Generate 3 conversation suggestions in ${language}.`;
+        Generate 3 conversation suggestions in ${language}. IMPORTANT: All suggestions MUST be written in ${language}.`;
+        
+        console.log(`🌐 [generateChatSuggestions] Generating suggestions with language: "${language}"`);
+        
+        // Map language names to native language names for better AI understanding
+        const languageNativeNames = {
+            'french': 'français',
+            'japanese': '日本語',
+            'spanish': 'español',
+            'portuguese': 'português',
+            'german': 'Deutsch',
+            'italian': 'italiano',
+            'chinese': '中文',
+            'korean': '한국어',
+            'thai': 'ไทย',
+            'russian': 'русский',
+            'hindi': 'हिन्दी',
+            'english': 'English'
+        };
+        const nativeLanguageName = languageNativeNames[language?.toLowerCase()] || language;
 
-        // Create user prompt
-        const userPrompt = `Generate 3 conversation suggestions based on the context above from the point of view of the user (${userDetails}). Include the character name in the suggestions if applicable.`;
+        // Create user prompt - STRONGLY emphasize language requirement
+        const userPrompt = `CRITICAL: Write ONLY in ${nativeLanguageName}.
 
-        // Use OpenAI with structured output
+Generate exactly 3 short conversation suggestions in ${nativeLanguageName}.
+Output format: {"suggestions": ["suggestion1 in ${nativeLanguageName}", "suggestion2 in ${nativeLanguageName}", "suggestion3 in ${nativeLanguageName}"]}`;
+
+        // Use DeepSeek for better multilingual support (Llama doesn't follow language instructions well)
         const openai = new OpenAI({
             apiKey: process.env.NOVITA_API_KEY,
             baseURL: "https://api.novita.ai/openai",
         });        
         const response = await openai.chat.completions.create({
-            model: "meta-llama/llama-3-70b-instruct",
+            model: "deepseek/deepseek-v3.2",
             messages: [
                 { role: "system", content: systemPrompt },
                 { role: "user", content: userPrompt }
@@ -125,6 +148,7 @@ async function generateChatSuggestions(db, chatDocument, userMessages, userInfo,
         });
         
         const parsedResponse = JSON.parse(response.choices[0].message.content);
+        console.log(`🌐 [generateChatSuggestions] AI returned suggestions:`, parsedResponse.suggestions);
         return parsedResponse.suggestions;
 
     } catch (error) {

@@ -84,18 +84,30 @@ async function routes(fastify, options) {
             // Get user's default language preference from chat settings (falls back to user profile)
             const defaultLanguage = await getPreferredChatLanguage(db, userId, chatId) || getLanguageName(userInfo.lang) || 'japanese';
             
+            // Debug: Log language detection for suggestions
+            console.log(`🌐 [chat-suggestions] LANGUAGE DEBUG:`);
+            console.log(`   - preferredChatLanguage (from settings): "${await getPreferredChatLanguage(db, userId, chatId) || 'NOT SET'}"`);
+            console.log(`   - userInfo.lang (user profile): "${userInfo?.lang || 'NOT SET'}"`);
+            console.log(`   - getLanguageName(userInfo.lang): "${getLanguageName(userInfo?.lang) || 'NOT SET'}"`);
+            console.log(`   - defaultLanguage resolved: "${defaultLanguage}"`);
+            
             // Detect actual conversation language (adapts to what user is actually speaking)
-            // Only detect if there's at least one user message to analyze
+            // Only detect after the first user message (exactly 1 user message) to avoid repeated API calls
             let language = defaultLanguage;
             const userMessages = userChatData.messages?.filter(m => m.role === 'user') || [];
-            if (userMessages.length > 0) {
+            if (userMessages.length === 1) {
                 const detectedLang = await detectConversationLanguage(userChatData.messages, defaultLanguage);
                 // Use detected language if confidence is high enough
                 if (detectedLang.confidence >= 60) {
                     language = detectedLang.language.toLowerCase();
-                    console.log(`[chat-suggestions] Using detected language: ${language} (confidence: ${detectedLang.confidence}%)`);
+                    console.log(`   - detectConversationLanguage result: "${language}" (confidence: ${detectedLang.confidence}%)`);
+                } else {
+                    console.log(`   - detectConversationLanguage skipped (confidence ${detectedLang.confidence}% < 60%)`);
                 }
+            } else {
+                console.log(`   - detectConversationLanguage skipped (${userMessages.length} user messages, only runs on first)`);
             }
+            console.log(`   - FINAL language used for suggestions: "${language}"`);
 
             // Generate suggestions
             const suggestions = await generateChatSuggestions(

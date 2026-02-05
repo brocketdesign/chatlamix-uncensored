@@ -436,6 +436,7 @@ async function getPreferredChatLanguage(db, userId, chatId = null) {
         // First check chat tool settings
         const settings = await getUserChatToolSettings(db, userId, chatId);
         if (settings.preferredChatLanguage) {
+            console.log(`🌐 [getPreferredChatLanguage] Found in chatToolSettings: "${settings.preferredChatLanguage}" (userId: ${userId}, chatId: ${chatId})`);
             return settings.preferredChatLanguage;
         }
         
@@ -444,10 +445,12 @@ async function getPreferredChatLanguage(db, userId, chatId = null) {
             const usersCollection = db.collection('users');
             const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
             if (user?.preferredChatLanguage) {
+                console.log(`🌐 [getPreferredChatLanguage] Found in user profile: "${user.preferredChatLanguage}" (userId: ${userId})`);
                 return user.preferredChatLanguage;
             }
         }
         
+        console.log(`🌐 [getPreferredChatLanguage] No preference found (userId: ${userId}, chatId: ${chatId})`);
         return '';
     } catch (error) {
         console.error('[getPreferredChatLanguage] Error getting preferred chat language:', error);

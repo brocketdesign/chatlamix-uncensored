@@ -12,6 +12,7 @@ const {
 } = require('../models/chat-scenario-utils');
 const { chatDataToString } = require('../models/chat-completion-utils');
 const { getPreparedScenarios, getScenarioById } = require('../models/predefined-scenarios');
+const { getPreferredChatLanguage } = require('../models/chat-tool-settings-utils');
 
 async function routes(fastify, options) {
     
@@ -89,6 +90,17 @@ async function routes(fastify, options) {
             
             let scenarios;
             
+            // Get preferred language from chat tool settings (priority) or fallback to user profile
+            const preferredLang = await getPreferredChatLanguage(fastify.mongo.db, userId, userChatDoc.chatId);
+            const language = preferredLang || getLanguageName(request.user.lang || 'ja');
+            
+            // Debug: Log language detection for scenario generation
+            console.log(`🌐 [chat-scenarios/generate] LANGUAGE DEBUG:`);
+            console.log(`   - preferredChatLanguage (from settings): "${preferredLang || 'NOT SET'}"`);
+            console.log(`   - request.user.lang (user profile): "${request.user?.lang || 'NOT SET'}"`);
+            console.log(`   - getLanguageName(request.user.lang): "${getLanguageName(request.user?.lang) || 'NOT SET'}"`);
+            console.log(`   - FINAL language used for scenarios: "${language}"`);
+            
             // Use predefined scenarios for fast loading (default)
             // Only use AI generation if explicitly requested
             if (useAI) {
@@ -107,8 +119,7 @@ async function routes(fastify, options) {
                     chatId: new ObjectId(userChatDoc.chatId)
                 }) || {};
 
-                // Generate scenarios using AI
-                const language = getLanguageName(request.user.lang || 'ja');
+                // Generate scenarios using AI with the correct language
                 scenarios = await generateChatScenarios(
                     {
                         name: chatDoc.name,
@@ -121,6 +132,8 @@ async function routes(fastify, options) {
                 );
             } else {
                 // Fast: Use predefined guided scenarios
+                // Note: Predefined scenarios are in English only - they don't support translation yet
+                console.log(`   ⚠️ Using PREDEFINED scenarios (English only, language param "${language}" ignored)`);
                 scenarios = getPreparedScenarios(
                     { name: chatDoc.name },
                     isPremium,
