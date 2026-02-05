@@ -61,6 +61,11 @@ window.ChatScenarioModule = (function() {
             
             if (data.currentScenario) {
                 currentScenario = data.currentScenario;
+                // If a scenario is already active, display it and set progress
+                displaySelectedScenario();
+                if (typeof data.scenarioProgress === 'number') {
+                    updateProgressBar(data.scenarioProgress);
+                }
             }
         } catch (error) {
             console.error('[ChatScenarioModule] Error initializing:', error);

@@ -1626,6 +1626,10 @@ function determineChatGender(chat) {
         const userChatScenarios = userChat.currentScenario || {};
         if (window.ChatScenarioModule && userChatId && Object.keys(userChatScenarios).length > 0) {
             window.ChatScenarioModule.displaySelectedScenario(userChatScenarios);
+            // Ensure persistent progress is displayed on page refresh
+            if (typeof userChat.scenarioProgress === 'number') {
+                window.ChatScenarioModule.updateProgressBar(userChat.scenarioProgress);
+            }
         }
         
         // Final display summary
