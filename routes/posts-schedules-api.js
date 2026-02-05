@@ -373,7 +373,10 @@ Return ONLY the caption text with hashtags, nothing else.`;
         await updatePostStatus(postId, status, db);
       }
 
-      await updatePost(postId, updates, db);
+      // Only call updatePost if there are other updates beyond status
+      if (Object.keys(updates).length > 0) {
+        await updatePost(postId, updates, db);
+      }
 
       return reply.send({
         success: true,
