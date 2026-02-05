@@ -126,8 +126,6 @@ async function routes(fastify, options) {
                     isPremium,
                     3 // Return 3 scenarios
                 );
-                
-                console.log(`📝 \x1b[1;36m[ScenarioGenerator]\x1b[0m \x1b[1mUsing predefined scenarios for: \x1b[33m${chatDoc.name}\x1b[0m (Premium: ${isPremium ? 'YES' : 'NO'})`);
             }
 
             if (!scenarios || scenarios.length === 0) {

@@ -323,8 +323,6 @@ function getAlertScenarios() {
  * @returns {Object} Personalized scenario
  */
 function personalizeScenario(scenario, characterName) {
-    const nameRegex = /\[Character name\]|\[character\]|they|them|their/gi;
-    
     return {
         ...scenario,
         _id: new ObjectId().toString(),
