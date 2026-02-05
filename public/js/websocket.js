@@ -423,6 +423,28 @@ function initializeWebSocket(onConnectionResult = null) {
               }
               break;
           }
+          case 'scenarioProgressUpdated': {
+              // Scenario progress was updated via AI evaluation
+              const progressData = data.notification;
+              console.log('[WebSocket] Scenario progress updated:', progressData.previousProgress + '% → ' + progressData.progress + '%');
+              
+              // Check if we're in the correct chat and have the scenario module
+              if (window.ChatScenarioModule && progressData.userChatId === sessionStorage.getItem('userChatId')) {
+                  window.ChatScenarioModule.handleProgressUpdate(progressData);
+              }
+              break;
+          }
+          case 'scenarioGoalAchieved': {
+              // Scenario goal was achieved
+              const goalData = data.notification;
+              console.log('[WebSocket] Scenario goal achieved!', goalData.scenarioTitle);
+              
+              // Check if we're in the correct chat and have the scenario module
+              if (window.ChatScenarioModule && goalData.userChatId === sessionStorage.getItem('userChatId')) {
+                  window.ChatScenarioModule.handleGoalAchieved(goalData);
+              }
+              break;
+          }
           default:
             // Removed console.log('[WebSocket] Unhandled notification type:', data.notification.type);
             break;

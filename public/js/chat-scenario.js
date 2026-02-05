@@ -808,22 +808,8 @@ $(document).ready(function() {
     }
 });
 
-// WebSocket event handlers for scenario progress
-if (typeof window.socket !== 'undefined') {
-    // Listen for progress updates
-    window.socket.on('scenarioProgressUpdated', function(data) {
-        if (window.ChatScenarioModule && data.userChatId === userChatId) {
-            window.ChatScenarioModule.handleProgressUpdate(data);
-        }
-    });
-    
-    // Listen for goal achieved
-    window.socket.on('scenarioGoalAchieved', function(data) {
-        if (window.ChatScenarioModule && data.userChatId === userChatId) {
-            window.ChatScenarioModule.handleGoalAchieved(data);
-        }
-    });
-}
+// Note: WebSocket event handlers for scenario progress are registered in websocket.js
+// Events handled: 'scenarioProgressUpdated', 'scenarioGoalAchieved'
 
 /**
  * DEBUG MODE - Console functions for testing spinner and scenario designs
