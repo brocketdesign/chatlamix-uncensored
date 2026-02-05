@@ -1161,53 +1161,94 @@ async function routes(fastify, options) {
   // Add character recommendations endpoint
   fastify.get('/api/character-recommendations', async (req, res) => {
     try {
-        const { style = 'anime', gender = 'female', interests = '', limit = 4 } = req.query;
+        const { style = 'anime', interests = '', limit = 4 } = req.query;
         const lang = req.lang || 'en';
-        console.log(`Language for recommendations: ${lang}`);
+        console.log(`[Recommendations] Style: ${style}, Language: ${lang}, Interests: ${interests}`);
+        
         // Build query based on preferences
-        const query = {};
+        // Filter for characters with valid chatImageUrl (must be a non-empty string starting with http)
+        const query = {
+            $and: [
+                { chatImageUrl: { $exists: true } },
+                { chatImageUrl: { $ne: null } },
+                { chatImageUrl: { $ne: '' } },
+                { chatImageUrl: { $type: 'string' } },
+                { chatImageUrl: { $regex: /^https?:\/\// } }
+            ]
+        };
         
+        // Style is mandatory - always filter by image style
         if (style && style !== 'any') {
-            console.log(`Using image style: ${style}`);
-            query.imageStyle = style;
-        }
-        
-        if (gender && gender !== 'both') {
-            query.gender = gender;
+            console.log(`[Recommendations] Filtering by imageStyle: ${style}`);
+            query.$and.push({ imageStyle: style });
         }
 
-        if (lang && lang !== 'any') {
-            query.language = lang;
-        }
-
-        // Add interest-based filtering if available
+        // Add interest-based filtering if available (but style takes priority)
         if (interests) {
             const interestKeywords = interests.split(',').map(i => i.trim().toLowerCase());
-            query.$or = [
-                { tags: { $in: interestKeywords } },
-                { name: { $regex: interestKeywords.join('|'), $options: 'i' } },
-                { first_message: { $regex: interestKeywords.join('|'), $options: 'i' } }
-            ];
+            query.$and.push({
+                $or: [
+                    { tags: { $in: interestKeywords } },
+                    { name: { $regex: interestKeywords.join('|'), $options: 'i' } },
+                    { first_message: { $regex: interestKeywords.join('|'), $options: 'i' } }
+                ]
+            });
         }
 
-        // Get recommended characters
-        const characters = await fastify.mongo.db.collection('chats').find(query)
+        console.log(`[Recommendations] Query:`, JSON.stringify(query));
+
+        // Get recommended characters (with valid image URLs and matching style)
+        let characters = await fastify.mongo.db.collection('chats').find(query)
             .project({ _id: 1, name: 1, chatImageUrl: 1, first_message: 1, tags: 1, gender: 1, imageStyle: 1 })
-            .limit(parseInt(limit))
+            .limit(parseInt(limit) * 2) // Fetch extra in case some need to be filtered
             .sort({ popularity: -1, createdAt: -1 })
             .toArray();
 
-        // If not enough characters found, get popular ones as fallback
-        if (characters.length < limit) {
-            const fallbackQuery = { gender: gender !== 'both' ? gender : 'female' };
-            const fallbackCharacters = await fastify.mongo.db.collection('chats').find(fallbackQuery)
+        // Double-check: Filter out any characters with invalid image URLs
+        characters = characters.filter(c => 
+            c.chatImageUrl && 
+            typeof c.chatImageUrl === 'string' && 
+            c.chatImageUrl.trim() !== '' &&
+            (c.chatImageUrl.startsWith('http://') || c.chatImageUrl.startsWith('https://'))
+        );
+
+        // If not enough characters found, get more with same style (fallback without interests)
+        if (characters.length < parseInt(limit)) {
+            const existingIds = characters.map(c => c._id);
+            const fallbackQuery = {
+                $and: [
+                    { chatImageUrl: { $exists: true } },
+                    { chatImageUrl: { $ne: null } },
+                    { chatImageUrl: { $ne: '' } },
+                    { chatImageUrl: { $type: 'string' } },
+                    { chatImageUrl: { $regex: /^https?:\/\// } },
+                    { _id: { $nin: existingIds } }
+                ]
+            };
+            
+            // Still respect the style preference in fallback
+            if (style && style !== 'any') {
+                fallbackQuery.$and.push({ imageStyle: style });
+            }
+            
+            let fallbackCharacters = await fastify.mongo.db.collection('chats').find(fallbackQuery)
                 .project({ _id: 1, name: 1, chatImageUrl: 1, first_message: 1, tags: 1, gender: 1, imageStyle: 1 })
                 .limit(parseInt(limit) - characters.length)
                 .sort({ popularity: -1 })
                 .toArray();
             
+            // Double-check fallback results too
+            fallbackCharacters = fallbackCharacters.filter(c => 
+                c.chatImageUrl && 
+                typeof c.chatImageUrl === 'string' && 
+                c.chatImageUrl.trim() !== '' &&
+                (c.chatImageUrl.startsWith('http://') || c.chatImageUrl.startsWith('https://'))
+            );
+            
             characters.push(...fallbackCharacters);
         }
+
+        console.log(`[Recommendations] Returning ${characters.length} characters`);
 
         res.send({ 
             success: true, 

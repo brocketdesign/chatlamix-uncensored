@@ -379,18 +379,7 @@ class OnboardingFunnel {
                 });
             });
 
-            // Character gender selection
-            document.querySelectorAll('.char-gender-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    document.querySelectorAll('.char-gender-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    this.userData.preferredCharacterGender = e.target.dataset.charGender;
 
-                    // Update user in database
-                    await this.updateUserData({ preferredCharacterGender: this.userData.preferredCharacterGender });
-                    this.validateStep1();
-                });
-            });
 
             // Character tags selection (multi-select)
             this.userData.selectedTags = this.userData.selectedTags || [];
@@ -429,7 +418,7 @@ class OnboardingFunnel {
     }
 
     validateStep1() {
-        const hasRequiredFields = this.userData.preferredStyle && this.userData.preferredCharacterGender;
+        const hasRequiredFields = this.userData.preferredStyle;
         const continueBtn = document.querySelector('.btn-continue');
         if (continueBtn) {
             continueBtn.disabled = !hasRequiredFields;
@@ -478,7 +467,6 @@ class OnboardingFunnel {
         try {
             const params = new URLSearchParams({
                 style: this.userData.preferredStyle || 'anime',
-                gender: this.userData.preferredCharacterGender || 'female',
                 limit: 10
             });
 
@@ -521,18 +509,35 @@ class OnboardingFunnel {
         // Clear existing content
         container.innerHTML = '';
 
+        // Filter out characters without valid image URLs before rendering
+        const validCharacters = characters.filter(c => 
+            c.chatImageUrl && 
+            typeof c.chatImageUrl === 'string' && 
+            c.chatImageUrl.trim() !== '' &&
+            (c.chatImageUrl.startsWith('http://') || c.chatImageUrl.startsWith('https://'))
+        );
+
+        if (validCharacters.length === 0) {
+            container.innerHTML = `
+                <div class="text-center w-100 py-4">
+                    <p class="text-muted">${this.t('no_characters_found', 'No characters found. Please try different preferences.')}</p>
+                </div>
+            `;
+            return;
+        }
+
         // Always use custom rendering to ensure proper click handling for onboarding
         // This avoids conflicts with displayChats which redirects to /character/ instead of /chat/
-        characters.forEach(character => {
+        validCharacters.forEach(character => {
             const card = document.createElement('div');
             card.className = 'gallery-card onboarding-character-card';
             card.dataset.id = character._id;
             card.innerHTML = `
                 <div class="card onboarding-character-card-inner">
-                    <img src="${character.chatImageUrl || '/images/default-avatar.png'}"
+                    <img src="${character.chatImageUrl}"
                          class="onboarding-character-img"
                          alt="${character.name}"
-                         onerror="this.src='/images/default-avatar.png'">
+                         onerror="this.parentElement.parentElement.style.display='none'">
                     <div class="onboarding-character-overlay">
                         <h6 class="onboarding-character-name">${character.name}</h6>
                     </div>
