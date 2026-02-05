@@ -57,7 +57,7 @@ async function routes(fastify, options) {
       const imageModels = [
         // Include all non-SD models
         ...Object.entries(IMAGE_MODEL_CONFIGS)
-          .filter(([id, config]) => !config.requiresModel)
+          .filter(([id, config]) => !config.requiresModel && id !== 'reimagine')
           .map(([id, config]) => ({
             id,
             name: config.name,
