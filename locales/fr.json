@@ -1,25 +1,25 @@
 {
   "lang": "fr",
-    "auth": {
-        "signingIn": "Connexion en cours...",
-        "signingOut": "Déconnexion en cours...",
-        "redirectingMessage": "Veuillez patienter pendant la redirection",
-        "seeYouSoon": "À bientôt ! Redirection en cours..."
-    },
-    "contactUs": "Nous Contacter",
-    "contactDescription": "Connectez-vous avec nous sur les réseaux sociaux pour les mises à jour et le support.",
-    "quickLinks": "Liens Rapides",
-    "legal": "Légal et Support",
-    "brandTagline": "Connecter. Créer. Expérimenter.",
-    "allRightsReserved": "Tous droits réservés.",
-    "madeWithLove": "Fait avec",
-    "forYou": "pour vous",
-    "all": "Tout",
-    "feature": "Fonctionnalité",
-    "sendGiftImageDirectly": "Je vous ai envoyé un cadeau, attendez-le !",
-    "sendPoseRequest": "J'ai demandé une nouvelle pose d'image de vous, sur le point de la générer maintenant. Voici l'invite que j'ai utilisée :",
-    "receivedGift": "Vous avez reçu un cadeau !",
-    "image_prompt_result": "L'image que j'ai demandée a été générée !",
+  "auth": {
+    "signingIn": "Connexion en cours...",
+    "signingOut": "Déconnexion en cours...",
+    "redirectingMessage": "Veuillez patienter pendant la redirection",
+    "seeYouSoon": "À bientôt ! Redirection en cours..."
+  },
+  "contactUs": "Vous pouvez nous contacter à tout moment depuis ici",
+  "contactDescription": "Connectez-vous avec nous sur les réseaux sociaux pour les mises à jour et le support.",
+  "quickLinks": "Liens Rapides",
+  "legal": "Légal et Support",
+  "brandTagline": "Connecter. Créer. Expérimenter.",
+  "allRightsReserved": "Tous droits réservés.",
+  "madeWithLove": "Fait avec",
+  "forYou": "pour vous",
+  "all": "Tout",
+  "feature": "Fonctionnalité",
+  "sendGiftImageDirectly": "Je vous ai envoyé un cadeau, attendez-le !",
+  "sendPoseRequest": "J'ai demandé une nouvelle pose d'image de vous, sur le point de la générer maintenant. Voici l'invite que j'ai utilisée :",
+  "receivedGift": "Vous avez reçu un cadeau !",
+  "image_prompt_result": "L'image que j'ai demandée a été générée !",
   "daysAgo": " jour(s) auparavant",
   "unlockAll": "Déverrouiller tout",
   "customPromptModal": {
@@ -47,7 +47,7 @@
   "image_prompt_request": "J'ai demandé l'image suivante",
   "image_liked": "J'aime cette image !",
   "video_liked": "J'aime cette vidéo !",
-  "recent" : "Récent",
+  "recent": "Récent",
   "recentVideos": "Vidéos récentes",
   "loading": "Chargement...",
   "newChat": "Nouvelle discussion",
@@ -96,170 +96,170 @@
     }
   },
   "favorite": {
-      "latest": "Récent",
-      "addFavorite": "Ajouter aux favoris",
-      "removeFavorite": "Supprimer des favoris",
-      "favorited": "Ajouté aux favoris !",
-      "unfavorited": "Supprimé des favoris",
-      "favorites": "Favoris",
-      "myFavorites": "Mes favoris",
-      "noFavorites": "Aucun personnage favori pour le moment",
-      "addedToFavorites": "Personnage ajouté à vos favoris",
-      "removedFromFavorites": "Personnage supprimé de vos favoris",
-      "requestFailed": "Impossible de mettre à jour le statut des favoris"
+    "latest": "Récent",
+    "addFavorite": "Ajouter aux favoris",
+    "removeFavorite": "Supprimer des favoris",
+    "favorited": "Ajouté aux favoris !",
+    "unfavorited": "Supprimé des favoris",
+    "favorites": "Favoris",
+    "myFavorites": "Mes favoris",
+    "noFavorites": "Aucun personnage favori pour le moment",
+    "addedToFavorites": "Personnage ajouté à vos favoris",
+    "removedFromFavorites": "Personnage supprimé de vos favoris",
+    "requestFailed": "Impossible de mettre à jour le statut des favoris"
+  },
+  "relationships": {
+    "friend": "Ami",
+    "companion": "Compagnon",
+    "mentor": "Mentor",
+    "partner": "Partenaire",
+    "assistant": "Assistant",
+    "lover": "Amant",
+    "submissive": "Soumis",
+    "dominant": "Dominant",
+    "playmate": "Camarade de jeu",
+    "intimate": "Intime"
+  },
+  "voices": {
+    "nova": {
+      "name": "Nova",
+      "description": "Voix féminine lumineuse et énergique"
     },
-    "relationships": {
-      "friend": "Ami",
-      "companion": "Compagnon",
-      "mentor": "Mentor",
-      "partner": "Partenaire",
-      "assistant": "Assistant",
-      "lover": "Amant",
-      "submissive": "Soumis",
-      "dominant": "Dominant",
-      "playmate": "Camarade de jeu",
-      "intimate": "Intime"
+    "alloy": {
+      "name": "Alloy",
+      "description": "Voix équilibrée et polyvalente"
     },
-    "voices": {
-      "nova": {
-        "name": "Nova",
-        "description": "Voix féminine lumineuse et énergique"
-      },
-      "alloy": {
-        "name": "Alloy",
-        "description": "Voix équilibrée et polyvalente"
-      },
-      "shimmer": {
-        "name": "Shimmer",
-        "description": "Voix féminine chaleureuse et expressive"
-      },
-      "echo": {
-        "name": "Echo",
-        "description": "Voix masculine claire et articulée"
-      },
-      "onyx": {
-        "name": "Onyx",
-        "description": "Voix masculine profonde et riche"
-      },
-      "fable": {
-        "name": "Fable",
-        "description": "Voix narrative avec du caractère"
-      },
-      "sakura": {
-        "name": "Sakura",
-        "description": "Voix féminine japonaise naturelle"
-      },
-      "mat": {
-        "name": "Mat",
-        "description": "Voix masculine anglaise professionnelle"
-      },
-      "coral": {
-        "name": "Coral",
-        "description": "Une voix douce et naturelle"
-      },
-      "verse": {
-        "name": "Verse",
-        "description": "Une voix rythmée et expressive"
-      },
-      "ballad": {
-        "name": "Ballad",
-        "description": "Une voix mélodique et fluide"
-      },
-      "ash": {
-        "name": "Ash",
-        "description": "Une voix calme et stable"
-      },
-      "sage": {
-        "name": "Sage",
-        "description": "Une voix sage et réfléchie"
-      },
-      "Thandiwe": {
-        "name": "Thandiwe Dlamini",
-        "description": "Une leader de marque stratégique sud-africaine"
-      },
-      "Miranda": {
-        "name": "Miranda",
-        "description": "Une jeune femme douce et pétillante"
-      },
-      "Nana": {
-        "name": "Nana-chan",
-        "description": "Voix féminine jeune, mignonne"
-      },
-      "Friendly_Person": {
-        "name": "Personne amicale",
-        "description": "Voix chaleureuse et accueillante avec une articulation claire"
-      },
-      "Inspirational_girl": {
-        "name": "Fille inspirante",
-        "description": "Voix jeune et motivante qui insuffle de l'énergie"
-      },
-      "Deep_Voice_Man": {
-        "name": "Homme à la voix grave",
-        "description": "Baryton profond au rythme régulier"
-      },
-      "Calm_Woman": {
-        "name": "Femme calme",
-        "description": "Parole douce et posée idéale pour les échanges détendus"
-      },
-      "Casual_Guy": {
-        "name": "Homme décontracté",
-        "description": "Ton conversationnel facile et sympathique"
-      },
-      "Lively_Girl": {
-        "name": "Fille pleine d'énergie",
-        "description": "Voix animée et dynamique pleine d'enthousiasme"
-      },
-      "Patient_Man": {
-        "name": "Homme patient",
-        "description": "Timbre rassurant et régulier pour un dialogue apaisant"
-      },
-      "Young_Knight": {
-        "name": "Jeune chevalier",
-        "description": "Voix jeune et confiante avec une touche héroïque"
-      },
-      "Determined_Man": {
-        "name": "Homme déterminé",
-        "description": "Voix résolue avec une forte accentuation"
-      },
-      "Lovely_Girl": {
-        "name": "Fille adorable",
-        "description": "Voix douce et charmante aux intonations délicates"
-      },
-      "Decent_Boy": {
-        "name": "Garçon respectable",
-        "description": "Timbre adolescent chaleureux et poli"
-      },
-      "Imposing_Manner": {
-        "name": "Allure imposante",
-        "description": "Présence vocale autoritaire et projetée"
-      },
-      "Elegant_Man": {
-        "name": "Homme élégant",
-        "description": "Diction raffinée au rythme maîtrisé"
-      },
-      "Abbess": {
-        "name": "Abbesse",
-        "description": "Tonalité sereine portant une douce autorité"
-      },
-      "Sweet_Girl_2": {
-        "name": "Fille douce 2",
-        "description": "Voix juvénile lumineuse pleine de tendresse"
-      },
-      "Exuberant_Girl": {
-        "name": "Fille exubérante",
-        "description": "Élocution très énergique débordante d'enthousiasme"
-      },
-      "Sophia": {
-        "name": "Sophia",
-        "description": "Une Américaine parlant doucement"
-      },
-      "Fena": {
-        "name": "Fena - Personnage",
-        "description": "Jeune fille impertinente"
-      }
+    "shimmer": {
+      "name": "Shimmer",
+      "description": "Voix féminine chaleureuse et expressive"
     },
-    "autoMergeFace": "Fusion automatique du visage",
-    "autoMergeFaceDescription": "Fusionnez automatiquement votre visage avec des images photoréalistes générées",
+    "echo": {
+      "name": "Echo",
+      "description": "Voix masculine claire et articulée"
+    },
+    "onyx": {
+      "name": "Onyx",
+      "description": "Voix masculine profonde et riche"
+    },
+    "fable": {
+      "name": "Fable",
+      "description": "Voix narrative avec du caractère"
+    },
+    "sakura": {
+      "name": "Sakura",
+      "description": "Voix féminine japonaise naturelle"
+    },
+    "mat": {
+      "name": "Mat",
+      "description": "Voix masculine anglaise professionnelle"
+    },
+    "coral": {
+      "name": "Coral",
+      "description": "Une voix douce et naturelle"
+    },
+    "verse": {
+      "name": "Verse",
+      "description": "Une voix rythmée et expressive"
+    },
+    "ballad": {
+      "name": "Ballad",
+      "description": "Une voix mélodique et fluide"
+    },
+    "ash": {
+      "name": "Ash",
+      "description": "Une voix calme et stable"
+    },
+    "sage": {
+      "name": "Sage",
+      "description": "Une voix sage et réfléchie"
+    },
+    "Thandiwe": {
+      "name": "Thandiwe Dlamini",
+      "description": "Une leader de marque stratégique sud-africaine"
+    },
+    "Miranda": {
+      "name": "Miranda",
+      "description": "Une jeune femme douce et pétillante"
+    },
+    "Nana": {
+      "name": "Nana-chan",
+      "description": "Voix féminine jeune, mignonne"
+    },
+    "Friendly_Person": {
+      "name": "Personne amicale",
+      "description": "Voix chaleureuse et accueillante avec une articulation claire"
+    },
+    "Inspirational_girl": {
+      "name": "Fille inspirante",
+      "description": "Voix jeune et motivante qui insuffle de l'énergie"
+    },
+    "Deep_Voice_Man": {
+      "name": "Homme à la voix grave",
+      "description": "Baryton profond au rythme régulier"
+    },
+    "Calm_Woman": {
+      "name": "Femme calme",
+      "description": "Parole douce et posée idéale pour les échanges détendus"
+    },
+    "Casual_Guy": {
+      "name": "Homme décontracté",
+      "description": "Ton conversationnel facile et sympathique"
+    },
+    "Lively_Girl": {
+      "name": "Fille pleine d'énergie",
+      "description": "Voix animée et dynamique pleine d'enthousiasme"
+    },
+    "Patient_Man": {
+      "name": "Homme patient",
+      "description": "Timbre rassurant et régulier pour un dialogue apaisant"
+    },
+    "Young_Knight": {
+      "name": "Jeune chevalier",
+      "description": "Voix jeune et confiante avec une touche héroïque"
+    },
+    "Determined_Man": {
+      "name": "Homme déterminé",
+      "description": "Voix résolue avec une forte accentuation"
+    },
+    "Lovely_Girl": {
+      "name": "Fille adorable",
+      "description": "Voix douce et charmante aux intonations délicates"
+    },
+    "Decent_Boy": {
+      "name": "Garçon respectable",
+      "description": "Timbre adolescent chaleureux et poli"
+    },
+    "Imposing_Manner": {
+      "name": "Allure imposante",
+      "description": "Présence vocale autoritaire et projetée"
+    },
+    "Elegant_Man": {
+      "name": "Homme élégant",
+      "description": "Diction raffinée au rythme maîtrisé"
+    },
+    "Abbess": {
+      "name": "Abbesse",
+      "description": "Tonalité sereine portant une douce autorité"
+    },
+    "Sweet_Girl_2": {
+      "name": "Fille douce 2",
+      "description": "Voix juvénile lumineuse pleine de tendresse"
+    },
+    "Exuberant_Girl": {
+      "name": "Fille exubérante",
+      "description": "Élocution très énergique débordante d'enthousiasme"
+    },
+    "Sophia": {
+      "name": "Sophia",
+      "description": "Une Américaine parlant doucement"
+    },
+    "Fena": {
+      "name": "Fena - Personnage",
+      "description": "Jeune fille impertinente"
+    }
+  },
+  "autoMergeFace": "Fusion automatique du visage",
+  "autoMergeFaceDescription": "Fusionnez automatiquement votre visage avec des images photoréalistes générées",
   "gifts": {
     "selectGift": "Sélectionner un cadeau",
     "selectGift_description": "Choisissez un cadeau à offrir au personnage."
@@ -1084,7 +1084,7 @@
   "chats": "Discussions",
   "guest": "Invité",
   "noChats": "Aucune discussion",
-  "startChatting": "Commencez à discuter avec des personnages IA",
+  "startChatting": "Commencer à discuter",
   "startNow": "Commencer",
   "justNow": "À l'instant",
   "refreshing": "Actualisation...",
@@ -1199,7 +1199,6 @@
   "continueWithLINE": "Continuer avec LINE",
   "or": "Ou",
   "continueWithEmail": "Continuer avec l'e-mail",
-  "contactUs": "Vous pouvez nous contacter à tout moment depuis ici",
   "aboutService": "À propos du service",
   "termsOfUse": "Conditions d'utilisation",
   "privacyPolicy": "Politique de confidentialité",
@@ -1385,7 +1384,22 @@
     "retry": "Réessayer"
   },
   "image_tools": {
-    "share_sns": "Publier"
+    "edit": "Éditer",
+    "like": "J'aime",
+    "liked": "Aimé",
+    "regenerate": "Régénérer",
+    "upscale": "Améliorer",
+    "upscaled": "Amélioré",
+    "video": "Vidéo",
+    "video_generated": "Vidéo générée",
+    "merge_face": "Fusionner le visage",
+    "face_merged": "Visage fusionné",
+    "info": "Infos",
+    "share": "Partager",
+    "download": "Télécharger",
+    "update_image": "Mettre à jour l'image",
+    "added_to_chat": "Image ajoutée au chat",
+    "add_to_chat_failed": "Échec de l'ajout de l'image au chat"
   },
   "avatar": {
     "affiliation": "Affiliation",
@@ -1420,11 +1434,9 @@
     "creator": "Créateur"
   },
   "notifications": {
-    "title": "Notifications",
-    "empty": "Aucune notification pour le moment",
-    "markAllRead": "Tout marquer comme lu",
-    "new": "Nouveau",
-    "viewAll": "Voir toutes les notifications"
+    "viewedMarked": "Notification marquée comme vue",
+    "viewed": "Marquer comme vue",
+    "nothing": "Aucune nouvelle notification"
   },
   "tabs": {
     "posts": "Publications",
@@ -1437,7 +1449,7 @@
     "thumbnailAlt": "Miniature de discussion",
     "posts": "Publications",
     "likes": "J'aime",
-    "likesTabInfo":"Vous êtes le seul à pouvoir voir vos publications aimées.",
+    "likesTabInfo": "Vous êtes le seul à pouvoir voir vos publications aimées.",
     "characters": "Personnages",
     "following": "Abonnements",
     "followers": "Abonnés",
@@ -1455,7 +1467,6 @@
     "manageContent": "Gérer le Contenu",
     "subscribe": "S'abonner"
   },
-  "startChatting": "Commencer à discuter",
   "like": "J'aime",
   "backToTop": "Retour en haut",
   "next": "Suivant",
@@ -1559,11 +1570,9 @@
     "regenerate_images": "Régénérer les images",
     "enableMergeFace": "Activer la fusion des visages",
     "mergeFaceDescription": "Utiliser le visage de l'image téléchargée comme visage du personnage.",
-    "ai_generate_if_empty": "Générer avec l'IA si vide",
     "errorInitiatingImageGeneration": "Une erreur s'est produite lors du lancement de la génération d'images.",
     "imageTitle_done": "Titre de l'image terminé",
     "imageCompletionDone_title": "Achèvement de l'image terminé",
-    "imageCompletionDone_message": "La nouvelle image de votre personnage est disponible.",
     "personalityDetailsDone": "Détails de la personnalité terminés",
     "tagsLabel": "Tags",
     "start_chat_and_image_generation": "Démarrer le chat et la génération d'images",
@@ -1753,7 +1762,6 @@
     "debrided_generation_error": "Amélioration de la personnalité terminée avec des avertissements",
     "saving_character_data": "Enregistrement des données du personnage...",
     "comprehensive_generation_started": "Démarrage de la génération complète du personnage...",
-    
     "step1_title": "Choisissez Votre Style",
     "step1_subtitle": "Quel type de personnage souhaitez-vous créer ?",
     "step2_title": "Choisissez l'Ethnie et l'Âge",
@@ -1770,37 +1778,29 @@
     "step7_subtitle": "Créez une image unique pour votre personnage",
     "step8_title": "Réviser et Confirmer",
     "step8_subtitle": "Révisez votre personnage et commencez à discuter",
-    
     "style_realistic": "Réaliste",
     "style_anime": "Anime",
-    
     "age_title": "Choisissez l'Âge",
     "age_label": "Âge",
     "age_years": "Ans",
-    
     "hair_color_title": "Choisissez la Couleur des Cheveux",
     "breast_size_title": "Choisissez la Taille de Poitrine",
     "butt_size_title": "Choisissez la Taille des Fesses",
-    
     "name_title": "Nom du Personnage",
     "name_placeholder": "Entrez un nom...",
     "generate_name": "Générer un Nom",
-    
     "personality_title": "Personnalité",
     "relationship_title": "Relation",
     "occupation_title": "Profession",
     "kinks_title": "Préférences",
     "custom_prompt_title": "Détails Personnalisés",
     "custom_prompt_placeholder": "Ex: portant une robe rouge, assise dans un café, journée ensoleillée, souriante...",
-    
     "character_purpose_title": "Histoire et Objectif du Personnage",
     "character_purpose_description": "Décrivez l'histoire de votre personnage, ses motivations et l'objectif de votre conversation. Cela aide à définir sa personnalité pendant les conversations (pas de description physique).",
     "character_purpose_placeholder": "Par exemple, elle a grandi dans une petite ville et a déménagé en ville pour poursuivre ses rêves. Elle est passionnée par l'art et aime les conversations profondes sur la vie et la philosophie...",
-    
     "outfit_prompt_title": "Personnaliser la Tenue et les Détails",
     "outfit_prompt_description": "Décrivez la tenue, les accessoires et les détails physiques que vous souhaitez dans l'image générée. Soyez précis sur le style vestimentaire, les couleurs et le cadre.",
     "outfit_prompt_placeholder": "Ex: portant une robe rouge, assise dans un café, journée ensoleillée, souriante...",
-    
     "step7_base_face_title": "Télécharger un Visage de Base",
     "step7_base_face_description": "Téléchargez une image de visage qui sera utilisée comme visage de base pour votre personnage. Lors de la génération d'images, le visage sera automatiquement fusionné par l'IA.",
     "step7_base_face_upload": "Cliquez pour télécharger une image de visage",
@@ -1808,13 +1808,10 @@
     "step7_base_face_clear": "Effacer",
     "step7_base_face_uploaded": "Visage téléchargé avec succès",
     "step7_base_face_optional": "(Optionnel)",
-    
     "chat_purpose_label": "Objectif du Chat",
-    
     "voice_title": "Voix",
     "play_sample": "Écouter",
     "stop_sample": "Arrêter",
-    
     "generate_image": "Générer l'Image",
     "regenerate_image": "Régénérer",
     "generating_image": "Génération de votre personnage...",
@@ -1822,14 +1819,11 @@
     "image_selected": "Image Sélectionnée",
     "no_image_generated": "Aucune image générée",
     "click_generate": "Cliquez sur le bouton ci-dessus pour générer l'image de votre personnage",
-    
     "review_title": "Votre Personnage",
     "start_chatting": "Commencer à Discuter",
     "generating_character": "Création de votre personnage...",
     "please_wait": "Cela peut prendre un moment",
-    
     "next": "Suivant",
-    
     "ethnicities": {
       "caucasian": "Caucasien",
       "asian": "Asiatique",
@@ -1840,7 +1834,6 @@
       "japanese": "Japonais",
       "korean": "Coréen"
     },
-    
     "hair_styles": {
       "straight": "Lisses",
       "bangs": "Frange",
@@ -1851,7 +1844,6 @@
       "braids": "Tresses",
       "wavy": "Ondulés"
     },
-    
     "hair_colors": {
       "brunette": "Brune",
       "blonde": "Blonde",
@@ -1862,7 +1854,6 @@
       "white": "Blanc",
       "purple": "Violet"
     },
-    
     "body_types": {
       "skinny": "Maigre",
       "slim": "Mince",
@@ -1871,7 +1862,6 @@
       "curvy": "Pulpeuse",
       "voluptuous": "Voluptueuse"
     },
-    
     "breast_sizes": {
       "flat": "Plate",
       "small": "Petite",
@@ -1879,7 +1869,6 @@
       "large": "Grande",
       "xl": "Très Grande"
     },
-    
     "butt_sizes": {
       "small": "Petit",
       "medium": "Moyen",
@@ -1887,7 +1876,6 @@
       "large": "Grand",
       "xl": "Très Grand"
     },
-    
     "personalities": {
       "submissive": "Soumise",
       "dominant": "Dominante",
@@ -1900,7 +1888,6 @@
       "caring": "Attentionnée",
       "mysterious": "Mystérieuse"
     },
-    
     "relationships": {
       "stranger": "Inconnue",
       "friend": "Amie",
@@ -1913,7 +1900,6 @@
       "first_date": "Premier Rendez-vous",
       "roommate": "Colocataire"
     },
-    
     "occupations": {
       "student": "Étudiante",
       "teacher": "Professeure",
@@ -1926,7 +1912,6 @@
       "scientist": "Scientifique",
       "musician": "Musicienne"
     },
-    
     "kinks": {
       "vanilla": "Classique",
       "daddy_dom": "Daddy Dom",
@@ -2074,11 +2059,6 @@
     "imageToVideo": "Image vers Vidéo",
     "convertToVideo": "Convertir en Vidéo"
   },
-  "notifications": {
-    "viewedMarked": "Notification marquée comme vue",
-    "viewed": "Marquer comme vue",
-    "nothing": "Aucune nouvelle notification"
-  },
   "sitemap": {
     "title": "Plan du site",
     "description": "Explorez tous les personnages IA et le contenu disponibles sur notre plateforme",
@@ -2203,24 +2183,6 @@
   "operationCancelled": "Opération annulée",
   "confirmDelete": "Êtes-vous sûr de vouloir supprimer ceci ?",
   "actionCannotBeUndone": "Cette action est irréversible !",
-  "image_tools": {
-    "edit": "Éditer",
-    "like": "J'aime",
-    "liked": "Aimé",
-    "regenerate": "Régénérer",
-    "upscale": "Améliorer",
-    "upscaled": "Amélioré",
-    "video": "Vidéo",
-    "video_generated": "Vidéo générée",
-    "merge_face": "Fusionner le visage",
-    "face_merged": "Visage fusionné",
-    "info": "Infos",
-    "share": "Partager",
-    "download": "Télécharger",
-    "update_image": "Mettre à jour l'image",
-    "added_to_chat": "Image ajoutée au chat",
-    "add_to_chat_failed": "Échec de l'ajout de l'image au chat"
-  },
   "video_already_generated": "Vidéo déjà générée",
   "convert_to_video": "Convertir en vidéo",
   "upscale_image": "Améliorer l'image",
@@ -2333,7 +2295,6 @@
   "try_again": "Réessayer",
   "loading_leaderboard": "Chargement du classement...",
   "analytics_refreshed": "Analyse actualisée avec succès",
-  
   "manage": "Gérer",
   "dashboard": {
     "myPosts": "Mes Publications",
@@ -2451,7 +2412,6 @@
     "prompt": "Prompt",
     "promptPlaceholder": "Entrez le prompt pour la génération...",
     "model": "Modèle",
-    "character": "Personnage",
     "optional": "Optionnel",
     "noCharacter": "Aucun personnage sélectionné",
     "promptType": "Type de Prompt",
@@ -2464,9 +2424,149 @@
     "testRunDescription": "Exécutez un test pour prévisualiser ce qui sera généré",
     "generateImageDescription": "Crée une nouvelle image générée par IA et l'enregistre dans vos publications. Si des comptes sociaux sont sélectionnés ci-dessous, elle sera également publiée automatiquement.",
     "generateVideoDescription": "Crée une nouvelle vidéo générée par IA et l'enregistre dans vos publications. Si des comptes sociaux sont sélectionnés ci-dessous, elle sera également publiée automatiquement.",
-    "publishPostDescription": "Publie une publication existante de votre bibliothèque sur les réseaux sociaux sélectionnés. Ne génère PAS de nouveau contenu."
+    "publishPostDescription": "Publie une publication existante de votre bibliothèque sur les réseaux sociaux sélectionnés. Ne génère PAS de nouveau contenu.",
+    "calendars": "Calendriers",
+    "useCalendar": "Utiliser un calendrier",
+    "manualTimeSelection": "Sélection manuelle de l'heure",
+    "calendarAutoFillHelp": "Sélectionnez un calendrier pour remplir automatiquement le prochain créneau disponible",
+    "nextSlotLoading": "Prochain créneau : Chargement...",
+    "useThisSlot": "Utiliser ce créneau",
+    "useCalendarOptionalReplacesCron": "Utiliser un calendrier",
+    "optionalReplacesCron": "optionnel - remplace le cron",
+    "useCronExpressionInstead": "Utiliser une expression cron à la place",
+    "calendarWeeklySlotsHelp": "Sélectionnez un calendrier pour utiliser ses créneaux hebdomadaires au lieu d'une expression cron",
+    "calendarPublishAtSlots": "Le calendrier publiera aux créneaux configurés",
+    "daily9AM": "Tous les jours à 9h",
+    "every6Hours": "Toutes les 6 heures",
+    "weekdaysNoon": "Jours ouvrables à midi",
+    "weekends10AM": "Week-ends à 10h",
+    "searchCharacters": "Rechercher des personnages...",
+    "loadingCharacters": "Chargement des personnages...",
+    "characterStylingHelp": "Sélectionnez un personnage pour appliquer un style spécifique aux images générées",
+    "promptTypeHelp": "Choisissez entre écrire votre propre prompt ou utiliser des prompts personnalisés pré-faits",
+    "loadingCustomPrompts": "Chargement des prompts personnalisés...",
+    "customPromptsHelp": "Sélectionnez un ou plusieurs prompts personnalisés. Un prompt aléatoire sera utilisé à chaque exécution.",
+    "promptsSelected": "prompt(s) sélectionné(s)",
+    "selectModel": "Sélectionner un modèle",
+    "textToImageModels": "Modèles Texte vers Image",
+    "customSDModels": "Modèles SD personnalisés",
+    "modelSameAsImageDashboard": "Mêmes modèles disponibles que dans le tableau d'images",
+    "testRunButton": "Test",
+    "generating": "Génération en cours...",
+    "generatingTestImage": "Génération de l'image test...",
+    "clear": "Effacer",
+    "testRunHelp": "Exécutez un test pour prévisualiser ce qui sera généré. Les images générées sont sauvegardées dans vos publications.",
+    "loadingConnectedAccounts": "Chargement des comptes connectés...",
+    "noSocialAccountsConnected": "Aucun compte social connecté.",
+    "connectAccounts": "Connecter des comptes",
+    "toAutoPublish": "pour publier automatiquement.",
+    "publishCalendars": "Calendriers de publication",
+    "calendarCreateHelp": "Créez des calendriers avec des créneaux hebdomadaires pour la publication automatique",
+    "newCalendar": "Nouveau calendrier",
+    "calendarName": "Nom du calendrier",
+    "calendarNamePlaceholder": "ex : Publications quotidiennes, Contenu du week-end",
+    "calendarDescriptionPlaceholder": "Brève description de ce calendrier",
+    "timezone": "Fuseau horaire",
+    "timeSlots": "Créneaux horaires",
+    "addSlot": "Ajouter un créneau",
+    "timeSlotsHelp": "Définissez des créneaux hebdomadaires récurrents pour la publication",
+    "noCalendarsYet": "Pas encore de calendriers",
+    "createCalendarToSchedule": "Créez un calendrier pour planifier des publications à des heures récurrentes",
+    "noTimeSlotsConfigured": "Aucun créneau horaire configuré",
+    "noSlotsConfigured": "Aucun créneau configuré",
+    "editCalendar": "Modifier le calendrier",
+    "createCalendar": "Créer le calendrier",
+    "saveChanges": "Enregistrer les modifications",
+    "calendarUpdated": "Calendrier mis à jour !",
+    "calendarCreated": "Calendrier créé !",
+    "calendarDeleted": "Calendrier supprimé",
+    "deleteCalendarConfirm": "Supprimer ce calendrier ? Les éléments en file d'attente seront également annulés.",
+    "failedToLoadCalendars": "Échec du chargement des calendriers",
+    "failedToLoadCalendar": "Échec du chargement du calendrier",
+    "failedToSaveCalendar": "Échec de l'enregistrement du calendrier",
+    "failedToDeleteCalendar": "Échec de la suppression du calendrier",
+    "enterCalendarName": "Veuillez entrer un nom de calendrier",
+    "timeSlotApplied": "Créneau horaire appliqué !",
+    "calendarSlotRecurring": "Le créneau du calendrier sera utilisé pour la planification récurrente !",
+    "findingNextSlot": "Recherche du prochain créneau disponible...",
+    "noAvailableSlots": "Aucun créneau disponible",
+    "noAvailableSlotsConfigured": "Aucun créneau disponible configuré",
+    "weeklySlots": "créneaux hebdomadaires",
+    "next": "Suivant",
+    "more": "de plus",
+    "recurring": "Récurrent",
+    "single": "Unique",
+    "cron": "Cron",
+    "runs": "Exécutions",
+    "lastRun": "Dernière exécution",
+    "created": "Créé",
+    "calendar": "Calendrier",
+    "executions": "Exécutions",
+    "nextExecution": "Prochaine exécution",
+    "lastExecuted": "Dernière exécution",
+    "generatedPosts": "Publications générées",
+    "postsCreated": "publications créées",
+    "viewPosts": "Voir les publications",
+    "lastError": "Dernière erreur",
+    "edit": "Modifier",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "view": "Voir",
+    "delete": "Supprimer",
+    "previous": "Précédent",
+    "page": "Page",
+    "of": "de",
+    "createSchedule": "Créer",
+    "createRecurringJob": "Créer un job récurrent",
+    "editSchedule": "Modifier la planification",
+    "scheduleUpdated": "Planification mise à jour !",
+    "scheduleCreated": "Planification créée !",
+    "schedulePaused": "Planification en pause",
+    "scheduleResumed": "Planification reprise",
+    "scheduleCancelled": "Planification annulée",
+    "scheduleDeleted": "Planification supprimée",
+    "failedToLoadSchedule": "Échec du chargement de la planification",
+    "failedToSaveSchedule": "Échec de l'enregistrement de la planification",
+    "failedToLoadSchedules": "Échec du chargement des planifications",
+    "failedToPauseSchedule": "Échec de la mise en pause de la planification",
+    "failedToResumeSchedule": "Échec de la reprise de la planification",
+    "failedToCancelSchedule": "Échec de l'annulation de la planification",
+    "failedToDeleteSchedule": "Échec de la suppression de la planification",
+    "selectDateAndTime": "Veuillez sélectionner une date et une heure",
+    "selectCalendarOrCron": "Veuillez sélectionner un calendrier ou entrer une expression cron",
+    "selectAtLeastOnePrompt": "Veuillez sélectionner au moins un prompt personnalisé",
+    "cancelScheduleConfirm": "Annuler cette planification ?",
+    "deleteScheduleConfirm": "Supprimer définitivement cette planification ?",
+    "testAlreadyInProgress": "Test déjà en cours",
+    "enterPromptFirst": "Veuillez d'abord entrer un prompt",
+    "testRunOnlyImage": "Le test ne prend en charge que la génération d'images",
+    "running": "En cours...",
+    "testImageGenerated": "Image test générée avec succès !",
+    "testRunFailed": "Échec du test",
+    "testRunResult": "Résultat du test",
+    "openFullSize": "Ouvrir en taille réelle",
+    "viewInPosts": "Voir dans les publications",
+    "savedToPosts": "Sauvegardé dans les publications",
+    "failedToLoadScheduleDetails": "Échec du chargement des détails de la planification",
+    "sunday": "Dimanche",
+    "monday": "Lundi",
+    "tuesday": "Mardi",
+    "wednesday": "Mercredi",
+    "thursday": "Jeudi",
+    "friday": "Vendredi",
+    "saturday": "Samedi",
+    "sunShort": "Dim",
+    "monShort": "Lun",
+    "tueShort": "Mar",
+    "wedShort": "Mer",
+    "thuShort": "Jeu",
+    "friShort": "Ven",
+    "satShort": "Sam",
+    "async": "Async",
+    "sync": "Sync",
+    "inactive": "Inactif",
+    "createSingleSchedule": "Créer une planification"
   },
-
   "analytics": {
     "title": "Tableau de Bord Analytique",
     "subtitle": "Suivez les performances de votre contenu et votre croissance",
@@ -2516,7 +2616,6 @@
     "image": "Image",
     "video": "Vidéo"
   },
-
   "subscriptions": {
     "tierManagement": "Gestion des Niveaux",
     "tierManagementDescription": "Créez et gérez les niveaux d'abonnement pour vos fans",
@@ -2605,7 +2704,6 @@
     "subscribeDate": "Abonné le",
     "renewDate": "Renouvellement le"
   },
-
   "creators": {
     "heroTitle": "Découvrez des Créateurs Incroyables",
     "heroSubtitle": "Suivez vos artistes IA préférés et débloquez du contenu exclusif",
@@ -2627,10 +2725,8 @@
     "followers": "Abonnés",
     "posts": "Publications",
     "likes": "J'aime",
-    
     "applyHeroTitle": "Devenir Créateur",
     "applyHeroSubtitle": "Partagez vos créations IA avec le monde, construisez votre audience et monétisez votre contenu",
-    
     "benefitBuildAudience": "Construisez Votre Audience",
     "benefitBuildAudienceDesc": "Connectez-vous avec des fans qui aiment votre style unique et vos créations",
     "benefitEarnMoney": "Gagnez de l'Argent",
@@ -2639,7 +2735,6 @@
     "benefitGrowBrandDesc": "Soyez mis en avant sur la plateforme et augmentez votre visibilité",
     "benefitCreatorTools": "Outils Créateur",
     "benefitCreatorToolsDesc": "Accédez aux analyses, à la planification et aux outils de gestion de contenu",
-    
     "applicationForm": "Candidature Créateur",
     "displayName": "Nom de Créateur",
     "displayNamePlaceholder": "Votre nom public de créateur",
@@ -2656,7 +2751,6 @@
     "cancel": "Annuler",
     "submitApplication": "Commencer à Créer",
     "submitting": "Traitement...",
-    
     "faqTitle": "Questions Fréquentes",
     "faqQuestion1": "Comment puis-je gagner de l'argent en tant que créateur ?",
     "faqAnswer1": "Les créateurs peuvent gagner via des niveaux d'abonnement (bientôt disponible), des pourboires des abonnés et des ventes de contenu exclusif. Vous aurez accès à un tableau de bord affichant vos revenus et analyses.",
@@ -2666,25 +2760,21 @@
     "faqAnswer3": "Les badges vérifiés sont attribués aux créateurs qui produisent régulièrement du contenu de qualité, ont une audience importante et maintiennent une bonne réputation dans la communauté. Nous examinons périodiquement les comptes pour la vérification.",
     "faqQuestion4": "Puis-je modifier mon profil créateur plus tard ?",
     "faqAnswer4": "Oui ! Vous pouvez mettre à jour votre nom d'affichage, bio, catégorie, tags et liens sociaux à tout moment depuis les paramètres de votre profil.",
-    
     "successTitle": "Bienvenue, Créateur !",
     "successMessage": "Votre profil créateur a été configuré. Commencez à partager votre contenu incroyable !",
     "errorTitle": "Oups !",
     "errorMessage": "Une erreur s'est produite. Veuillez réessayer.",
-    
     "categoryAnime": "Anime",
     "categoryRealistic": "Réaliste",
     "categoryFantasy": "Fantaisie",
     "categoryMixed": "Mixte",
     "categoryOther": "Autre",
-    
     "premiumRequiredTitle": "Premium Requis",
     "premiumRequiredDesc": "Passez à Lamix Premium pour débloquer le Programme Créateur et commencer à monétiser vos créations IA.",
     "upgradeToPremium": "Passer à Premium",
     "youAreCreator": "Vous êtes Créateur !",
     "youAreCreatorDesc": "Merci de faire partie de notre communauté de créateurs. Continuez à créer du contenu incroyable !",
     "viewProfile": "Voir Mon Profil",
-    
     "creatorBenefits": {
       "title": "Ce que Vous Débloquez en tant que Créateur",
       "monetization": "Monétisez vos créations IA grâce aux pourboires et abonnements",

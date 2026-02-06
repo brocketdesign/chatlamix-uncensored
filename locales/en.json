@@ -1,26 +1,25 @@
-
 {
-    "lang": "en",
-    "auth": {
-        "signingIn": "Signing In...",
-        "signingOut": "Signing Out...",
-        "redirectingMessage": "Please wait while we redirect you",
-        "seeYouSoon": "See you soon! Taking you back..."
-    },
-    "contactUs": "Contact Us",
-    "contactDescription": "Connect with us on social media for updates and support.",
-    "quickLinks": "Quick Links",
-    "legal": "Legal & Support",
-    "brandTagline": "Connect. Create. Experience.",
-    "allRightsReserved": "All Rights Reserved.",
-    "madeWithLove": "Made with",
-    "forYou": "for you",
-    "all": "All",
-    "feature": "Feature",
-    "sendGiftImageDirectly": "I sent you a gift wait for it!",
-    "sendPoseRequest": "I requested a new image pose of you, about to generate it now. Here is the prompt I used:",
-    "receivedGift": "You have received a gift!",
-    "image_prompt_result": "The image I requested has been generated!",
+  "lang": "en",
+  "auth": {
+    "signingIn": "Signing In...",
+    "signingOut": "Signing Out...",
+    "redirectingMessage": "Please wait while we redirect you",
+    "seeYouSoon": "See you soon! Taking you back..."
+  },
+  "contactUs": "You can contact us anytime from here",
+  "contactDescription": "Connect with us on social media for updates and support.",
+  "quickLinks": "Quick Links",
+  "legal": "Legal & Support",
+  "brandTagline": "Connect. Create. Experience.",
+  "allRightsReserved": "All Rights Reserved.",
+  "madeWithLove": "Made with",
+  "forYou": "for you",
+  "all": "All",
+  "feature": "Feature",
+  "sendGiftImageDirectly": "I sent you a gift wait for it!",
+  "sendPoseRequest": "I requested a new image pose of you, about to generate it now. Here is the prompt I used:",
+  "receivedGift": "You have received a gift!",
+  "image_prompt_result": "The image I requested has been generated!",
   "daysAgo": " day(s) ago",
   "unlockAll": "Unlock All",
   "customPromptModal": {
@@ -50,7 +49,7 @@
   "image_prompt_request": "I requested the following image",
   "image_liked": "I like this image!",
   "video_liked": "I like this video!",
-  "recent" : "Recent",
+  "recent": "Recent",
   "recentVideos": "Recent Videos",
   "upgradeNow": "Upgrade Now",
   "startHere": "Start Here",
@@ -787,20 +786,14 @@
     "meet_subheading": "Dive into an uncensored AI experience and find companionship like never before. Engage in personalized, intelligent conversations with your ideal AI character.",
     "why_heading": "Why Choose Lamix?",
     "why_subheading": "Unmatched Flexibility, Convenience, and Uncensored Expression",
-    "feature1_title": "Free to Use",
-    "feature1_text": "Test chat and image generation for free and create one character. Upgrade to premium for unlimited characters and more features.",
-    "feature2_title": "Mobile-Friendly",
-    "feature2_text": "Take your chats with you wherever you go. Lamix works seamlessly on your phone or tablet.",
-    "feature3_title": "Uncensored Content",
-    "feature3_text": "Experience completely uncensored conversations and image generation with no limitations.",
-    "feature4_title": "Safe and Secure",
-    "feature4_text": "Your conversations are private and protected, allowing you to chat without concerns.",
     "feature1_title": "Lightning Fast",
     "feature1_text": "Get instant results with our optimized AI models and servers.",
-    "feature4_title": "Safe & Secure",
-    "feature4_text": "Your conversations are private and protected with advanced encryption.",
     "feature2_title": "Mobile Friendly",
     "feature2_text": "Works seamlessly on all devices - phone, tablet, or desktop.",
+    "feature3_title": "Uncensored Content",
+    "feature3_text": "Experience completely uncensored conversations and image generation with no limitations.",
+    "feature4_title": "Safe & Secure",
+    "feature4_text": "Your conversations are private and protected with advanced encryption.",
     "how_step1_title": "1. Create an Account",
     "how_step1_text": "Sign up in seconds and get instant access to all features.",
     "how_step2_title": "2. Choose an AI Character",
@@ -965,10 +958,9 @@
   "result_image_query": "Search results for",
   "explore_latest_images": "Explore Latest Images",
   "no_results_found_for": "No results found for",
-  "about":" About ",
+  "about": " About ",
   "images": "Images",
   "start_searching": "Start searching to see results",
-  "loading": "Loading...",
   "prompt": "Prompt",
   "prompt_description": "An image prompt is a textual description or set of instructions provided to an AI model to generate an image. The prompt guides the AI in creating an image that matches the given description.",
   "seo": {
@@ -1150,7 +1142,7 @@
   "chats": "Chats",
   "guest": "Guest",
   "noChats": "No chats yet",
-  "startChatting": "Start chatting with AI characters",
+  "startChatting": " Start chatting",
   "startNow": "Start Now",
   "justNow": "Just now",
   "refreshing": "Refreshing...",
@@ -1268,7 +1260,6 @@
   "continueWithLINE": "Continue with LINE",
   "or": "Or",
   "continueWithEmail": "Continue with Email",
-  "contactUs": "You can contact us anytime from here",
   "aboutService": "About Service",
   "termsOfUse": "Terms of Use",
   "privacyPolicy": "Privacy Policy",
@@ -1454,7 +1445,22 @@
     "retry": "Retry"
   },
   "image_tools": {
-    "share_sns": "Post"
+    "edit": "Edit",
+    "like": "Like",
+    "liked": "Liked",
+    "regenerate": "Regenerate",
+    "upscale": "Upscale",
+    "upscaled": "Upscaled",
+    "video": "Video",
+    "video_generated": "Video Generated",
+    "merge_face": "Merge Face",
+    "face_merged": "Face Merged",
+    "info": "Info",
+    "share": "Share",
+    "download": "Download",
+    "update_image": "Update Image",
+    "added_to_chat": "Image added to chat",
+    "add_to_chat_failed": "Failed to add image to chat"
   },
   "avatar": {
     "affiliation": "Affiliation",
@@ -1489,11 +1495,9 @@
     "creator": "Creator"
   },
   "notifications": {
-    "title": "Notifications",
-    "empty": "No notifications yet",
-    "markAllRead": "Mark all as read",
-    "new": "New",
-    "viewAll": "View all notifications"
+    "viewedMarked": "Notification marked as viewed",
+    "viewed": "Mark as Viewed",
+    "nothing": "No new notification"
   },
   "tabs": {
     "posts": "Posts",
@@ -1506,7 +1510,7 @@
     "thumbnailAlt": "Chat Thumbnail",
     "posts": "Posts",
     "likes": "Likes",
-    "likesTabInfo":"Your are the only one who can see your liked posts.",
+    "likesTabInfo": "Your are the only one who can see your liked posts.",
     "characters": "Characters",
     "following": "Following",
     "followers": "Followers",
@@ -1575,7 +1579,6 @@
   "share_character_intro": "Check out this AI character!",
   "share_site_name": "Japanese Custom GPT",
   "default_character_description": "There is no detailed information for this character.",
-  "startChatting": " Start chatting",
   "backToTop": "Back to Top",
   "next": "Next",
   "prev": "Previous",
@@ -1585,12 +1588,12 @@
     "chatPurposeLabel": "Describe the character background and purpose",
     "chatPurposePlaceholder": "E.g., A cute friend who loves cats and enjoys chatting about daily life.",
     "physicalDescriptionLabel": "Physical Description",
-    "ai_generate_if_empty": "AI generate if empty",
+    "ai_generate_if_empty": "Ai generate if empty",
     "selectedKeywords": "Selected Keywords:",
     "clickKeywordsPlaceholder": "Click keywords above to add them...",
     "keywordSections": {
       "personality": "Personality",
-      "occupation": "Occupation", 
+      "occupation": "Occupation",
       "hobbies": "Hobbies",
       "style": "Style",
       "traits": "Traits"
@@ -1678,7 +1681,6 @@
     "regenerate_images": "Regenerate Images",
     "enableMergeFace": "Enable Merge Face",
     "mergeFaceDescription": "Use the face of the uploaded image as the character's face.",
-    "ai_generate_if_empty": "Ai generate if empty",
     "errorInitiatingImageGeneration": "An error occurred while initiating image generation.",
     "imageTitle_done": "Image title done",
     "imageCompletionDone_title": "Image Completion Done",
@@ -1872,7 +1874,6 @@
     "debrided_generation_error": "Personality enhancement completed with warnings",
     "saving_character_data": "Saving character data...",
     "comprehensive_generation_started": "Starting comprehensive character generation...",
-    
     "step1_title": "Choose Your Style",
     "step1_subtitle": "What type of character would you like to create?",
     "step2_title": "Choose Ethnicity & Age",
@@ -1889,37 +1890,29 @@
     "step7_subtitle": "Create a unique image for your character",
     "step8_title": "Review & Confirm",
     "step8_subtitle": "Review your character and start chatting",
-    
     "style_realistic": "Realistic",
     "style_anime": "Anime",
-    
     "age_title": "Choose Age",
     "age_label": "Age",
     "age_years": "Years",
-    
     "hair_color_title": "Choose Hair Color",
     "breast_size_title": "Choose Breast Size",
     "butt_size_title": "Choose Butt Size",
-    
     "name_title": "Character Name",
     "name_placeholder": "Enter a name...",
     "generate_name": "Generate Name",
-    
     "personality_title": "Personality",
     "relationship_title": "Relationship",
     "occupation_title": "Occupation",
     "kinks_title": "Preferences",
     "custom_prompt_title": "Custom Details",
     "custom_prompt_placeholder": "E.g., wearing a red dress, sitting in a cafe, sunny day, smiling...",
-    
     "character_purpose_title": "Character History & Purpose",
     "character_purpose_description": "Describe your character's backstory, motivations, and the purpose of your chat. This helps define their personality during conversations (not physical description).",
     "character_purpose_placeholder": "E.g., she grew up in a small town and moved to the city to pursue her dreams. She's passionate about art and loves deep conversations about life and philosophy...",
-    
     "outfit_prompt_title": "Customize Outfit & Details",
     "outfit_prompt_description": "Describe the outfit, accessories, and physical details you want in the generated image. Be specific about clothing style, colors, and setting.",
     "outfit_prompt_placeholder": "E.g., wearing a red dress, sitting in a cafe, sunny day, smiling...",
-    
     "step7_base_face_title": "Upload Base Face",
     "step7_base_face_description": "Upload a face image that will be used as the base face for your character. When generating images, the face will automatically be merged using AI.",
     "step7_base_face_upload": "Click to upload face image",
@@ -1927,13 +1920,10 @@
     "step7_base_face_clear": "Clear",
     "step7_base_face_uploaded": "Face uploaded successfully",
     "step7_base_face_optional": "(Optional)",
-    
     "chat_purpose_label": "Chat Purpose",
-    
     "voice_title": "Voice",
     "play_sample": "Play Sample",
     "stop_sample": "Stop",
-    
     "generate_image": "Generate Image",
     "regenerate_image": "Regenerate",
     "generating_image": "Generating your character...",
@@ -1941,14 +1931,11 @@
     "image_selected": "Image Selected",
     "no_image_generated": "No image generated yet",
     "click_generate": "Click the button above to generate your character's image",
-    
     "review_title": "Your Character",
     "start_chatting": "Start Chatting",
     "generating_character": "Creating your character...",
     "please_wait": "This may take a moment",
-    
     "next": "Next",
-    
     "ethnicities": {
       "caucasian": "Caucasian",
       "asian": "Asian",
@@ -1959,7 +1946,6 @@
       "japanese": "Japanese",
       "korean": "Korean"
     },
-    
     "hair_styles": {
       "straight": "Straight",
       "bangs": "Bangs",
@@ -1970,7 +1956,6 @@
       "braids": "Braids",
       "wavy": "Wavy"
     },
-    
     "hair_colors": {
       "brunette": "Brunette",
       "blonde": "Blonde",
@@ -1981,7 +1966,6 @@
       "white": "White",
       "purple": "Purple"
     },
-    
     "body_types": {
       "skinny": "Skinny",
       "slim": "Slim",
@@ -1990,7 +1974,6 @@
       "curvy": "Curvy",
       "voluptuous": "Voluptuous"
     },
-    
     "breast_sizes": {
       "flat": "Flat",
       "small": "Small",
@@ -1998,7 +1981,6 @@
       "large": "Large",
       "xl": "Extra Large"
     },
-    
     "butt_sizes": {
       "small": "Small",
       "medium": "Medium",
@@ -2006,7 +1988,6 @@
       "large": "Large",
       "xl": "Extra Large"
     },
-    
     "personalities": {
       "submissive": "Submissive",
       "dominant": "Dominant",
@@ -2019,7 +2000,6 @@
       "caring": "Caring",
       "mysterious": "Mysterious"
     },
-    
     "relationships": {
       "stranger": "Stranger",
       "friend": "Friend",
@@ -2032,7 +2012,6 @@
       "first_date": "First Date",
       "roommate": "Roommate"
     },
-    
     "occupations": {
       "student": "Student",
       "teacher": "Teacher",
@@ -2045,7 +2024,6 @@
       "scientist": "Scientist",
       "musician": "Musician"
     },
-    
     "kinks": {
       "vanilla": "Vanilla",
       "daddy_dom": "Daddy Dom",
@@ -2195,11 +2173,6 @@
     "imageToVideo": "Image to Video",
     "convertToVideo": "Convert to Video"
   },
-  "notifications": {
-    "viewedMarked": "Notification marked as viewed",
-    "viewed": "Mark as Viewed",
-    "nothing": "No new notification"
-  },
   "sitemap": {
     "title": "Site Map",
     "description": "Explore all available AI characters and content on our platform",
@@ -2226,24 +2199,6 @@
     "support_title": "Support",
     "support_desc": "Need help? Contact our support team"
   },
-  "image_tools": {
-    "edit": "Edit",
-    "like": "Like",
-    "liked": "Liked",
-    "regenerate": "Regenerate",
-    "upscale": "Upscale",
-    "upscaled": "Upscaled",
-    "video": "Video",
-    "video_generated": "Video Generated",
-    "merge_face": "Merge Face",
-    "face_merged": "Face Merged",
-    "info": "Info",
-    "share": "Share",
-    "download": "Download",
-    "update_image": "Update Image",
-    "added_to_chat": "Image added to chat",
-    "add_to_chat_failed": "Failed to add image to chat"
-  },
   "video_already_generated": "Video already generated",
   "convert_to_video": "Convert to Video",
   "upscale_image": "Upscale Image",
@@ -2251,7 +2206,7 @@
   "categories": {
     "schoolgirl": "Schoolgirl",
     "maid": "Maid",
-    "princess": "Princess", 
+    "princess": "Princess",
     "fantasy": "Fantasy",
     "ninja": "Ninja",
     "robot": "Robot",
@@ -2320,7 +2275,7 @@
     "completedGoals": "Chat Goals",
     "completedGoals_description": "View your conversation objectives and completed achievements.",
     "current_goal": "Current Goal",
-    "completed_goals": "Completed Goals", 
+    "completed_goals": "Completed Goals",
     "in_progress": "In Progress",
     "completed": "Completed",
     "no_goals": "No goals yet",
@@ -2339,23 +2294,22 @@
       "image request": "Image Request"
     }
   },
-   "leaderboards_title": "Leaderboards",
-    "leaderboard_short": "Leaderboard",
-    "most_creative_users": "The most creative users",
-    "most_active_users": "The most active users",
-    "leaderboard_footer_info": "Rankings are updated periodically and reflect current user activity",
-    "leaderboard_refreshed": "Leaderboard refreshed successfully",
-    "anonymous": "Anonymous User",
-    "joined": "Joined",
-    "unique_images": "unique images",
-    "images_generated": "images generated",
-    "points_title": "points",
-    "day_streak": "day streak",
-    "no_leaderboard": "No leaderboard data available",
-    "no_users_leaderboard": "No users found on leaderboard",
-    "error_loading_leaderboard": "Error loading leaderboard data",
-    "try_again": "Try Again",
-  
+  "leaderboards_title": "Leaderboards",
+  "leaderboard_short": "Leaderboard",
+  "most_creative_users": "The most creative users",
+  "most_active_users": "The most active users",
+  "leaderboard_footer_info": "Rankings are updated periodically and reflect current user activity",
+  "leaderboard_refreshed": "Leaderboard refreshed successfully",
+  "anonymous": "Anonymous User",
+  "joined": "Joined",
+  "unique_images": "unique images",
+  "images_generated": "images generated",
+  "points_title": "points",
+  "day_streak": "day streak",
+  "no_leaderboard": "No leaderboard data available",
+  "no_users_leaderboard": "No users found on leaderboard",
+  "error_loading_leaderboard": "Error loading leaderboard data",
+  "try_again": "Try Again",
   "manage": "Manage",
   "dashboard": {
     "title": "Dashboard",
@@ -2488,7 +2442,6 @@
     "useInImageDashboard": "Use in Image Dashboard",
     "category": "Category",
     "styleCategory": "Style Category",
-    "character": "Character",
     "landscape": "Landscape",
     "abstract": "Abstract",
     "portrait": "Portrait",
@@ -2512,9 +2465,149 @@
     "randomizeSeed": "Randomize Seed",
     "nsfwTemplate": "NSFW Template",
     "promptVariations": "Prompt Variations",
-    "regenerate": "Regenerate"
+    "regenerate": "Regenerate",
+    "calendars": "Calendars",
+    "useCalendar": "Use Calendar",
+    "manualTimeSelection": "Manual time selection",
+    "calendarAutoFillHelp": "Select a calendar to auto-fill the next available time slot",
+    "nextSlotLoading": "Next slot: Loading...",
+    "useThisSlot": "Use this slot",
+    "useCalendarOptionalReplacesCron": "Use Calendar",
+    "optionalReplacesCron": "optional - replaces cron",
+    "useCronExpressionInstead": "Use cron expression instead",
+    "calendarWeeklySlotsHelp": "Select a calendar to use its weekly time slots instead of a cron expression",
+    "calendarPublishAtSlots": "Calendar will publish at configured weekly slots",
+    "daily9AM": "Daily 9 AM",
+    "every6Hours": "Every 6 hours",
+    "weekdaysNoon": "Weekdays noon",
+    "weekends10AM": "Weekends 10 AM",
+    "searchCharacters": "Search characters...",
+    "loadingCharacters": "Loading characters...",
+    "characterStylingHelp": "Select a character to apply character-specific styling to generated images",
+    "promptTypeHelp": "Choose between writing your own prompt or using pre-made custom prompts",
+    "loadingCustomPrompts": "Loading custom prompts...",
+    "customPromptsHelp": "Select one or multiple custom prompts. A random one will be used each time the schedule runs.",
+    "promptsSelected": "prompt(s) selected",
+    "selectModel": "Select Model",
+    "textToImageModels": "Text to Image Models",
+    "customSDModels": "Custom SD Models",
+    "modelSameAsImageDashboard": "Same models available as in the Image Dashboard",
+    "testRunButton": "Test Run",
+    "generating": "Generating...",
+    "generatingTestImage": "Generating test image...",
+    "clear": "Clear",
+    "testRunHelp": "Run a test to preview what will be generated. Generated images are saved to your Posts.",
+    "loadingConnectedAccounts": "Loading connected accounts...",
+    "noSocialAccountsConnected": "No social accounts connected.",
+    "connectAccounts": "Connect accounts",
+    "toAutoPublish": "to auto-publish.",
+    "publishCalendars": "Publish Calendars",
+    "calendarCreateHelp": "Create calendars with weekly time slots for automated publishing",
+    "newCalendar": "New Calendar",
+    "calendarName": "Calendar Name",
+    "calendarNamePlaceholder": "e.g., Daily Posts, Weekend Content",
+    "calendarDescriptionPlaceholder": "Brief description of this calendar",
+    "timezone": "Timezone",
+    "timeSlots": "Time Slots",
+    "addSlot": "Add Slot",
+    "timeSlotsHelp": "Define weekly recurring time slots when posts should be published",
+    "noCalendarsYet": "No calendars yet",
+    "createCalendarToSchedule": "Create a calendar to schedule posts at recurring times",
+    "noTimeSlotsConfigured": "No time slots configured",
+    "noSlotsConfigured": "No slots configured",
+    "editCalendar": "Edit Calendar",
+    "createCalendar": "Create Calendar",
+    "saveChanges": "Save Changes",
+    "calendarUpdated": "Calendar updated!",
+    "calendarCreated": "Calendar created!",
+    "calendarDeleted": "Calendar deleted",
+    "deleteCalendarConfirm": "Delete this calendar? This will also cancel any queued items.",
+    "failedToLoadCalendars": "Failed to load calendars",
+    "failedToLoadCalendar": "Failed to load calendar",
+    "failedToSaveCalendar": "Failed to save calendar",
+    "failedToDeleteCalendar": "Failed to delete calendar",
+    "enterCalendarName": "Please enter a calendar name",
+    "timeSlotApplied": "Time slot applied!",
+    "calendarSlotRecurring": "Calendar slot will be used for recurring schedule!",
+    "findingNextSlot": "Finding next available slot...",
+    "noAvailableSlots": "No available slots",
+    "noAvailableSlotsConfigured": "No available slots configured",
+    "weeklySlots": "weekly slots",
+    "next": "Next",
+    "more": "more",
+    "recurring": "Recurring",
+    "single": "Single",
+    "cron": "Cron",
+    "runs": "Runs",
+    "lastRun": "Last run",
+    "created": "Created",
+    "calendar": "Calendar",
+    "executions": "Executions",
+    "nextExecution": "Next Execution",
+    "lastExecuted": "Last Executed",
+    "generatedPosts": "Generated Posts",
+    "postsCreated": "posts created",
+    "viewPosts": "View Posts",
+    "lastError": "Last Error",
+    "edit": "Edit",
+    "pause": "Pause",
+    "resume": "Resume",
+    "view": "View",
+    "delete": "Delete",
+    "previous": "Previous",
+    "page": "Page",
+    "of": "of",
+    "createSchedule": "Create",
+    "createRecurringJob": "Create Recurring Job",
+    "editSchedule": "Edit Schedule",
+    "scheduleUpdated": "Schedule updated!",
+    "scheduleCreated": "Schedule created!",
+    "schedulePaused": "Schedule paused",
+    "scheduleResumed": "Schedule resumed",
+    "scheduleCancelled": "Schedule cancelled",
+    "scheduleDeleted": "Schedule deleted",
+    "failedToLoadSchedule": "Failed to load schedule",
+    "failedToSaveSchedule": "Failed to save schedule",
+    "failedToLoadSchedules": "Failed to load schedules",
+    "failedToPauseSchedule": "Failed to pause schedule",
+    "failedToResumeSchedule": "Failed to resume schedule",
+    "failedToCancelSchedule": "Failed to cancel schedule",
+    "failedToDeleteSchedule": "Failed to delete schedule",
+    "selectDateAndTime": "Please select a date and time",
+    "selectCalendarOrCron": "Please select a calendar or enter a cron expression",
+    "selectAtLeastOnePrompt": "Please select at least one custom prompt",
+    "cancelScheduleConfirm": "Cancel this schedule?",
+    "deleteScheduleConfirm": "Delete this schedule permanently?",
+    "testAlreadyInProgress": "Test already in progress",
+    "enterPromptFirst": "Please enter a prompt first",
+    "testRunOnlyImage": "Test run only supports image generation",
+    "running": "Running...",
+    "testImageGenerated": "Test image generated successfully!",
+    "testRunFailed": "Test run failed",
+    "testRunResult": "Test Run Result",
+    "openFullSize": "Open Full Size",
+    "viewInPosts": "View in Posts",
+    "savedToPosts": "Saved to Posts",
+    "failedToLoadScheduleDetails": "Failed to load schedule details",
+    "sunday": "Sunday",
+    "monday": "Monday",
+    "tuesday": "Tuesday",
+    "wednesday": "Wednesday",
+    "thursday": "Thursday",
+    "friday": "Friday",
+    "saturday": "Saturday",
+    "sunShort": "Sun",
+    "monShort": "Mon",
+    "tueShort": "Tue",
+    "wedShort": "Wed",
+    "thuShort": "Thu",
+    "friShort": "Fri",
+    "satShort": "Sat",
+    "async": "Async",
+    "sync": "Sync",
+    "inactive": "Inactive",
+    "createSingleSchedule": "Create Schedule"
   },
-  
   "prompts": {
     "mutation": "Prompt Mutation",
     "variations": "Variations",
@@ -2536,7 +2629,6 @@
     "generateVariations": "Generate Variations",
     "saveTemplate": "Save as Template"
   },
-  
   "schedules": {
     "single": "Single Schedule",
     "recurring": "Recurring Schedule",
@@ -2562,7 +2654,6 @@
     "createSchedule": "Create Schedule",
     "scheduleType": "Schedule Type"
   },
-  
   "features": {
     "upgradeRequired": "Upgrade Required",
     "premiumFeature": "This is a premium feature",
@@ -2577,11 +2668,9 @@
     "adminTier": "Admin",
     "currentLimit": "Current",
     "maxLimit": "Maximum"
-  }
-,
-    "loading_leaderboard": "Loading leaderboard...",
-    "analytics_refreshed": "Analytics refreshed",
-
+  },
+  "loading_leaderboard": "Loading leaderboard...",
+  "analytics_refreshed": "Analytics refreshed",
   "analytics": {
     "title": "Analytics Dashboard",
     "subtitle": "Track your content performance and growth",
@@ -2631,7 +2720,6 @@
     "image": "Image",
     "video": "Video"
   },
-
   "subscriptions": {
     "tierManagement": "Tier Management",
     "tierManagementDescription": "Create and manage subscription tiers for your fans",
@@ -2706,7 +2794,6 @@
     "tierRequired": "tier or higher",
     "subscribeToUnlock": "Subscribe to unlock this content"
   },
-
   "creators": {
     "heroTitle": "Discover Amazing Creators",
     "heroSubtitle": "Follow your favorite AI artists and unlock exclusive content",
@@ -2728,10 +2815,8 @@
     "followers": "Followers",
     "posts": "Posts",
     "likes": "Likes",
-    
     "applyHeroTitle": "Become a Creator",
     "applyHeroSubtitle": "Share your AI creations with the world, build your audience, and monetize your content",
-    
     "benefitBuildAudience": "Build Your Audience",
     "benefitBuildAudienceDesc": "Connect with fans who love your unique style and creations",
     "benefitEarnMoney": "Earn Money",
@@ -2740,7 +2825,6 @@
     "benefitGrowBrandDesc": "Get featured on the platform and boost your visibility",
     "benefitCreatorTools": "Creator Tools",
     "benefitCreatorToolsDesc": "Access analytics, scheduling, and content management tools",
-    
     "applicationForm": "Creator Application",
     "displayName": "Creator Name",
     "displayNamePlaceholder": "Your public creator name",
@@ -2757,7 +2841,6 @@
     "cancel": "Cancel",
     "submitApplication": "Start Creating",
     "submitting": "Processing...",
-    
     "faqTitle": "Frequently Asked Questions",
     "faqQuestion1": "How do I earn money as a creator?",
     "faqAnswer1": "Creators can earn through subscription tiers (coming soon), tips from followers, and exclusive content sales. You'll have access to a dashboard showing your earnings and analytics.",
@@ -2767,25 +2850,21 @@
     "faqAnswer3": "Verified badges are given to creators who consistently produce quality content, have a significant following, and maintain good standing in the community. We review accounts periodically for verification.",
     "faqQuestion4": "Can I change my creator profile later?",
     "faqAnswer4": "Yes! You can update your display name, bio, category, tags, and social links anytime from your profile settings.",
-    
     "successTitle": "Welcome, Creator!",
     "successMessage": "Your creator profile has been set up. Start sharing your amazing content!",
     "errorTitle": "Oops!",
     "errorMessage": "Something went wrong. Please try again.",
-    
     "categoryAnime": "Anime",
     "categoryRealistic": "Realistic",
     "categoryFantasy": "Fantasy",
     "categoryMixed": "Mixed",
     "categoryOther": "Other",
-    
     "premiumRequiredTitle": "Premium Required",
     "premiumRequiredDesc": "Upgrade to Lamix Premium to unlock the Creator Program and start monetizing your AI creations.",
     "upgradeToPremium": "Upgrade to Premium",
     "youAreCreator": "You're a Creator!",
     "youAreCreatorDesc": "Thank you for being part of our creator community. Keep creating amazing content!",
     "viewProfile": "View My Profile",
-    
     "creatorBenefits": {
       "title": "What You Unlock as a Creator",
       "monetization": "Monetize your AI creations through tips and subscriptions",
