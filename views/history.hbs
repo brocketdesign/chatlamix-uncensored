@@ -723,25 +723,25 @@
         <!-- Header -->
         <div class="history-header">
             <h1 class="history-title">
-                <i class="bi bi-clock-history"></i> History
+                <i class="bi bi-clock-history"></i> {{translations.history_page.title}}
             </h1>
-            <p class="history-subtitle">Browse all your generated images and videos</p>
+            <p class="history-subtitle">{{translations.history_page.subtitle}}</p>
         </div>
 
         <!-- Content Type Filters -->
         <div class="filter-card">
             <div class="filter-section">
                 <button class="filter-btn active" data-filter="all">
-                    <i class="bi bi-grid-3x3"></i> All Content
+                    <i class="bi bi-grid-3x3"></i> {{translations.history_page.all_content}}
                 </button>
                 <button class="filter-btn" data-filter="recent">
-                    <i class="bi bi-stars"></i> Recent
+                    <i class="bi bi-stars"></i> {{translations.history_page.recent}}
                 </button>
                 <button class="filter-btn" data-filter="images">
-                    <i class="bi bi-image"></i> Images Only
+                    <i class="bi bi-image"></i> {{translations.history_page.images_only}}
                 </button>
                 <button class="filter-btn" data-filter="videos">
-                    <i class="bi bi-camera-video"></i> Videos Only
+                    <i class="bi bi-camera-video"></i> {{translations.history_page.videos_only}}
                 </button>
             </div>
         </div>
@@ -749,7 +749,7 @@
         <!-- Character Filter Carousel -->
         <div class="character-filter-section">
             <div class="character-filter-header">
-                <span class="character-filter-title"><i class="bi bi-people-fill"></i> Filter by Character</span>
+                <span class="character-filter-title"><i class="bi bi-people-fill"></i> {{translations.history_page.filter_by_character}}</span>
                 <div class="character-nav-buttons">
                     <button class="character-nav-btn" id="charScrollLeft" disabled>
                         <i class="bi bi-chevron-left"></i>
@@ -768,7 +768,7 @@
                                 <i class="bi bi-grid-3x3-gap-fill"></i>
                             </div>
                         </div>
-                        <span class="character-filter-name">All</span>
+                        <span class="character-filter-name">{{translations.history_page.all_characters}}</span>
                     </div>
                     <!-- Character items will be populated dynamically -->
                 </div>
@@ -784,7 +784,7 @@
         <div id="contentGrid" class="content-grid">
             <div class="loading-spinner" style="grid-column: 1 / -1;">
                 <i class="bi bi-arrow-repeat"></i>
-                <p>Loading your content...</p>
+                <p>{{translations.history_page.loading_content}}</p>
             </div>
         </div>
 
@@ -792,21 +792,21 @@
         <div id="loadMoreContainer" style="display: none;">
             <div id="loadMoreSpinner" class="loading-spinner" style="display: none; padding: 20px;">
                 <i class="bi bi-arrow-repeat"></i>
-                <p>Loading more...</p>
+                <p>{{translations.history_page.loading_more}}</p>
             </div>
             <button id="loadMoreBtn" class="filter-btn">
-                <i class="bi bi-arrow-down-circle"></i> Load More
+                <i class="bi bi-arrow-down-circle"></i> {{translations.history_page.load_more}}
             </button>
         </div>
 
         <!-- Empty State -->
         <div id="emptyState" class="empty-state" style="display: none;">
             <div class="empty-state-icon"><i class="bi bi-images"></i></div>
-            <h3>No content yet</h3>
-            <p>Start creating images and videos to build your history</p>
+            <h3>{{translations.history_page.empty_title}}</h3>
+            <p>{{translations.history_page.empty_description}}</p>
             <a href="/dashboard/generation" class="empty-state-btn">
                 <i class="bi bi-plus-circle"></i>
-                Create Content
+                {{translations.history_page.empty_cta}}
             </a>
         </div>
     </div>
@@ -818,7 +818,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title" id="contentModalLabel">
                         <i class="bi bi-info-circle"></i>
-                        Content Details
+                        {{translations.history_page.modal_title}}
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
