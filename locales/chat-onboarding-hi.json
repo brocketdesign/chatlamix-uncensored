@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "title": "{{name}} से चैट करें | ChatLamix",
+        "description": "ChatLamix पर {{name}} से चैट शुरू करें। अपना मुफ्त खाता बनाएं और तुरंत शुरू करें!",
+        "keywords": "AI चैट, AI साथी, ChatLamix, AI से चैट"
+    },
+
+    "page_title": "चैट के लिए तैयार हो जाइए",
+
+    "step1": {
+        "title": "आप चैट करने वाले हैं",
+        "subtitle": "एक व्यक्तिगत अनुभव के लिए अपने बारे में कुछ बताएं",
+        "begin_button": "चलिए शुरू करते हैं!"
+    },
+
+    "step2": {
+        "title": "आपके बारे में",
+        "subtitle": "{{name}} के साथ आपके अनुभव को निजीकृत करने में हमारी मदद करें",
+        "nickname_label": "हम आपको क्या बुलाएं?",
+        "nickname_placeholder": "अपना उपनाम दर्ज करें",
+        "gender_label": "आपका लिंग",
+        "gender_male": "पुरुष",
+        "gender_female": "महिला",
+        "gender_nonbinary": "नॉन-बाइनरी",
+        "age_label": "आपकी उम्र की श्रेणी",
+        "age_18_24": "18-24",
+        "age_25_34": "25-34",
+        "age_35_44": "35-44",
+        "age_45_54": "45-54",
+        "age_55_plus": "55+",
+        "language_label": "चैट भाषा",
+        "language_hint": "{{name}} आपसे इस भाषा में बात करेगा/करेगी"
+    },
+
+    "step3": {
+        "title": "आपकी पसंद",
+        "subtitle": "{{name}} के साथ आप कैसा अनुभव चाहते हैं?",
+        "interests_label": "आपकी रुचि किसमें है? (वैकल्पिक)",
+        "tag_romantic": "रोमांटिक",
+        "tag_dominant": "प्रभावशाली",
+        "tag_submissive": "आज्ञाकारी",
+        "tag_playful": "चंचल",
+        "tag_mysterious": "रहस्यमय",
+        "tag_caring": "देखभाल करने वाला",
+        "tag_adventurous": "साहसी",
+        "tag_shy": "शर्मीला",
+        "tag_roleplay": "रोलप्ले",
+        "tag_casual": "सामान्य बातचीत"
+    },
+
+    "step4": {
+        "title": "एक आखिरी कदम!",
+        "subtitle": "{{name}} से चैट शुरू करने के लिए अपना मुफ्त खाता बनाएं",
+        "benefits_title": "आपको क्या मिलेगा:",
+        "benefit1": "{{name}} से तुरंत चैट शुरू करें",
+        "benefit2": "असीमित मुफ्त बातचीत",
+        "benefit3": "सभी उपकरणों पर चैट इतिहास सहेजा गया",
+        "benefit4": "छवि निर्माण सुविधाओं तक पहुंच",
+        "google_button": "Google से जारी रखें",
+        "apple_button": "Apple से जारी रखें",
+        "line_button": "LINE से जारी रखें",
+        "or_divider": "या ईमेल से जारी रखें",
+        "email_placeholder": "अपना ईमेल दर्ज करें",
+        "password_placeholder": "पासवर्ड बनाएं",
+        "terms_agree": "मैं सेवा की शर्तों और गोपनीयता नीति से सहमत हूं",
+        "create_account": "खाता बनाएं और चैट शुरू करें",
+        "already_have_account": "पहले से खाता है?",
+        "sign_in": "साइन इन करें"
+    },
+
+    "buttons": {
+        "next": "अगला",
+        "back": "पीछे",
+        "skip": "छोड़ें"
+    },
+
+    "errors": {
+        "enter_nickname": "कृपया एक उपनाम दर्ज करें",
+        "select_gender": "कृपया अपना लिंग चुनें",
+        "select_age": "कृपया अपनी उम्र की श्रेणी चुनें",
+        "agree_terms": "कृपया शर्तों से सहमत हों",
+        "password_short": "पासवर्ड कम से कम 8 अक्षरों का होना चाहिए",
+        "auth_failed": "प्रमाणीकरण विफल हुआ। कृपया पुन: प्रयास करें।"
+    },
+
+    "loading": {
+        "setting_up": "{{name}} के साथ आपकी चैट तैयार हो रही है...",
+        "please_wait": "कृपया प्रतीक्षा करें, इसमें बस एक पल लगेगा"
+    }
+}

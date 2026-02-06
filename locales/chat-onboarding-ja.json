@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "title": "{{name}}とチャット | ChatLamix",
+        "description": "ChatLamixで{{name}}とチャットを始めましょう。無料アカウントを作成してすぐに始められます！",
+        "keywords": "AIチャット, AIコンパニオン, ChatLamix, AIとチャット"
+    },
+
+    "page_title": "チャットの準備をしましょう",
+
+    "step1": {
+        "title": "これからチャットする相手",
+        "subtitle": "パーソナライズされた体験のために、あなたについて少し教えてください",
+        "begin_button": "始めましょう！"
+    },
+
+    "step2": {
+        "title": "あなたについて",
+        "subtitle": "{{name}}との体験をパーソナライズするためにお手伝いください",
+        "nickname_label": "なんとお呼びしましょうか？",
+        "nickname_placeholder": "ニックネームを入力",
+        "gender_label": "あなたの性別",
+        "gender_male": "男性",
+        "gender_female": "女性",
+        "gender_nonbinary": "ノンバイナリー",
+        "age_label": "あなたの年齢層",
+        "age_18_24": "18-24",
+        "age_25_34": "25-34",
+        "age_35_44": "35-44",
+        "age_45_54": "45-54",
+        "age_55_plus": "55+",
+        "language_label": "チャット言語",
+        "language_hint": "{{name}}はこの言語であなたに話しかけます"
+    },
+
+    "step3": {
+        "title": "あなたの好み",
+        "subtitle": "{{name}}とどんな体験をお求めですか？",
+        "interests_label": "興味があるものは？（任意）",
+        "tag_romantic": "ロマンチック",
+        "tag_dominant": "ドミナント",
+        "tag_submissive": "サブミッシブ",
+        "tag_playful": "遊び心",
+        "tag_mysterious": "ミステリアス",
+        "tag_caring": "思いやり",
+        "tag_adventurous": "冒険的",
+        "tag_shy": "シャイ",
+        "tag_roleplay": "ロールプレイ",
+        "tag_casual": "カジュアルチャット"
+    },
+
+    "step4": {
+        "title": "最後のステップ！",
+        "subtitle": "{{name}}とチャットを始めるために無料アカウントを作成してください",
+        "benefits_title": "得られるもの：",
+        "benefit1": "{{name}}とすぐにチャット開始",
+        "benefit2": "無制限の無料会話",
+        "benefit3": "デバイス間でチャット履歴を保存",
+        "benefit4": "画像生成機能へのアクセス",
+        "google_button": "Googleで続ける",
+        "apple_button": "Appleで続ける",
+        "line_button": "LINEで続ける",
+        "or_divider": "またはメールで続ける",
+        "email_placeholder": "メールアドレスを入力",
+        "password_placeholder": "パスワードを作成",
+        "terms_agree": "利用規約とプライバシーポリシーに同意します",
+        "create_account": "アカウントを作成してチャットを始める",
+        "already_have_account": "すでにアカウントをお持ちですか？",
+        "sign_in": "サインイン"
+    },
+
+    "buttons": {
+        "next": "次へ",
+        "back": "戻る",
+        "skip": "スキップ"
+    },
+
+    "errors": {
+        "enter_nickname": "ニックネームを入力してください",
+        "select_gender": "性別を選択してください",
+        "select_age": "年齢層を選択してください",
+        "agree_terms": "利用規約に同意してください",
+        "password_short": "パスワードは8文字以上必要です",
+        "auth_failed": "認証に失敗しました。もう一度お試しください。"
+    },
+
+    "loading": {
+        "setting_up": "{{name}}とのチャットを準備中...",
+        "please_wait": "少々お待ちください"
+    }
+}

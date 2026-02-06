@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "title": "Chat with {{name}} | ChatLamix",
+        "description": "Start chatting with {{name}} on ChatLamix. Create your free account and dive right in!",
+        "keywords": "AI chat, AI companion, ChatLamix, chat with AI"
+    },
+
+    "page_title": "Get Ready to Chat",
+
+    "step1": {
+        "title": "You're about to chat with",
+        "subtitle": "Tell us a bit about yourself for a personalized experience",
+        "begin_button": "Let's Go!"
+    },
+
+    "step2": {
+        "title": "About You",
+        "subtitle": "Help us personalize your experience with {{name}}",
+        "nickname_label": "What should we call you?",
+        "nickname_placeholder": "Enter your nickname",
+        "gender_label": "Your gender",
+        "gender_male": "Male",
+        "gender_female": "Female",
+        "gender_nonbinary": "Non-binary",
+        "age_label": "Your age range",
+        "age_18_24": "18-24",
+        "age_25_34": "25-34",
+        "age_35_44": "35-44",
+        "age_45_54": "45-54",
+        "age_55_plus": "55+",
+        "language_label": "Chat language",
+        "language_hint": "{{name}} will speak to you in this language"
+    },
+
+    "step3": {
+        "title": "Your Preferences",
+        "subtitle": "What kind of experience are you looking for with {{name}}?",
+        "interests_label": "What interests you? (optional)",
+        "tag_romantic": "Romantic",
+        "tag_dominant": "Dominant",
+        "tag_submissive": "Submissive",
+        "tag_playful": "Playful",
+        "tag_mysterious": "Mysterious",
+        "tag_caring": "Caring",
+        "tag_adventurous": "Adventurous",
+        "tag_shy": "Shy",
+        "tag_roleplay": "Roleplay",
+        "tag_casual": "Casual Chat"
+    },
+
+    "step4": {
+        "title": "One Last Step!",
+        "subtitle": "Create your free account to start chatting with {{name}}",
+        "benefits_title": "What you'll get:",
+        "benefit1": "Start chatting with {{name}} instantly",
+        "benefit2": "Unlimited free conversations",
+        "benefit3": "Your chat history saved across devices",
+        "benefit4": "Access to image generation features",
+        "google_button": "Continue with Google",
+        "apple_button": "Continue with Apple",
+        "line_button": "Continue with LINE",
+        "or_divider": "Or continue with email",
+        "email_placeholder": "Enter your email",
+        "password_placeholder": "Create a password",
+        "terms_agree": "I agree to the Terms of Service and Privacy Policy",
+        "create_account": "Create Account & Start Chatting",
+        "already_have_account": "Already have an account?",
+        "sign_in": "Sign In"
+    },
+
+    "buttons": {
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip"
+    },
+
+    "errors": {
+        "enter_nickname": "Please enter a nickname",
+        "select_gender": "Please select your gender",
+        "select_age": "Please select your age range",
+        "agree_terms": "Please agree to the terms",
+        "password_short": "Password must be at least 8 characters",
+        "auth_failed": "Authentication failed. Please try again."
+    },
+
+    "loading": {
+        "setting_up": "Setting up your chat with {{name}}...",
+        "please_wait": "Please wait, this will only take a moment"
+    }
+}

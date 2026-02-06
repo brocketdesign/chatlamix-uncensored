@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Chat with {{characterName}} | ChatLamix</title>
+    <meta name="description" content="Start chatting with {{characterName}} on ChatLamix">
+    
+    <!-- SEO Meta Tags -->
+    {{#each seo}}
+    <meta {{#if this.name}}name="{{this.name}}"{{/if}}{{#if this.property}}property="{{this.property}}"{{/if}} content="{{this.content}}">
+    {{/each}}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/img/favicon.png">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Chat Onboarding CSS -->
+    <link rel="stylesheet" href="/css/chat-onboarding.css">
+    
+    <!-- Clerk styles -->
+    <style>
+        .cl-rootBox { width: 100%; }
+        .cl-card {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(10px) !important;
+            -webkit-backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 15px !important;
+            box-shadow: 0 8px 32px rgba(110, 32, 244, 0.15) !important;
+        }
+        .cl-headerTitle, .cl-headerSubtitle { color: #ffffff !important; }
+        .cl-formButtonPrimary {
+            background: linear-gradient(90.9deg, #D2B8FF 2.74%, #8240FF 102.92%) !important;
+            border: none !important;
+            border-radius: 12px !important;
+            font-weight: 600 !important;
+            transition: all 0.3s ease !important;
+        }
+        .cl-formButtonPrimary:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 8px 20px rgba(130, 64, 255, 0.4) !important;
+        }
+        .cl-socialButtonsBlockButton {
+            border-radius: 12px !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+        .cl-formFieldInput {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px !important;
+            color: #ffffff !important;
+        }
+        .cl-formFieldInput:focus {
+            border-color: #8240FF !important;
+            box-shadow: 0 0 0 3px rgba(130, 64, 255, 0.2) !important;
+        }
+        .cl-footerActionLink { color: #D2B8FF !important; }
+        .cl-internal-b3fm6y { color: #aeb0b4 !important; }
+    </style>
+</head>
+<body class="chat-onboarding-body">
+    <!-- Animated background -->
+    <div class="chat-onboarding-bg">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+    
+    <!-- Main Container -->
+    <div class="chat-onboarding-container">
+        <!-- Header with Progress Bar -->
+        <header class="chat-onboarding-header">
+            <a href="/" class="brand-logo">
+                <img src="/img/logo.png" alt="ChatLamix" height="32">
+            </a>
+            <div class="progress-container">
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="progressBar" style="width: 25%"></div>
+                </div>
+                <div class="step-indicator" id="stepIndicator">
+                    <span class="current-step">1</span>/<span class="total-steps">4</span>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Steps Container -->
+        <div class="steps-wrapper" id="stepsWrapper">
+            
+            <!-- Step 1: Welcome / Meet the Character -->
+            <div class="step-slide active" data-step="1" id="step1">
+                <div class="step-content step-welcome">
+                    <!-- Character Showcase -->
+                    <div class="character-showcase">
+                        <div class="character-avatar-wrapper">
+                            <img src="{{characterThumbnail}}" alt="{{characterName}}" class="character-avatar" id="characterAvatar">
+                            <div class="avatar-glow"></div>
+                        </div>
+                        <h1 class="character-name">{{characterName}}</h1>
+                        {{#if characterIntro}}
+                        <p class="character-intro">{{characterIntro}}</p>
+                        {{/if}}
+                        {{#if characterTags}}
+                        <div class="character-tags">
+                            {{#each characterTags}}
+                            <span class="character-tag">{{this}}</span>
+                            {{/each}}
+                        </div>
+                        {{/if}}
+                    </div>
+                    
+                    <div class="welcome-message">
+                        <div class="welcome-bubble">
+                            <p class="welcome-text">{{chatOnboardingTranslations.step1.subtitle}}</p>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-begin" id="beginBtn">
+                        {{chatOnboardingTranslations.step1.begin_button}}
+                        <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Step 2: About You -->
+            <div class="step-slide" data-step="2" id="step2">
+                <div class="step-content">
+                    <!-- Character mini banner at top -->
+                    <div class="character-mini-banner">
+                        <img src="{{characterThumbnail}}" alt="{{characterName}}" class="mini-avatar">
+                        <span class="mini-name">{{characterName}}</span>
+                    </div>
+                    
+                    <h1 class="step-title">{{chatOnboardingTranslations.step2.title}}</h1>
+                    <p class="step-subtitle">{{chatOnboardingTranslations.step2.subtitle}}</p>
+                    
+                    <!-- Nickname -->
+                    <div class="form-section">
+                        <label class="form-label">{{chatOnboardingTranslations.step2.nickname_label}}</label>
+                        <input type="text" class="onboarding-input" id="userNickname" 
+                               placeholder="{{chatOnboardingTranslations.step2.nickname_placeholder}}" maxlength="30">
+                    </div>
+                    
+                    <!-- Gender -->
+                    <div class="form-section">
+                        <label class="form-label">{{chatOnboardingTranslations.step2.gender_label}}</label>
+                        <div class="option-pills" id="genderPills">
+                            <button type="button" class="option-pill" data-value="male">
+                                <i class="bi bi-gender-male"></i>
+                                {{chatOnboardingTranslations.step2.gender_male}}
+                            </button>
+                            <button type="button" class="option-pill" data-value="female">
+                                <i class="bi bi-gender-female"></i>
+                                {{chatOnboardingTranslations.step2.gender_female}}
+                            </button>
+                            <button type="button" class="option-pill" data-value="non-binary">
+                                <i class="bi bi-gender-ambiguous"></i>
+                                {{chatOnboardingTranslations.step2.gender_nonbinary}}
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Age Range -->
+                    <div class="form-section">
+                        <label class="form-label">{{chatOnboardingTranslations.step2.age_label}}</label>
+                        <div class="option-pills" id="agePills">
+                            <button type="button" class="option-pill" data-value="18-24">18-24</button>
+                            <button type="button" class="option-pill" data-value="25-34">25-34</button>
+                            <button type="button" class="option-pill" data-value="35-44">35-44</button>
+                            <button type="button" class="option-pill" data-value="45-54">45-54</button>
+                            <button type="button" class="option-pill" data-value="55+">55+</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Language -->
+                    <div class="form-section">
+                        <label class="form-label">{{chatOnboardingTranslations.step2.language_label}}</label>
+                        <p class="form-hint">{{chatOnboardingTranslations.step2.language_hint}}</p>
+                        <div class="language-options" id="chatLanguagePills">
+                            <button type="button" class="lang-btn" data-lang="english">
+                                <span class="lang-flag">🇬🇧</span>
+                                <span>English</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="japanese">
+                                <span class="lang-flag">🇯🇵</span>
+                                <span>日本語</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="french">
+                                <span class="lang-flag">🇫🇷</span>
+                                <span>Français</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="portuguese">
+                                <span class="lang-flag">🇧🇷</span>
+                                <span>Português</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="spanish">
+                                <span class="lang-flag">🇪🇸</span>
+                                <span>Español</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="chinese">
+                                <span class="lang-flag">🇨🇳</span>
+                                <span>中文</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="korean">
+                                <span class="lang-flag">🇰🇷</span>
+                                <span>한국어</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="thai">
+                                <span class="lang-flag">🇹🇭</span>
+                                <span>ไทย</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="german">
+                                <span class="lang-flag">🇩🇪</span>
+                                <span>Deutsch</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="italian">
+                                <span class="lang-flag">🇮🇹</span>
+                                <span>Italiano</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="russian">
+                                <span class="lang-flag">🇷🇺</span>
+                                <span>Русский</span>
+                            </button>
+                            <button type="button" class="lang-btn" data-lang="hindi">
+                                <span class="lang-flag">🇮🇳</span>
+                                <span>हिन्दी</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Preferences -->
+            <div class="step-slide" data-step="3" id="step3">
+                <div class="step-content">
+                    <!-- Character mini banner -->
+                    <div class="character-mini-banner">
+                        <img src="{{characterThumbnail}}" alt="{{characterName}}" class="mini-avatar">
+                        <span class="mini-name">{{characterName}}</span>
+                    </div>
+                    
+                    <h1 class="step-title">{{chatOnboardingTranslations.step3.title}}</h1>
+                    <p class="step-subtitle">{{chatOnboardingTranslations.step3.subtitle}}</p>
+                    
+                    <!-- Interest Tags -->
+                    <div class="form-section">
+                        <label class="form-label">{{chatOnboardingTranslations.step3.interests_label}}</label>
+                        <div class="tag-grid" id="interestTags">
+                            <button type="button" class="tag-pill" data-tag="romantic">
+                                💕 {{chatOnboardingTranslations.step3.tag_romantic}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="dominant">
+                                👑 {{chatOnboardingTranslations.step3.tag_dominant}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="submissive">
+                                🎀 {{chatOnboardingTranslations.step3.tag_submissive}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="playful">
+                                🎭 {{chatOnboardingTranslations.step3.tag_playful}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="mysterious">
+                                🌙 {{chatOnboardingTranslations.step3.tag_mysterious}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="caring">
+                                💝 {{chatOnboardingTranslations.step3.tag_caring}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="adventurous">
+                                🔥 {{chatOnboardingTranslations.step3.tag_adventurous}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="shy">
+                                😊 {{chatOnboardingTranslations.step3.tag_shy}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="roleplay">
+                                🎪 {{chatOnboardingTranslations.step3.tag_roleplay}}
+                            </button>
+                            <button type="button" class="tag-pill" data-tag="casual">
+                                💬 {{chatOnboardingTranslations.step3.tag_casual}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 4: Sign Up (Clerk) -->
+            <div class="step-slide" data-step="4" id="step4">
+                <div class="step-content registration-step">
+                    <!-- Character mini banner -->
+                    <div class="character-mini-banner">
+                        <img src="{{characterThumbnail}}" alt="{{characterName}}" class="mini-avatar">
+                        <span class="mini-name">{{characterName}}</span>
+                    </div>
+                    
+                    <h1 class="step-title">{{chatOnboardingTranslations.step4.title}}</h1>
+                    <p class="step-subtitle">{{chatOnboardingTranslations.step4.subtitle}}</p>
+                    
+                    <!-- Benefits -->
+                    <div class="benefits-list">
+                        <h4>{{chatOnboardingTranslations.step4.benefits_title}}</h4>
+                        <ul>
+                            <li><i class="bi bi-check-circle-fill"></i> {{chatOnboardingTranslations.step4.benefit1}}</li>
+                            <li><i class="bi bi-check-circle-fill"></i> {{chatOnboardingTranslations.step4.benefit2}}</li>
+                            <li><i class="bi bi-check-circle-fill"></i> {{chatOnboardingTranslations.step4.benefit3}}</li>
+                            <li><i class="bi bi-check-circle-fill"></i> {{chatOnboardingTranslations.step4.benefit4}}</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Direct OAuth Buttons -->
+                    <div class="auth-container">
+                        <div class="social-buttons-direct">
+                            <button type="button" class="social-btn-direct google-btn" id="directGoogleBtn">
+                                <svg width="20" height="20" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                <span>{{chatOnboardingTranslations.step4.google_button}}</span>
+                            </button>
+                        </div>
+                        
+                        <div class="divider">
+                            <span>{{chatOnboardingTranslations.step4.or_divider}}</span>
+                        </div>
+                        
+                        <!-- Clerk sign-up for email/password (social buttons hidden) -->
+                        <div id="clerk-auth-container"></div>
+                        
+                        <!-- Fallback -->
+                        <div class="fallback-auth" id="fallbackAuth" style="display: none;">
+                            <form id="emailSignupForm" class="email-form">
+                                <input type="email" class="onboarding-input" id="signupEmail" 
+                                       placeholder="{{chatOnboardingTranslations.step4.email_placeholder}}" required>
+                                <input type="password" class="onboarding-input" id="signupPassword" 
+                                       placeholder="{{chatOnboardingTranslations.step4.password_placeholder}}" required>
+                                <div class="terms-checkbox">
+                                    <input type="checkbox" id="termsAgree" required>
+                                    <label for="termsAgree">{{chatOnboardingTranslations.step4.terms_agree}}</label>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-create">
+                                    {{chatOnboardingTranslations.step4.create_account}}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <div class="login-link">
+                        {{chatOnboardingTranslations.step4.already_have_account}}
+                        <a href="/login">{{chatOnboardingTranslations.step4.sign_in}}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer Navigation -->
+        <footer class="chat-onboarding-footer" id="onboardingFooter">
+            <button type="button" class="btn btn-back" id="backBtn" style="visibility: hidden;">
+                <i class="bi bi-chevron-left"></i>
+                {{chatOnboardingTranslations.buttons.back}}
+            </button>
+            <button type="button" class="btn btn-next" id="nextBtn" style="display: none;">
+                {{chatOnboardingTranslations.buttons.next}}
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </footer>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="loading-character">
+                <img src="{{characterThumbnail}}" alt="{{characterName}}" class="loading-avatar">
+            </div>
+            <div class="spinner-border text-light" role="status"></div>
+            <p>{{chatOnboardingTranslations.loading.setting_up}}</p>
+            <small>{{chatOnboardingTranslations.loading.please_wait}}</small>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Pass data to JavaScript -->
+    <script>
+        window.chatOnboardingTranslations = {{{json chatOnboardingTranslations}}};
+        window.clerkTranslations = {{{json clerkTranslations}}};
+        window.lang = '{{lang}}';
+        window.MODE = '{{mode}}';
+        window.chatOnboardingData = {
+            chatId: '{{chatId}}',
+            characterName: '{{characterName}}',
+            characterThumbnail: '{{characterThumbnail}}',
+            characterIntro: '{{characterIntro}}'
+        };
+    </script>
+    
+    <!-- Clerk Authentication Setup -->
+    <script>
+        const clerkKey = window.MODE === 'production'
+            ? 'pk_live_Y2xlcmsuY2hhdGxhbWl4LmNvbSQ'
+            : 'pk_test_Z29vZC10ZXJtaXRlLTU2LmNsZXJrLmFjY291bnRzLmRldiQ';
+        
+        const clerkSrc = window.MODE === 'production'
+            ? 'https://accounts.chatlamix.com/npm/@clerk/clerk-js@5.117.0/dist/clerk.browser.js'
+            : 'https://good-termite-56.clerk.accounts.dev/npm/@clerk/clerk-js@5/dist/clerk.browser.js';
+        
+        window.clerkPublishableKey = clerkKey;
+        
+        const clerkScript = document.createElement('script');
+        clerkScript.src = clerkSrc;
+        clerkScript.async = true;
+        clerkScript.crossOrigin = 'anonymous';
+        clerkScript.setAttribute('data-clerk-publishable-key', clerkKey);
+        document.head.appendChild(clerkScript);
+        
+        window.addEventListener('load', async function() {
+            try {
+                if (typeof Clerk === 'undefined') {
+                    await new Promise((resolve) => {
+                        const checkClerk = setInterval(() => {
+                            if (typeof Clerk !== 'undefined') {
+                                clearInterval(checkClerk);
+                                resolve();
+                            }
+                        }, 100);
+                        setTimeout(() => { clearInterval(checkClerk); resolve(); }, 10000);
+                    });
+                }
+                
+                if (typeof Clerk !== 'undefined') {
+                    const clerkLang = window.clerkTranslations ? Object.keys(window.clerkTranslations)[0] : null;
+                    const localization = clerkLang && window.clerkTranslations[clerkLang] 
+                        ? { localization: window.clerkTranslations[clerkLang] }
+                        : {};
+                    
+                    await Clerk.load(localization);
+                    window.Clerk = Clerk;
+                    console.log('[ChatOnboarding] Clerk loaded successfully');
+                    
+                    // If user is already signed in, redirect to chat
+                    if (Clerk.user) {
+                        console.log('[ChatOnboarding] User already signed in, redirecting...');
+                        handleClerkAuth();
+                        return;
+                    }
+                    
+                    Clerk.addListener(({ user }) => {
+                        if (user) {
+                            console.log('[ChatOnboarding] User signed in:', user.id);
+                            handleClerkAuth();
+                        }
+                    });
+                } else {
+                    console.warn('[ChatOnboarding] Clerk not available');
+                    showFallbackAuth();
+                }
+            } catch (error) {
+                console.error('[ChatOnboarding] Error initializing Clerk:', error);
+                showFallbackAuth();
+            }
+        });
+        
+        function handleClerkAuth() {
+            if (!window.Clerk?.user) return;
+            
+            // Save onboarding data then redirect
+            const onboarding = window.chatOnboarding;
+            if (onboarding) {
+                onboarding.onAuthComplete(window.Clerk.user);
+            } else {
+                // Fallback: just sync and redirect
+                fetch('/user/clerk-update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Clerk-Session-Id': window.Clerk?.session?.id || '',
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(window.Clerk.user)
+                }).finally(() => {
+                    window.location.href = '/chat/' + window.chatOnboardingData.chatId;
+                });
+            }
+        }
+        
+        function showFallbackAuth() {
+            const clerkContainer = document.getElementById('clerk-auth-container');
+            const fallbackAuth = document.getElementById('fallbackAuth');
+            if (clerkContainer) clerkContainer.style.display = 'none';
+            if (fallbackAuth) fallbackAuth.style.display = 'block';
+        }
+        
+        window.handleClerkAuth = handleClerkAuth;
+        window.showFallbackAuth = showFallbackAuth;
+    </script>
+    
+    <!-- Chat Onboarding JavaScript -->
+    <script src="/js/chat-onboarding.js"></script>
+</body>
+</html>

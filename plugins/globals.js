@@ -34,6 +34,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
     const buyPointsTranslationsCache = {}; // Add cache for buy-points translations
     const chatModelTestTranslationsCache = {}; // Add cache for chat model test translations
     const coldOnboardingTranslationsCache = {}; // Add cache for cold onboarding translations
+    const chatOnboardingTranslationsCache = {}; // Add cache for chat onboarding translations
     const creatorTranslationsCache = {}; // Add cache for creator translations
     
     // Decorate Fastify with user, lang, and translations functions
@@ -56,6 +57,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
     fastify.decorate('getBuyPointsTranslations', getBuyPointsTranslations); // Add buy-points translations decorator
     fastify.decorate('getChatModelTestTranslations', getChatModelTestTranslations); // Add chat model test translations decorator
     fastify.decorate('getColdOnboardingTranslations', getColdOnboardingTranslations); // Add cold onboarding translations decorator
+    fastify.decorate('getChatOnboardingTranslations', getChatOnboardingTranslations); // Add chat onboarding translations decorator
     fastify.decorate('getCreatorTranslations', getCreatorTranslations); // Add creator translations decorator
     
     // Attach `lang` and `user` dynamically
@@ -90,6 +92,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
     fastify.decorateRequest('buyPointsTranslations', null); // Add buy-points translations to request
     fastify.decorateRequest('chatModelTestTranslations', null); // Add chat model test translations to request
     fastify.decorateRequest('coldOnboardingTranslations', null); // Add cold onboarding translations to request
+    fastify.decorateRequest('chatOnboardingTranslations', null); // Add chat onboarding translations to request
     fastify.decorateRequest('creatorTranslations', null); // Add creator translations to request
 
     // Pre-handler to set user, lang, and translations
@@ -114,6 +117,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
         request.buyPointsTranslations = getBuyPointsTranslations(request.lang); // Load buy-points translations
         request.chatModelTestTranslations = getChatModelTestTranslations(request.lang); // Load chat model test translations
         request.coldOnboardingTranslations = getColdOnboardingTranslations(request.lang); // Load cold onboarding translations
+        request.chatOnboardingTranslations = getChatOnboardingTranslations(request.lang); // Load chat onboarding translations
         request.creatorTranslations = getCreatorTranslations(request.lang); // Load creator translations
    
         // Make translations available in Handlebars templates
@@ -136,6 +140,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
             buyPointsTranslations: request.buyPointsTranslations, // Make buy-points translations available
             chatModelTestTranslations: request.chatModelTestTranslations, // Make chat model test translations available
             coldOnboardingTranslations: request.coldOnboardingTranslations, // Make cold onboarding translations available
+            chatOnboardingTranslations: request.chatOnboardingTranslations, // Make chat onboarding translations available
             creatorTranslations: request.creatorTranslations, // Make creator translations available
             user: request.user, // Make user available
             isUserAdmin: request.isUserAdmin, // Make admin status available
@@ -593,6 +598,7 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
             buyPointsTranslations: request.buyPointsTranslations, // Add buy-points translations to locals
             chatModelTestTranslations: request.chatModelTestTranslations, // Add chat model test translations to locals
             coldOnboardingTranslations: request.coldOnboardingTranslations, // Add cold onboarding translations to locals
+            chatOnboardingTranslations: request.chatOnboardingTranslations, // Add chat onboarding translations to locals
             creatorTranslations: request.creatorTranslations, // Add creator translations to locals
             lang: request.lang,
             user: request.user,
@@ -723,6 +729,26 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
             }
         }
         return coldOnboardingTranslationsCache[currentLang];
+    }
+
+    /** Load ChatOnboardingTranslations for a specific language (cached for performance) */
+    function getChatOnboardingTranslations(currentLang) {
+        if (!currentLang) currentLang = 'en';
+        
+        if (!chatOnboardingTranslationsCache[currentLang]) {
+            const chatOnboardingTranslationFile = path.join(__dirname, '..', 'locales', `chat-onboarding-${currentLang}.json`);
+            if (fs.existsSync(chatOnboardingTranslationFile)) {
+                try {
+                    chatOnboardingTranslationsCache[currentLang] = JSON.parse(fs.readFileSync(chatOnboardingTranslationFile, 'utf-8'));
+                } catch (e) {
+                    fastify.log.error(`Error reading chat onboarding translations for ${currentLang}:`, e);
+                    chatOnboardingTranslationsCache[currentLang] = {};
+                }
+            } else {
+                chatOnboardingTranslationsCache[currentLang] = {}; // Fallback to empty object if translation file is missing
+            }
+        }
+        return chatOnboardingTranslationsCache[currentLang];
     }
 
     /** Load CreatorTranslations for a specific language (from main locale file) */

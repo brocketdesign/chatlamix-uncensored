@@ -1,0 +1,90 @@
+{
+    "meta": {
+        "title": "Discuter avec {{name}} | ChatLamix",
+        "description": "Commencez à discuter avec {{name}} sur ChatLamix. Créez votre compte gratuit et plongez directement !",
+        "keywords": "chat IA, compagnon IA, ChatLamix, discuter avec IA"
+    },
+
+    "page_title": "Préparez-vous à discuter",
+
+    "step1": {
+        "title": "Vous êtes sur le point de discuter avec",
+        "subtitle": "Dites-nous en un peu plus sur vous pour une expérience personnalisée",
+        "begin_button": "C'est parti !"
+    },
+
+    "step2": {
+        "title": "À propos de vous",
+        "subtitle": "Aidez-nous à personnaliser votre expérience avec {{name}}",
+        "nickname_label": "Comment devons-nous vous appeler ?",
+        "nickname_placeholder": "Entrez votre surnom",
+        "gender_label": "Votre genre",
+        "gender_male": "Homme",
+        "gender_female": "Femme",
+        "gender_nonbinary": "Non-binaire",
+        "age_label": "Votre tranche d'âge",
+        "age_18_24": "18-24",
+        "age_25_34": "25-34",
+        "age_35_44": "35-44",
+        "age_45_54": "45-54",
+        "age_55_plus": "55+",
+        "language_label": "Langue de chat",
+        "language_hint": "{{name}} vous parlera dans cette langue"
+    },
+
+    "step3": {
+        "title": "Vos préférences",
+        "subtitle": "Quel type d'expérience recherchez-vous avec {{name}} ?",
+        "interests_label": "Qu'est-ce qui vous intéresse ? (optionnel)",
+        "tag_romantic": "Romantique",
+        "tag_dominant": "Dominant",
+        "tag_submissive": "Soumis",
+        "tag_playful": "Joueur",
+        "tag_mysterious": "Mystérieux",
+        "tag_caring": "Attentionné",
+        "tag_adventurous": "Aventurier",
+        "tag_shy": "Timide",
+        "tag_roleplay": "Jeu de rôle",
+        "tag_casual": "Discussion décontractée"
+    },
+
+    "step4": {
+        "title": "Une dernière étape !",
+        "subtitle": "Créez votre compte gratuit pour commencer à discuter avec {{name}}",
+        "benefits_title": "Ce que vous obtiendrez :",
+        "benefit1": "Commencez à discuter avec {{name}} instantanément",
+        "benefit2": "Conversations gratuites illimitées",
+        "benefit3": "Historique de chat sauvegardé sur tous vos appareils",
+        "benefit4": "Accès aux fonctionnalités de génération d'images",
+        "google_button": "Continuer avec Google",
+        "apple_button": "Continuer avec Apple",
+        "line_button": "Continuer avec LINE",
+        "or_divider": "Ou continuer avec un email",
+        "email_placeholder": "Entrez votre email",
+        "password_placeholder": "Créez un mot de passe",
+        "terms_agree": "J'accepte les Conditions d'utilisation et la Politique de confidentialité",
+        "create_account": "Créer un compte et commencer à discuter",
+        "already_have_account": "Vous avez déjà un compte ?",
+        "sign_in": "Se connecter"
+    },
+
+    "buttons": {
+        "next": "Suivant",
+        "back": "Retour",
+        "skip": "Passer"
+    },
+
+    "errors": {
+        "enter_nickname": "Veuillez entrer un surnom",
+        "select_gender": "Veuillez sélectionner votre genre",
+        "select_age": "Veuillez sélectionner votre tranche d'âge",
+        "agree_terms": "Veuillez accepter les conditions",
+        "password_short": "Le mot de passe doit contenir au moins 8 caractères",
+        "auth_failed": "L'authentification a échoué. Veuillez réessayer."
+    },
+
+    "loading": {
+        "setting_up": "Préparation de votre chat avec {{name}}...",
+        "please_wait": "Veuillez patienter, cela ne prendra qu'un instant"
+    }
+}

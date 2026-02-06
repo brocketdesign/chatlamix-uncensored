@@ -342,6 +342,73 @@ fastify.get('/create-character', async (request, reply) => {
   });
 });
 
+// Chat onboarding - for users arriving from social media links with a specific chat/character
+fastify.get('/chat-onboarding/:chatId', async (request, reply) => {
+  const db = fastify.mongo.db;
+  let { clerkTranslations, translations, lang, user } = request;
+  const chatId = request.params.chatId;
+  
+  // Support ?lang= parameter to override display language for this page
+  const langParam = request.query?.lang;
+  const validLangs = ['en', 'fr', 'ja', 'hi'];
+  const displayLang = (langParam && validLangs.includes(langParam)) ? langParam : lang;
+  
+  // Reload translations if lang was overridden
+  let chatOnboardingTranslations = request.chatOnboardingTranslations;
+  if (displayLang !== lang) {
+    chatOnboardingTranslations = fastify.getChatOnboardingTranslations(displayLang);
+    clerkTranslations = fastify.getClerkTranslations(displayLang);
+  }
+  
+  // If user is already logged in and not temporary, redirect directly to the chat
+  if (user && !user.isTemporary && user.onboardingCompleted) {
+    return reply.redirect(`/chat/${chatId}`);
+  }
+  
+  // Fetch the target chat/character data
+  let chat;
+  try {
+    chat = await db.collection('chats').findOne({ _id: new fastify.mongo.ObjectId(chatId) });
+  } catch (e) {
+    // Try by slug
+    chat = await db.collection('chats').findOne({ slug: chatId });
+  }
+  
+  if (!chat) {
+    return reply.redirect('/create-character');
+  }
+  
+  const characterName = chat.name || 'AI Character';
+  const characterThumbnail = chat.thumbnailUrl || chat.chatImageUrl || '/img/default-avatar.png';
+  const characterIntro = chat.short_intro || '';
+  const characterTags = chat.tags || [];
+  
+  // Replace {{name}} placeholders in translation strings
+  const processedTranslations = JSON.parse(
+    JSON.stringify(chatOnboardingTranslations).replace(/\{\{name\}\}/g, characterName)
+  );
+  
+  return reply.renderWithGtm('chat-onboarding.hbs', {
+    title: `Chat with ${characterName} | ChatLamix`,
+    seo: [
+      { name: 'description', content: `Start chatting with ${characterName} on ChatLamix. Create your free account and dive right in!` },
+      { property: 'og:title', content: `Chat with ${characterName} | ChatLamix` },
+      { property: 'og:description', content: characterIntro || `Start chatting with ${characterName} on ChatLamix.` },
+      { property: 'og:image', content: characterThumbnail },
+      { property: 'og:url', content: `https://chatlamix.com/chat-onboarding/${chatId}` },
+    ],
+    chatId,
+    characterName,
+    characterThumbnail,
+    characterIntro,
+    characterTags,
+    lang: displayLang,
+    chatOnboardingTranslations: processedTranslations,
+    clerkTranslations,
+    mode: process.env.MODE || 'development'
+  });
+});
+
 // old login
 fastify.get('/login', async (request, reply) => {
   const db = fastify.mongo.db;
