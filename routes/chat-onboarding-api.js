@@ -51,10 +51,25 @@ async function routes(fastify) {
      */
     fastify.post('/api/chat-onboarding/save-user-data', async (request, reply) => {
         try {
-            const { userData, chatId } = request.body;
-            const { user } = request;
+            const { userData, chatId, clerkId } = request.body;
+            let { user } = request;
+            
+            console.log(`[chat-onboarding] save-user-data called. JWT user: ${user?._id || 'none'}, isTemp: ${user?.isTemporary}, clerkId: ${clerkId || 'none'}`);
+            
+            // Primary auth: JWT cookie. Fallback: clerkId from request body.
+            // The clerkId fallback is needed because the JWT cookie set by /user/clerk-auth
+            // may not be available in the same browser session immediately.
+            if ((!user || user.isTemporary) && clerkId) {
+                const db = fastify.mongo.db;
+                user = await db.collection('users').findOne({ clerkId });
+                console.log(`[chat-onboarding] Fallback clerkId lookup: ${user ? 'found user ' + user._id : 'not found'}`);
+                if (!user) {
+                    return reply.status(401).send({ error: 'User not found' });
+                }
+            }
             
             if (!user || user.isTemporary) {
+                console.log(`[chat-onboarding] Auth failed - no valid user`);
                 return reply.status(401).send({ error: 'Authentication required' });
             }
             
@@ -76,10 +91,12 @@ async function routes(fastify) {
             if (userData.chatLanguage) updateData.preferredChatLanguage = userData.chatLanguage;
             if (userData.interests?.length) updateData.interests = userData.interests;
             
-            await db.collection('users').updateOne(
+            const updateResult = await db.collection('users').updateOne(
                 { _id: userId },
                 { $set: updateData }
             );
+            
+            console.log(`[chat-onboarding] User ${userId} updated:`, JSON.stringify(updateData), `matched: ${updateResult.matchedCount}, modified: ${updateResult.modifiedCount}`);
             
             // Also log to analytics collection for the admin dashboard
             await db.collection('onboardingAnalytics').insertOne({

@@ -524,6 +524,10 @@ class ChatOnboarding {
      * Saves user data and redirects to the target chat
      */
     async onAuthComplete(user) {
+        // Prevent double execution (can be called from multiple listeners)
+        if (this._authCompleting) return;
+        this._authCompleting = true;
+        
         console.log('[ChatOnboarding] Auth complete, saving user data...');
         this.showLoading();
         
@@ -549,27 +553,32 @@ class ChatOnboarding {
             });
             
             if (!authResponse.ok) {
-                console.error('[ChatOnboarding] clerk-auth failed:', authResponse.status);
+                const errText = await authResponse.text();
+                console.error('[ChatOnboarding] clerk-auth failed:', authResponse.status, errText);
             } else {
-                console.log('[ChatOnboarding] User synced successfully');
+                const authData = await authResponse.json();
+                console.log('[ChatOnboarding] User synced successfully:', authData);
             }
             
             // 2. Save onboarding user data (nickname, gender, language, interests)
-            // JWT cookie is now set, so this request will be authenticated
+            // Send clerkId as fallback in case JWT cookie isn't available yet
             const saveResponse = await fetch('/api/chat-onboarding/save-user-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
                 body: JSON.stringify({
                     userData: this.userData,
-                    chatId: chatId
+                    chatId: chatId,
+                    clerkId: clerkId
                 })
             });
             
             if (!saveResponse.ok) {
-                console.error('[ChatOnboarding] save-user-data failed:', saveResponse.status);
+                const errText = await saveResponse.text();
+                console.error('[ChatOnboarding] save-user-data failed:', saveResponse.status, errText);
             } else {
-                console.log('[ChatOnboarding] Onboarding data saved successfully');
+                const saveData = await saveResponse.json();
+                console.log('[ChatOnboarding] Onboarding data saved successfully:', saveData);
             }
             
             // 3. Clear saved data
