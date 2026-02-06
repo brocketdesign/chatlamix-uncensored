@@ -5,6 +5,9 @@
 (function() {
     'use strict';
 
+    const historyTranslations = window.translations?.history_page || {};
+    const t = (key, fallback) => historyTranslations[key] || fallback;
+
     let currentPage = 1;
     let currentFilter = 'all';
     let currentCharacter = '';
@@ -224,7 +227,7 @@
         const emptyState = document.getElementById('emptyState');
 
         if (!append) {
-            contentGrid.innerHTML = '<div class="loading-spinner"><i class="bi bi-hourglass-split"></i><p>Loading your content...</p></div>';
+            contentGrid.innerHTML = `<div class="loading-spinner"><i class="bi bi-hourglass-split"></i><p>${t('loading_content', 'Loading your content...')}</p></div>`;
             displayedContent = [];
         } else {
             // Show loading spinner in load more area
@@ -317,7 +320,7 @@
                 if (loadMoreSpinner) loadMoreSpinner.style.display = 'none';
                 if (loadMoreBtn) loadMoreBtn.style.display = 'inline-block';
                 if (!append) {
-                    contentGrid.innerHTML = '<div class="empty-state"><i class="bi bi-exclamation-triangle"></i><h3>Error loading content</h3><p>Please try again later</p></div>';
+                    contentGrid.innerHTML = `<div class="empty-state"><i class="bi bi-exclamation-triangle"></i><h3>${t('error_loading_content_title', 'Error loading content')}</h3><p>${t('error_loading_content_message', 'Please try again later')}</p></div>`;
                 }
             });
     }
@@ -382,9 +385,9 @@
             : (item.thumbnailUrl || item.imageUrl || item.url);
         
         div.innerHTML = `
-            <img src="${thumbnailUrl}" alt="${item.prompt || 'Generated content'}" loading="lazy">
+            <img src="${thumbnailUrl}" alt="${item.prompt || t('generated_content_alt', 'Generated content')}" loading="lazy">
             ${item.contentType === 'video' ? '<div class="video-overlay"><i class="bi bi-play-fill"></i></div>' : ''}
-            ${isRecent ? '<span class="content-badge badge-recent"><i class="bi bi-star-fill"></i> New</span>' : ''}
+            ${isRecent ? `<span class="content-badge badge-recent"><i class="bi bi-star-fill"></i> ${t('new_badge', 'New')}</span>` : ''}
         `;
 
         div.addEventListener('click', () => {
@@ -469,7 +472,7 @@
         const modalContentArea = document.getElementById('modalContentArea');
 
         // Show loading state
-        modalContentArea.innerHTML = '<div class="text-center p-4"><i class="bi bi-hourglass-split"></i> Loading details...</div>';
+        modalContentArea.innerHTML = `<div class="text-center p-4"><i class="bi bi-hourglass-split"></i> ${t('loading_details', 'Loading details...')}</div>`;
         modal.show();
 
         // Fetch detailed info
@@ -480,12 +483,12 @@
                 if (data.success) {
                     renderModalContent(data.data, data.contentType);
                 } else {
-                    modalContentArea.innerHTML = '<div class="alert alert-danger">Failed to load content details</div>';
+                    modalContentArea.innerHTML = `<div class="alert alert-danger">${t('failed_loading_details', 'Failed to load content details')}</div>`;
                 }
             })
             .catch(error => {
                 console.error('Error loading content details:', error);
-                modalContentArea.innerHTML = '<div class="alert alert-danger">Error loading content details</div>';
+                modalContentArea.innerHTML = `<div class="alert alert-danger">${t('error_loading_details', 'Error loading content details')}</div>`;
             });
     }
 
@@ -506,14 +509,14 @@
                 <div class="mb-4">
                     <video controls class="w-100" style="border-radius: 12px; max-height: 500px;">
                         <source src="${content.videoUrl}" type="video/mp4">
-                        Your browser does not support the video tag.
+                        ${t('video_not_supported', 'Your browser does not support the video tag.')}
                     </video>
                 </div>
             `;
         } else {
             html += `
                 <div class="mb-4 text-center">
-                    <img src="${content.imageUrl}" alt="Generated image" class="img-fluid" style="border-radius: 12px; max-height: 500px;">
+                    <img src="${content.imageUrl}" alt="${t('generated_image_alt', 'Generated image')}" class="img-fluid" style="border-radius: 12px; max-height: 500px;">
                 </div>
             `;
         }
@@ -522,7 +525,7 @@
         if (chat) {
             html += `
                 <div class="detail-item">
-                    <div class="detail-label">Character</div>
+                    <div class="detail-label">${t('detail_character', 'Character')}</div>
                     <div class="detail-value">
                         <a href="/chat/${chat.slug}" class="text-decoration-none" style="color: #b58afe;">
                             ${chat.name}
@@ -536,7 +539,7 @@
         if (content.prompt) {
             html += `
                 <div class="detail-item">
-                    <div class="detail-label">Prompt</div>
+                    <div class="detail-label">${t('detail_prompt', 'Prompt')}</div>
                     <div class="detail-value">${content.prompt}</div>
                 </div>
             `;
@@ -547,7 +550,7 @@
             const createdDate = new Date(content.createdAt);
             html += `
                 <div class="detail-item">
-                    <div class="detail-label">Created</div>
+                    <div class="detail-label">${t('detail_created', 'Created')}</div>
                     <div class="detail-value">${createdDate.toLocaleString()}</div>
                 </div>
             `;
@@ -558,7 +561,7 @@
             if (content.seed !== null && content.seed !== undefined) {
                 html += `
                     <div class="detail-item">
-                        <div class="detail-label">Seed</div>
+                        <div class="detail-label">${t('detail_seed', 'Seed')}</div>
                         <div class="detail-value">${content.seed}</div>
                     </div>
                 `;
@@ -567,7 +570,7 @@
             if (content.aspectRatio) {
                 html += `
                     <div class="detail-item">
-                        <div class="detail-label">Aspect Ratio</div>
+                        <div class="detail-label">${t('detail_aspect_ratio', 'Aspect Ratio')}</div>
                         <div class="detail-value">${content.aspectRatio}</div>
                     </div>
                 `;
@@ -577,7 +580,7 @@
                 if (request.model_name) {
                     html += `
                         <div class="detail-item">
-                            <div class="detail-label">Model</div>
+                            <div class="detail-label">${t('detail_model', 'Model')}</div>
                             <div class="detail-value">${request.model_name}</div>
                         </div>
                     `;
@@ -586,7 +589,7 @@
                 if (request.steps) {
                     html += `
                         <div class="detail-item">
-                            <div class="detail-label">Steps</div>
+                            <div class="detail-label">${t('detail_steps', 'Steps')}</div>
                             <div class="detail-value">${request.steps}</div>
                         </div>
                     `;
@@ -595,7 +598,7 @@
                 if (request.guidance_scale) {
                     html += `
                         <div class="detail-item">
-                            <div class="detail-label">Guidance Scale</div>
+                            <div class="detail-label">${t('detail_guidance_scale', 'Guidance Scale')}</div>
                             <div class="detail-value">${request.guidance_scale}</div>
                         </div>
                     `;
@@ -607,7 +610,7 @@
         if (contentType === 'video' && content.duration) {
             html += `
                 <div class="detail-item">
-                    <div class="detail-label">Duration</div>
+                    <div class="detail-label">${t('detail_duration', 'Duration')}</div>
                     <div class="detail-value">${content.duration}s</div>
                 </div>
             `;

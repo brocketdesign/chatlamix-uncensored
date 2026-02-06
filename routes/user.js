@@ -1478,7 +1478,7 @@ async function routes(fastify, options) {
       const { translations, lang } = request;
 
       return reply.renderWithGtm('history.hbs', {
-        title: 'History - Generated Content',
+        title: translations?.history_page?.page_title || 'History - Generated Content',
         user,
         translations,
         lang
