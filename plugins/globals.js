@@ -206,19 +206,19 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
     async function getLang(request, reply) {
         // Priority 1: Check URL parameter (for SEO-friendly language switching)
         const langParam = request.query?.lang;
-        if (langParam && ['en', 'fr', 'ja'].includes(langParam)) {
+        if (langParam && ['en', 'fr', 'ja', 'hi'].includes(langParam)) {
             return langParam;
         }
         
         // Priority 2: Check language cookie (set when user changes language)
         const langCookie = request.cookies?.lang;
-        if (langCookie && ['en', 'fr', 'ja'].includes(langCookie)) {
+        if (langCookie && ['en', 'fr', 'ja', 'hi'].includes(langCookie)) {
             return langCookie;
         }
         
         // Priority 3: Check subdomain (for backward compatibility during transition)
         const subdomain = request.hostname.split('.')[0];
-        if (['en', 'fr', 'ja'].includes(subdomain)) {
+        if (['en', 'fr', 'ja', 'hi'].includes(subdomain)) {
             return subdomain;
         }
         

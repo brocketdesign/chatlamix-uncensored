@@ -1,0 +1,27 @@
+{
+  "scenarios_title": "अपना रोमांच चुनें",
+  "scenarios_loading": "आपके परिदृश्य तैयार हो रहे हैं",
+  "scenarios_empty": "कोई परिदृश्य उपलब्ध नहीं",
+  "scenarios_error": "परिदृश्य लोड करने में असमर्थ",
+  "scenarios_close": "परिदृश्य बंद करें",
+  "no_scenarios_available": "कोई परिदृश्य उपलब्ध नहीं",
+  "choose_scenario": "यह रोमांच शुरू करें",
+  "selected": "चयनित",
+  "emotional_tone": "मनोदशा",
+  "conversation_direction": "बातचीत की दिशा",
+  "scenario_selected": "रोमांच शुरू!",
+  "scenario_selection_failed": "परिदृश्य चुनने में विफल",
+  "your_goal": "आपका लक्ष्य",
+  "the_scene": "दृश्य",
+  "progress": "प्रगति",
+  "goal_achieved": "लक्ष्य प्राप्त!",
+  "congratulations": "बधाई! आपने यह परिदृश्य पूरा कर लिया।",
+  "premium_only": "केवल प्रीमियम",
+  "urgent": "तत्काल",
+  "thresholds": "मील के पत्थर",
+  "settings": {
+    "scenariosSettings": "परिदृश्य सेटिंग्स",
+    "enableScenarios": "चैट परिदृश्य सक्षम करें",
+    "scenariosDescription": "लक्ष्यों और मील के पत्थरों के साथ इमर्सिव गाइडेड एडवेंचर चुनें"
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "notifications": {
+    "alreadyInProgress": "आपके पास पहले से एक वीडियो जनरेशन कार्य प्रगति में है।",
+    "generationFailed": "वीडियो जनरेशन शुरू होने में विफल",
+    "videoSaveFailed": "वीडियो बनाया गया लेकिन सहेजने में विफल",
+    "noVideoUrl": "वीडियो जनरेशन पूरा हुआ लेकिन कोई वीडियो URL प्राप्त नहीं हुआ",
+    "videoCompletionDone_title": "वीडियो जनरेशन पूरा हुआ",
+    "videoCompletionDone_message": "आपका वीडियो सफलतापूर्वक बनाया गया है।"
+  },
+  "video_generation_in_progress": "वीडियो जनरेशन प्रगति में है",
+  "video_generation_started": "वीडियो जनरेशन शुरू हुआ",
+  "video_generation_failed": "वीडियो जनरेशन विफल",
+  "video_prompt_title": "वीडियो जनरेशन प्रॉम्प्ट",
+  "video_prompt_subtitle": "छवि से वीडियो बनाने में {{points}} अंक तक लगेंगे।",
+  "video_prompt_description": "वीडियो गति या शैली का वर्णन करें (वैकल्पिक)",
+  "video_prompt_placeholder": "उदा., धीमा ज़ूम इन, नाटकीय प्रकाश, सहज कैमरा मूवमेंट...",
+  "select_video_model": "वीडियो मॉडल चुनें",
+  "characters": "अक्षर",
+  "cancel": "रद्द करें",
+  "generate_video": "वीडियो बनाएं",
+  "generating_video": "वीडियो बना रहे हैं...",
+  "complete": "पूर्ण",
+  "video_not_supported": "आपका ब्राउज़र वीडियो टैग का समर्थन नहीं करता।",
+  "generated_video": "बनाया गया वीडियो",
+  "video_link_copied": "वीडियो लिंक क्लिपबोर्ड पर कॉपी किया गया",
+  "share_failed": "वीडियो शेयर करने में विफल",
+  "regeneration_failed": "वीडियो पुनः बनाने में विफल",
+  "download_started": "वीडियो डाउनलोड शुरू हुआ",
+  "download_failed": "वीडियो डाउनलोड करने में विफल"
+}

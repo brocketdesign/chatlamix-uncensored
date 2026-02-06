@@ -1,0 +1,25 @@
+{
+  "suggestions_title": "त्वरित उत्तर",
+  "suggestions_loading": "सुझाव बना रहे हैं...",
+  "suggestions_empty": "कोई सुझाव उपलब्ध नहीं",
+  "suggestions_error": "सुझाव लोड करने में असमर्थ",
+  "suggestions_close": "सुझाव बंद करें",
+  "suggestions_disable": "सुझाव अक्षम करें",
+  "suggestions_enable": "सुझाव सक्षम करें",
+  "suggestions_sent": "सुझाव भेजा गया",
+  "suggestions_failed": "सुझाव भेजने में विफल",
+  "preset_flirty": "छेड़खानी",
+  "preset_romantic": "रोमांटिक",
+  "preset_dominant": "प्रभावशाली",
+  "preset_innocent": "मासूम",
+  "preset_humorous": "हास्यपूर्ण",
+  "preset_nsfw": "हॉट",
+  "preset_neutral": "तटस्थ",
+  "preset_nsfw_gate": "18+",
+  "preset_nsfw_gate_notice": "हॉट प्रीसेट का उपयोग करने के लिए अपनी खाता सेटिंग्स में NSFW सक्षम करें।",
+  "settings": {
+    "suggestionsSettings": "सुझाव सेटिंग्स",
+    "enableSuggestions": "चैट सुझाव सक्षम करें",
+    "suggestionsDescription": "स्वचालित रूप से AI प्रतिक्रिया सुझाव दिखाएं"
+  }
+}

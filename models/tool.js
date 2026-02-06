@@ -815,7 +815,7 @@ function generateSeoMetadata(request, path = '', currentLang = 'en') {
     
     // Generate alternate language URLs with ?lang= parameter
     const alternates = [];
-    const supportedLangs = ['en', 'fr', 'ja'];
+    const supportedLangs = ['en', 'fr', 'ja', 'hi'];
     
     supportedLangs.forEach(lang => {
         const langUrl = new URL(canonicalUrl);

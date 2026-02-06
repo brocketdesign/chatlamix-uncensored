@@ -228,7 +228,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'premium',
         maxTokens: 4096,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -243,7 +243,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'premium',
         maxTokens: 4096,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -258,7 +258,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'premium',
         maxTokens: 4096,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -273,7 +273,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'free',
         maxTokens: 2048,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -288,7 +288,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'free',
         maxTokens: 2048,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       },
@@ -303,7 +303,7 @@ const initializeDefaultModels = async () => {
         isActive: true,
         category: 'free',
         maxTokens: 4096,
-        supportedLanguages: ['en', 'fr', 'ja'],
+        supportedLanguages: ['en', 'fr', 'ja', 'hi'],
         createdAt: new Date(),
         updatedAt: new Date()
       }

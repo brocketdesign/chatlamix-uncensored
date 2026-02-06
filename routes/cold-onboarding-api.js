@@ -297,15 +297,15 @@ async function routes(fastify) {
                 return reply.send({
                     generated: null,
                     voices: [
-                        { key: 'Wise_Woman', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Friendly_Person', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Inspirational_girl', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Calm_Woman', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Lively_Girl', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Lovely_Girl', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Abbess', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Sweet_Girl_2', gender: 'female', languages: ['en', 'fr', 'ja'] },
-                        { key: 'Exuberant_Girl', gender: 'female', languages: ['en', 'fr', 'ja'] }
+                        { key: 'Wise_Woman', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Friendly_Person', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Inspirational_girl', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Calm_Woman', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Lively_Girl', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Lovely_Girl', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Abbess', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Sweet_Girl_2', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] },
+                        { key: 'Exuberant_Girl', gender: 'female', languages: ['en', 'fr', 'ja', 'hi'] }
                     ],
                     files: []
                 });

@@ -1,0 +1,189 @@
+{
+    "meta": {
+        "title": "अपना AI साथी बनाएँ | ChatLamix",
+        "description": "अपनी आदर्श AI प्रेमिका या साथी बनाएँ। उपस्थिति, व्यक्तित्व और आवाज़ चुनें।",
+        "keywords": "AI साथी, AI प्रेमिका, AI प्रेमी, कस्टम AI पात्र, वर्चुअल साथी"
+    },
+    
+    "page_title": "अपना AI साथी बनाएँ",
+    "meta_description": "अपनी आदर्श AI प्रेमिका या साथी बनाएँ। उपस्थिति, व्यक्तित्व और आवाज़ चुनें।",
+    
+    "step_indicator": "{{total}} में से चरण {{current}}",
+    
+    "step1": {
+        "title": "अपनी शैली चुनें",
+        "subtitle": "आप किस प्रकार का पात्र बनाना चाहेंगे?",
+        "style_realistic": "यथार्थवादी",
+        "style_anime": "एनीमे",
+        "gender_title": "पात्र का लिंग",
+        "gender_girls": "लड़कियां",
+        "gender_boys": "लड़के",
+        "gender_trans": "ट्रांस"
+    },
+    
+    "step2": {
+        "title": "जातीयता चुनें",
+        "subtitle": "अपने पात्र की जातीयता चुनें",
+        "ethnicities": {
+            "caucasian": "कोकेशियान",
+            "asian": "एशियाई",
+            "black": "अश्वेत / एफ्रो",
+            "latina": "लैटिना",
+            "arab": "अरब",
+            "indian": "भारतीय",
+            "japanese": "जापानी",
+            "korean": "कोरियाई",
+            "mixed": "मिश्रित"
+        },
+        "age_title": "आयु चुनें",
+        "age_years": "वर्ष"
+    },
+    
+    "step3": {
+        "title": "बालों की शैली चुनें",
+        "subtitle": "सही हेयरस्टाइल चुनें",
+        "hair_styles": {
+            "straight": "सीधे",
+            "bangs": "बैंग्स",
+            "curly": "घुंघराले",
+            "bun": "जूड़ा",
+            "short": "छोटे",
+            "ponytail": "पोनीटेल",
+            "braids": "चोटियाँ",
+            "wavy": "लहरदार",
+            "long": "लंबे"
+        },
+        "hair_color_title": "बालों का रंग चुनें",
+        "hair_colors": {
+            "brunette": "ब्रुनेट",
+            "blonde": "ब्लोंड",
+            "black": "काले",
+            "redhead": "लाल बाल",
+            "pink": "गुलाबी",
+            "blue": "नीले",
+            "white": "सफेद",
+            "purple": "बैंगनी",
+            "green": "हरा"
+        }
+    },
+    
+    "step4": {
+        "title": "शरीर का प्रकार चुनें",
+        "subtitle": "शरीर की विशेषताएं चुनें",
+        "body_types": {
+            "skinny": "दुबला",
+            "slim": "छरहरा",
+            "athletic": "एथलेटिक",
+            "average": "औसत",
+            "curvy": "कर्व़ी",
+            "voluptuous": "कामुक",
+            "muscular": "मांसपेशियों वाला",
+            "bbw": "बीबीडब्ल्यू"
+        },
+        "breast_size_title": "स्तन का आकार चुनें",
+        "breast_sizes": {
+            "flat": "सपाट",
+            "small": "छोटा",
+            "medium": "मध्यम",
+            "large": "बड़ा",
+            "xl": "अतिरिक्त बड़ा"
+        },
+        "butt_size_title": "नितंब का आकार चुनें",
+        "butt_sizes": {
+            "small": "छोटा",
+            "skinny": "दुबला",
+            "athletic": "एथलेटिक",
+            "medium": "मध्यम",
+            "large": "बड़ा"
+        }
+    },
+    "step5": {
+        "title": "व्यक्तित्व चुनें",
+        "subtitle": "विकल्प बदलने के लिए क्लिक करें",
+        "name_title": "एक नाम चुनें",
+        "name_placeholder": "नाम दर्ज करें या एक जनरेट करें",
+        "generate_name": "नाम जनरेट करें",
+        "personality_title": "व्यक्तित्व चुनें",
+        "personalities": {
+            "submissive": "विनम्र",
+            "dominant": "हावी",
+            "shy": "शर्मीला",
+            "confident": "आत्मविश्वासी",
+            "playful": "चंचल",
+            "serious": "गंभीर",
+            "romantic": "रोमांटिक",
+            "adventurous": "साहसी",
+            "caring": "देखभाल करने वाला",
+            "mysterious": "रहस्यमयी"
+        },
+        "relationship_title": "संबंध चुनें",
+        "relationships": {
+            "stranger": "अजनबी",
+            "friend": "मित्र",
+            "girlfriend": "प्रेमिका",
+            "wife": "पत्नी",
+            "crush": "क्रश",
+            "colleague": "सहकर्मी",
+            "neighbor": "पड़ोसी",
+            "ex": "पूर्व",
+            "first_date": "पहली डेट",
+            "roommate": "रूममेट"
+        },
+        "occupation_title": "व्यवसाय चुनें",
+        "occupations": {
+            "student": "छात्र",
+            "teacher": "शिक्षक",
+            "nurse": "नर्स",
+            "model": "मॉडल",
+            "artist": "कलाकार",
+            "athlete": "एथलीट",
+            "businesswoman": "व्यवसायी महिला",
+            "influencer": "प्रभावशाली व्यक्ति",
+            "scientist": "वैज्ञानिक",
+            "musician": "संगीतकार"
+        }
+    },
+    
+    "step6": {
+        "title": "आवाज़ चुनें",
+        "subtitle": "अपने पात्र की आवाज़ चुनें",
+        "play_sample": "नमूना बजाएं",
+        "playing": "बज रहा है...",
+        "voices": {
+            "Wise_Woman": "बुद्धिमान महिला",
+            "Inspirational_girl": "प्रेरणादायक लड़की",
+            "Calm_Woman": "शांत महिला",
+            "Lively_Girl": "जीवंत लड़की",
+            "Lovely_Girl": "प्यारी लड़की",
+            "Abbess": "अब्बेस",
+            "Sweet_Girl_2": "स्वीट गर्ल",
+            "Exuberant_Girl": "प्रफुल्लित लड़की"
+        }
+    },
+    
+    "step7": {
+        "title": "अपनी छवियों का पूर्वावलोकन करें",
+        "subtitle": "आपके पात्र के चित्र बनाए जा रहे हैं",
+        "generate_button": "छवियां जनरेट करें",
+        "generating": "जनरेट किया जा रहा है...",
+        "select_image": "जारी रखने के लिए एक छवि चुनें"
+    },
+    
+    "step8": {
+        "title": "आपका पात्र तैयार है!",
+        "subtitle": "अपना साहसिक कार्य शुरू करें",
+        "start_chat": "चैट शुरू करें"
+    },
+    
+    "buttons": {
+        "next": "अगला",
+        "back": "पीछे",
+        "create": "पात्र बनाएँ",
+        "start_chat": "चैट शुरू करें"
+    },
+    
+    "loading": "लोड हो रहा है...",
+    "generating_image": "आपके पात्र की छवियां बनाई जा रही हैं...",
+    "creating_character": "आपका पात्र बनाया जा रहा है...",
+    "please_wait": "कृपया प्रतीक्षा करें..."
+}

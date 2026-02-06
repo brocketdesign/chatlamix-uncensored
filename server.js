@@ -219,9 +219,9 @@ fastify.addHook('onRequest', (request, reply, done) => {
     return reply.code(301).redirect(newUrl);
   }
   
-  // Redirect language subdomains (fr, en, ja) to app.chatlamix.com with ?lang= parameter
+  // Redirect language subdomains (fr, en, ja, hi) to app.chatlamix.com with ?lang= parameter
   const subdomain = host.split('.')[0];
-  if (['en', 'fr', 'ja'].includes(subdomain)) {
+  if (['en', 'fr', 'ja', 'hi'].includes(subdomain)) {
     const baseDomain = host.split('.').slice(-2).join('.'); // Get chatlamix.com
     if (baseDomain === 'chatlamix.com') {
       const currentUrl = request.raw.url;

@@ -297,7 +297,7 @@ async function routes(fastify, options) {
 
       const existingTitle = image.title || {};
       if (!existingTitle[lang]) {
-        const fullLang = { en: 'english', fr: 'french', ja: 'japanese' }[lang] || 'english';
+        const fullLang = { en: 'english', fr: 'french', ja: 'japanese', hi: 'hindi' }[lang] || 'english';
         existingTitle[lang] = await generatePromptTitle(image.prompt, fullLang);
         // Update the database asynchronously
         db.collection('gallery').updateOne(

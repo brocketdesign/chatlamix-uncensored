@@ -1,0 +1,258 @@
+{
+    "meta": {
+        "title": "पात्र बनाएँ | ChatLamix",
+        "description": "अपना कस्टम AI साथी बनाएँ। उपस्थिति, व्यक्तित्व, आवाज़ चुनें और एक छवि जनरेट करें।"
+    },
+    
+    "page_title": "अपना पात्र बनाएँ",
+    
+    "step_indicator": "{{total}} में से चरण {{current}}",
+    
+    "step1": {
+        "title": "अपनी शैली चुनें",
+        "subtitle": "आप किस प्रकार का पात्र बनाना चाहेंगे?",
+        "style_realistic": "यथार्थवादी",
+        "style_anime": "एनीमे",
+        "gender_title": "पात्र का लिंग",
+        "gender_girls": "लड़कियां",
+        "gender_boys": "लड़के",
+        "gender_trans": "ट्रांस"
+    },
+    
+    "step2": {
+        "title": "जातीयता चुनें",
+        "subtitle": "अपने पात्र की जातीयता चुनें",
+        "ethnicities": {
+            "caucasian": "कोकेशियान",
+            "asian": "एशियाई",
+            "black": "अश्वेत / एफ्रो",
+            "latina": "लैटिना",
+            "arab": "अरब",
+            "indian": "भारतीय",
+            "japanese": "जापानी",
+            "korean": "कोरियाई",
+            "mixed": "मिश्रित"
+        },
+        "age_title": "आयु चुनें",
+        "age_years": "वर्ष"
+    },
+    
+    "step3": {
+        "title": "बालों की शैली चुनें",
+        "subtitle": "सही हेयरस्टाइल चुनें",
+        "hair_styles": {
+            "straight": "सीधे",
+            "bangs": "बैंग्स",
+            "curly": "घुंघराले",
+            "bun": "जूड़ा",
+            "short": "छोटे",
+            "ponytail": "पोनीटेल",
+            "braids": "चोटियाँ",
+            "wavy": "लहरदार",
+            "long": "लंबे"
+        },
+        "hair_color_title": "बालों का रंग चुनें",
+        "hair_colors": {
+            "brunette": "ब्रुनेट",
+            "blonde": "ब्लोंड",
+            "black": "काले",
+            "redhead": "लाल बाल",
+            "pink": "गुलाबी",
+            "blue": "नीले",
+            "white": "सफेद",
+            "purple": "बैंगनी",
+            "green": "हरा"
+        }
+    },
+    
+    "step4": {
+        "title": "शरीर का प्रकार चुनें",
+        "subtitle": "शरीर की विशेषताएं चुनें",
+        "body_types": {
+            "skinny": "दुबला",
+            "slim": "छरहरा",
+            "athletic": "एथलेटिक",
+            "average": "औसत",
+            "curvy": "कर्व़ी",
+            "voluptuous": "कामुक",
+            "muscular": "मांसपेशियों वाला",
+            "bbw": "बीबीडब्ल्यू"
+        },
+        "breast_size_title": "स्तन का आकार चुनें",
+        "breast_sizes": {
+            "flat": "सपाट",
+            "small": "छोटा",
+            "medium": "मध्यम",
+            "large": "बड़ा",
+            "xl": "अतिरिक्त बड़ा"
+        },
+        "butt_size_title": "नितंब का आकार चुनें",
+        "butt_sizes": {
+            "small": "छोटा",
+            "skinny": "दुबला",
+            "athletic": "एथलेटिक",
+            "medium": "मध्यम",
+            "large": "बड़ा"
+        }
+    },
+    
+    "step5": {
+        "title": "व्यक्तित्व चुनें",
+        "subtitle": "विकल्प बदलने के लिए क्लिक करें",
+        "name_title": "एक नाम चुनें",
+        "name_placeholder": "नाम दर्ज करें या एक जनरेट करें",
+        "generate_name": "नाम जनरेट करें",
+        "personality_title": "व्यक्तित्व चुनें",
+        "personalities": {
+            "submissive": "विनम्र",
+            "dominant": "हावी",
+            "shy": "शर्मीला",
+            "confident": "आत्मविश्वासी",
+            "playful": "चंचल",
+            "serious": "गंभीर",
+            "romantic": "रोमांटिक",
+            "adventurous": "साहसी",
+            "caring": "देखभाल करने वाला",
+            "mysterious": "रहस्यमयी"
+        },
+        "relationship_title": "संबंध चुनें",
+        "relationships": {
+            "stranger": "अजनबी",
+            "friend": "मित्र",
+            "girlfriend": "प्रेमिका",
+            "wife": "पत्नी",
+            "crush": "क्रश",
+            "colleague": "सहकर्मी",
+            "neighbor": "पड़ोसी",
+            "ex": "पूर्व",
+            "first_date": "पहली डेट",
+            "roommate": "रूममेट"
+        },
+        "occupation_title": "व्यवसाय चुनें",
+        "occupations": {
+            "student": "छात्र",
+            "teacher": "शिक्षक",
+            "nurse": "नर्स",
+            "model": "मॉडल",
+            "artist": "कलाकार",
+            "athlete": "एथलीट",
+            "businesswoman": "व्यवसायी महिला",
+            "influencer": "प्रभावशाली व्यक्ति",
+            "scientist": "वैज्ञानिक",
+            "musician": "संगीतकार"
+        },
+        "kinks_title": "उन्हें क्या पसंद है?",
+        "kinks": {
+            "vanilla": "वैनिला",
+            "daddy_dom": "डैडी प्रभुत्व",
+            "roleplay": "रोलप्ले",
+            "bdsm": "BDSM",
+            "exhibitionism": "प्रदर्शनीवाद",
+            "feet": "पैर",
+            "lingerie": "अन्तर्वस्त्र",
+            "outdoor": "आउटडोर",
+            "toys": "खिलौने"
+        },
+        "custom_prompt_title": "पात्र व्यक्तित्व और पृष्ठभूमि",
+        "custom_prompt_label": "पात्र व्यक्तित्व और पृष्ठभूमि",
+        "custom_prompt_description": "अपने पात्र की पृष्ठभूमि, कहानी से संबंधित तत्वों और व्यवहार का वर्णन करें (शारीरिक वर्णन नहीं)",
+        "custom_prompt_placeholder": "जैसे, वह एक दयालु शिक्षक है जिसे छात्रों की मदद करना पसंद है, अपने खाली समय में किताबें पढ़ना पसंद करती है...",
+        "character_purpose_title": "पात्र इतिहास और उद्देश्य",
+        "character_purpose_description": "अपने पात्र की पिछली कहानी, प्रेरणाओं और आपकी चैट के उद्देश्य का वर्णन करें।",
+        "character_purpose_placeholder": "जैसे, वह एक छोटे से शहर में पली-बढ़ी और अपने सपनों को पूरा करने के लिए शहर चली गई..."
+    },
+    
+    "step6": {
+        "title": "आवाज़ चुनें",
+        "subtitle": "अपने पात्र की आवाज़ सुनें और चुनें",
+        "play_sample": "नमूना बजाएं",
+        "playing": "बज रहा है...",
+        "voices": {
+            "Wise_Woman": {
+                "name": "बुद्धिमान महिला",
+                "description": "गर्म और अभिव्यंजक, गहरी बातचीत के लिए उपयुक्त"
+            },
+            "Inspirational_girl": {
+                "name": "प्रेरणादायक लड़की",
+                "description": "प्रोत्साहित करने वाली और उज्ज्वल प्रस्तुति"
+            },
+            "Calm_Woman": {
+                "name": "शांत महिला",
+                "description": "सुखदायक और नपी-तुली, आरामदेह चैट के लिए आदर्श"
+            },
+            "Lively_Girl": {
+                "name": "जीवंत लड़की",
+                "description": "त्वरित लय के साथ एनिमेटेड और ऊर्जावान"
+            },
+            "Lovely_Girl": {
+                "name": "प्यारी लड़की",
+                "description": "कोमल स्वर के साथ सौम्य और आकर्षक"
+            },
+            "Abbess": {
+                "name": "अब्बेस",
+                "description": "कोमल अधिकार के साथ शांत और गरिमापूर्ण"
+            },
+            "Sweet_Girl_2": {
+                "name": "स्वीट गर्ल",
+                "description": "स्नेहपूर्ण गर्माहट के साथ उज्ज्वल और युवा"
+            },
+            "Exuberant_Girl": {
+                "name": "प्रफुल्लित लड़की",
+                "description": "उत्साह से भरी उच्च-ऊर्जा प्रस्तुति"
+            }
+        }
+    },
+    
+    "step7": {
+        "title": "छवि जनरेट करें",
+        "subtitle": "अपने पात्र के लिए चित्र बनाएँ",
+        "generate_button": "छवियां जनरेट करें",
+        "regenerate_button": "अधिक जनरेट करें",
+        "generating": "जनरेट किया जा रहा है...",
+        "select_image": "जारी रखने के लिए एक छवि चुनें",
+        "placeholder_text": "छवियां बनाने के लिए जनरेट पर क्लिक करें",
+        "outfit_prompt_title": "पोशाक और विवरण अनुकूलित करें",
+        "outfit_prompt_description": "जनरेट की गई छवि में आप जो पोशाक, सहायक उपकरण और शारीरिक विवरण चाहते हैं उसका वर्णन करें।",
+        "outfit_prompt_placeholder": "जैसे, लाल पोशाक पहने हुए, कैफे में बैठी हुई, धूप वाला दिन, मुस्कुराते हुए...",
+        "base_face_title": "बेस फेस अपलोड करें",
+        "base_face_description": "एक चेहरे की छवि अपलोड करें जिसे आपके पात्र के लिए बेस फेस के रूप में उपयोग किया जाएगा।",
+        "base_face_upload": "चेहरे की छवि अपलोड करने के लिए क्लिक करें",
+        "base_face_supported": "JPG, PNG, WebP का समर्थन करता है",
+        "base_face_clear": "साफ़ करें",
+        "base_face_uploaded": "चेहरा सफलतापूर्वक अपलोड किया गया",
+        "base_face_optional": "(वैकल्पिक)"
+    },
+    
+    "step8": {
+        "title": "आपका पात्र तैयार है!",
+        "subtitle": "अपने पात्र की समीक्षा करें और चैटिंग शुरू करें",
+        "character_summary": "पात्र सारांश",
+        "start_chat": "चैट शुरू करें",
+        "chat_purpose_label": "चैट का उद्देश्य"
+    },
+    
+    "buttons": {
+        "next": "अगला",
+        "back": "पीछे",
+        "create": "पात्र बनाएँ",
+        "start_chat": "चैट शुरू करें",
+        "generating": "जनरेट किया जा रहा है..."
+    },
+    
+    "errors": {
+        "select_style": "कृपया एक शैली चुनें",
+        "select_ethnicity": "कृपया एक जातीयता चुनें",
+        "select_hair": "कृपया बालों की शैली और रंग चुनें",
+        "select_body": "कृपया शरीर का प्रकार चुनें",
+        "select_personality": "कृपया व्यक्तित्व विकल्प चुनें",
+        "select_voice": "कृपया एक आवाज़ चुनें",
+        "select_image": "कृपया एक छवि चुनें",
+        "enter_name": "कृपया अपने पात्र के लिए एक नाम दर्ज करें",
+        "generation_failed": "छवि जनरेट करने में विफल। कृपया पुनः प्रयास करें।"
+    },
+    
+    "loading": "लोड हो रहा है...",
+    "generating_image": "आपके पात्र की छवियां जनरेट की जा रही हैं...",
+    "creating_character": "आपका पात्र बनाया जा रहा है...",
+    "please_wait": "कृपया प्रतीक्षा करें..."
+}

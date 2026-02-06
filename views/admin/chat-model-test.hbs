@@ -1252,7 +1252,7 @@ async function handleAddModel(event) {
     
     // Get supported languages
     const supportedLanguages = [];
-    ['en', 'fr', 'ja'].forEach(lang => {
+    ['en', 'fr', 'ja', 'hi'].forEach(lang => {
         if (document.getElementById(`lang_${lang}`).checked) {
             supportedLanguages.push(lang);
         }
@@ -1323,7 +1323,7 @@ async function editModel(modelId) {
         document.getElementById('editIsActive').value = model.isActive !== false ? 'true' : 'false';
         
         // Set supported languages
-        ['en', 'fr', 'ja'].forEach(lang => {
+        ['en', 'fr', 'ja', 'hi'].forEach(lang => {
             const checkbox = document.getElementById(`edit_lang_${lang}`);
             checkbox.checked = (model.supportedLanguages || ['en']).includes(lang);
         });
@@ -1349,7 +1349,7 @@ async function handleEditModel(event) {
     
     // Get supported languages
     const supportedLanguages = [];
-    ['en', 'fr', 'ja'].forEach(lang => {
+    ['en', 'fr', 'ja', 'hi'].forEach(lang => {
         if (document.getElementById(`edit_lang_${lang}`).checked) {
             supportedLanguages.push(lang);
         }

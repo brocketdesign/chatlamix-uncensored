@@ -1,0 +1,70 @@
+{
+    "pageTitle": "क्रिएटर कमाई",
+    "pageDescription": "अपनी कमाई ट्रैक करें, पेआउट प्रबंधित करें, और राजस्व विश्लेषण देखें",
+    
+    "heroTitle": "आपका कमाई डैशबोर्ड",
+    "heroDescription": "सदस्यता और टिप्स से अपना राजस्व ट्रैक करें, पेआउट प्रबंधित करें, और अपनी क्रिएटर आय बढ़ाएं।",
+    
+    "availableBalance": "उपलब्ध शेष",
+    "requestPayout": "पेआउट अनुरोध करें",
+    "totalEarnings": "कुल कमाई",
+    "thisMonth": "इस महीने",
+    "allTime": "कुल मिलाकर",
+    "activeSubscribers": "सक्रिय सदस्य",
+    "tipsReceived": "प्राप्त टिप्स",
+    
+    "revenueOverview": "राजस्व अवलोकन",
+    "last6Months": "पिछले 6 महीने",
+    "last12Months": "पिछले 12 महीने",
+    "revenueBreakdown": "राजस्व विवरण",
+    "subscriptions": "सदस्यताएं",
+    "tips": "टिप्स",
+    "netEarnings": "शुद्ध कमाई",
+    
+    "recentTransactions": "हाल के लेनदेन",
+    "viewAll": "सभी देखें",
+    "noTransactions": "अभी तक कोई लेनदेन नहीं",
+    "recentTips": "हाल की टिप्स",
+    "noTips": "अभी तक कोई टिप्स प्राप्त नहीं",
+    
+    "payoutSettings": "पेआउट सेटिंग्स",
+    "payoutSummary": "पेआउट सारांश",
+    "totalPaidOut": "कुल भुगतान किया गया",
+    "pendingPayout": "लंबित पेआउट",
+    "minimumPayout": "न्यूनतम पेआउट",
+    "platformFee": "प्लेटफ़ॉर्म शुल्क",
+    
+    "payoutPreferences": "पेआउट प्राथमिकताएं",
+    "payoutSchedule": "पेआउट शेड्यूल",
+    "weekly": "साप्ताहिक",
+    "biweekly": "पाक्षिक",
+    "monthly": "मासिक",
+    "customMinimum": "कस्टम न्यूनतम पेआउट",
+    "minimumNote": "इससे कम नहीं हो सकता",
+    "autoPayout": "शेष न्यूनतम तक पहुंचने पर स्वचालित पेआउट सक्षम करें",
+    "saveSettings": "सेटिंग्स सहेजें",
+    
+    "payoutHistory": "पेआउट इतिहास",
+    "refresh": "रीफ्रेश करें",
+    "date": "तिथि",
+    "amount": "राशि",
+    "status": "स्थिति",
+    "method": "विधि",
+    "noPayouts": "अभी तक कोई पेआउट नहीं",
+    
+    "payoutAmount": "पेआउट राशि",
+    "availableToWithdraw": "निकासी के लिए उपलब्ध",
+    "payoutNote": "पेआउट आमतौर पर 3-5 व्यावसायिक दिनों के भीतर प्रोसेस होते हैं। आपका पेआउट भेजे जाने पर आपको ईमेल अधिसूचना प्राप्त होगी।",
+    "cancel": "रद्द करें",
+    "confirmPayout": "पेआउट की पुष्टि करें",
+    
+    "loadError": "कमाई डेटा लोड करने में विफल",
+    "insufficientBalance": "पेआउट के लिए अपर्याप्त शेष",
+    "payoutRequested": "पेआउट सफलतापूर्वक अनुरोध किया गया!",
+    "settingsSaved": "सेटिंग्स सफलतापूर्वक सहेजी गईं!",
+    
+    "statusPending": "लंबित",
+    "statusProcessing": "प्रोसेसिंग",
+    "statusCompleted": "पूर्ण",
+    "statusFailed": "विफल"
+}

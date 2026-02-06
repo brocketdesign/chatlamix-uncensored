@@ -1,0 +1,17 @@
+{
+  "payment_success": {
+    "one_time": "एकबारगी",
+    "day_pass_success": "डे पास सक्रिय!",
+    "day_pass_expires": "आपका पास 24 घंटे में समाप्त होगा",
+    "expires_in_24_hours": "आपकी प्रीमियम सुविधाएं अगले 24 घंटों के लिए उपलब्ध रहेंगी।",
+    "subscription_success": "सदस्यता सक्रिय!",
+    "subscription_activated": "आपकी प्रीमियम सदस्यता सफलतापूर्वक सक्रिय हो गई है।",
+    "premium_features_unlocked": "सभी प्रीमियम सुविधाएं अब अनलॉक हो गई हैं और उपयोग के लिए तैयार हैं।",
+    "bonus_coins_added": "बोनस: आपके खाते में 1000 सिक्के जोड़ दिए गए हैं!",
+    "unlimited_chats": "असीमित चैट",
+    "unlimited_images": "असीमित छवियां",
+    "all_content": "सभी सामग्री तक पहुंच",
+    "new_features_unlocked": "अब उपलब्ध सुविधाएं",
+    "continue_to_chat": "चैट जारी रखें"
+  }
+}
