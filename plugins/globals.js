@@ -237,11 +237,43 @@ module.exports = fastifyPlugin(async function (fastify, opts) {
         if (!currentLang) currentLang = 'en';
 
         if (!translationsCache[currentLang]) {
-            const translationFile = path.join(__dirname, '..', 'locales', `${currentLang}.json`);
-            if (fs.existsSync(translationFile)) {
-                translationsCache[currentLang] = JSON.parse(fs.readFileSync(translationFile, 'utf-8'));
+            // Load English as base for fallback
+            const englishFile = path.join(__dirname, '..', 'locales', 'en.json');
+            let englishTranslations = {};
+            if (fs.existsSync(englishFile)) {
+                try {
+                    englishTranslations = JSON.parse(fs.readFileSync(englishFile, 'utf-8'));
+                } catch (e) {
+                    fastify.log.error(`Error reading English translations:`, e);
+                }
+            }
+
+            if (currentLang === 'en') {
+                translationsCache[currentLang] = englishTranslations;
             } else {
-                translationsCache[currentLang] = {}; // Fallback to empty object if translation file is missing
+                const translationFile = path.join(__dirname, '..', 'locales', `${currentLang}.json`);
+                if (fs.existsSync(translationFile)) {
+                    try {
+                        const langTranslations = JSON.parse(fs.readFileSync(translationFile, 'utf-8'));
+                        // Merge English with the current language (current language takes precedence)
+                        translationsCache[currentLang] = { ...englishTranslations, ...langTranslations };
+
+                        // Deep merge for objects like 'seo', 'auth', etc. (one level deep)
+                        for (const key in englishTranslations) {
+                            if (typeof englishTranslations[key] === 'object' &&
+                                englishTranslations[key] !== null &&
+                                !Array.isArray(englishTranslations[key]) &&
+                                langTranslations[key]) {
+                                translationsCache[currentLang][key] = { ...englishTranslations[key], ...langTranslations[key] };
+                            }
+                        }
+                    } catch (e) {
+                        fastify.log.error(`Error reading translations for ${currentLang}:`, e);
+                        translationsCache[currentLang] = englishTranslations;
+                    }
+                } else {
+                    translationsCache[currentLang] = englishTranslations;
+                }
             }
         }
         return translationsCache[currentLang];
