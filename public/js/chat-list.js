@@ -682,7 +682,7 @@ function openChatActionsModal() {
             <div class="action-divider"></div>
             <div class="admin-section-header">
                 <i class="bi bi-shield-lock-fill"></i>
-                <span>Admin Settings</span>
+                <span>${window.translations.adminSettings}</span>
             </div>
 
             <div class="chat-action-item" onclick="closeChatActionsModal(); loadCharacterUpdatePage('${chat._id}')">
@@ -697,19 +697,19 @@ function openChatActionsModal() {
                 <div class="action-icon purple">
                     <i class="bi bi-terminal"></i>
                 </div>
-                <span class="action-text">Log Full Conversation</span>
+                <span class="action-text">${window.translations.logFullConversation}</span>
                 <i class="bi bi-chevron-right action-arrow"></i>
             </div>
             <div class="admin-model-section">
                 <div class="model-label">
                     <i class="bi bi-image"></i>
-                    <span>Image Generation Model</span>
+                    <span>${window.translations.imageGenerationModel}</span>
                 </div>
                 <div class="current-model-display" id="currentModelDisplay">
-                    <span class="current-model-name">${chat.imageModel || 'Not set'}</span>
+                    <span class="current-model-name">${chat.imageModel || window.translations.notSet}</span>
                 </div>
                 <select id="modelDropdown" class="model-dropdown" onchange="updateCharacterModel('${chat._id}', this.value)">
-                    <option value="">Loading models...</option>
+                    <option value="">${window.translations.loadingModels}</option>
                 </select>
             </div>
             ` : ''}
@@ -746,7 +746,7 @@ function loadTxt2ImgModels(currentModel) {
         success: function(response) {
             if (response.success && response.models) {
                 dropdown.empty();
-                dropdown.append('<option value="">-- Select Model --</option>');
+                dropdown.append(`<option value="">${window.translations.selectModel}</option>`);
 
                 // Group models by type
                 const sdModels = response.models.filter(m => m.isSDModel);
@@ -754,7 +754,7 @@ function loadTxt2ImgModels(currentModel) {
 
                 // Add built-in models group
                 if (builtInModels.length > 0) {
-                    const builtInGroup = $('<optgroup label="Built-in Models"></optgroup>');
+                    const builtInGroup = $(`<optgroup label="${window.translations.builtInModels}"></optgroup>`);
                     builtInModels.forEach(model => {
                         const selected = currentModel === model.id ? 'selected' : '';
                         builtInGroup.append(`<option value="${model.id}" ${selected}>${model.name}</option>`);
@@ -764,7 +764,7 @@ function loadTxt2ImgModels(currentModel) {
 
                 // Add SD/Custom models group
                 if (sdModels.length > 0) {
-                    const sdGroup = $('<optgroup label="Custom SD Models"></optgroup>');
+                    const sdGroup = $(`<optgroup label="${window.translations.customSdModels}"></optgroup>`);
                     sdModels.forEach(model => {
                         const selected = (currentModel === model.modelName || currentModel === model.sdName) ? 'selected' : '';
                         sdGroup.append(`<option value="${model.id}" data-model-name="${model.modelName || model.sdName}" data-style="${model.style || ''}" ${selected}>${model.name}</option>`);
@@ -775,7 +775,7 @@ function loadTxt2ImgModels(currentModel) {
         },
         error: function(error) {
             console.error('Error loading models:', error);
-            dropdown.html('<option value="">Error loading models</option>');
+            dropdown.html(`<option value="">${window.translations.errorLoadingModels}</option>`);
         }
     });
 }
