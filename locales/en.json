@@ -6,7 +6,7 @@
     "redirectingMessage": "Please wait while we redirect you",
     "seeYouSoon": "See you soon! Taking you back..."
   },
-  "contactUs": "You can contact us anytime from here",
+  "contactUs": "Contact Us",
   "contactDescription": "Connect with us on social media for updates and support.",
   "quickLinks": "Quick Links",
   "legal": "Legal & Support",
@@ -1588,7 +1588,7 @@
     "chatPurposeLabel": "Describe the character background and purpose",
     "chatPurposePlaceholder": "E.g., A cute friend who loves cats and enjoys chatting about daily life.",
     "physicalDescriptionLabel": "Physical Description",
-    "ai_generate_if_empty": "Ai generate if empty",
+    "ai_generate_if_empty": "AI generate if empty",
     "selectedKeywords": "Selected Keywords:",
     "clickKeywordsPlaceholder": "Click keywords above to add them...",
     "keywordSections": {
