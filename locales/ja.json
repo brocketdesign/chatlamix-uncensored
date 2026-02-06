@@ -2590,7 +2590,8 @@
     "satShort": "土",
     "async": "非同期",
     "sync": "同期",
-    "inactive": "無効"
+    "inactive": "無効",
+    "createSingleSchedule": "スケジュールを作成"
   },
   "analytics": {
     "title": "アナリティクス",

@@ -1516,7 +1516,7 @@ class SchedulesDashboard {
     // Update modal title
     const t = window.translations?.dashboard || {};
     document.getElementById('scheduleModalTitle').innerHTML = `
-      <i class="bi bi-calendar-plus me-2"></i>${type === 'single' ? (t.createSchedule || 'Create') + ' ' + (t.singleSchedule || 'Schedule') : (t.createRecurringJob || 'Create Recurring Job')}
+      <i class="bi bi-calendar-plus me-2"></i>${type === 'single' ? (t.createSingleSchedule || 'Create Schedule') : (t.createRecurringJob || 'Create Recurring Job')}
     `;
     
     this.scheduleModal?.show();

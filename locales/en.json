@@ -2605,7 +2605,8 @@
     "satShort": "Sat",
     "async": "Async",
     "sync": "Sync",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "createSingleSchedule": "Create Schedule"
   },
   "prompts": {
     "mutation": "Prompt Mutation",

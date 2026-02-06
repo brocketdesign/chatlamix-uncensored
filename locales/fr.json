@@ -2564,7 +2564,8 @@
     "satShort": "Sam",
     "async": "Async",
     "sync": "Sync",
-    "inactive": "Inactif"
+    "inactive": "Inactif",
+    "createSingleSchedule": "Créer une planification"
   },
   "analytics": {
     "title": "Tableau de Bord Analytique",

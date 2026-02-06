@@ -586,6 +586,7 @@
     "satShort": "शनि",
     "async": "एसिंक",
     "sync": "सिंक",
-    "inactive": "निष्क्रिय"
+    "inactive": "निष्क्रिय",
+    "createSingleSchedule": "शेड्यूल बनाएं"
   }
 }
