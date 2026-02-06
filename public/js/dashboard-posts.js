@@ -66,7 +66,7 @@ const CaptionHistory = window.CaptionHistory || {
     const history = this.getHistory();
     
     if (history.length === 0) {
-      container.innerHTML = '<small class="text-muted">No caption history yet</small>';
+      container.innerHTML = `<small class="text-muted">${window.translations?.dashboard?.noCaptionHistory || 'No caption history yet'}</small>`;
       return;
     }
     
@@ -93,7 +93,7 @@ const CaptionHistory = window.CaptionHistory || {
     
     container.innerHTML = `
       <label class="form-label small text-muted mt-2">
-        <i class="bi bi-clock-history me-1"></i>Caption History
+        <i class="bi bi-clock-history me-1"></i>${window.translations?.dashboard?.captionHistory || 'Caption History'}
       </label>
       <div class="caption-history-list" style="max-height: 150px; overflow-y: auto;">
         ${html}
@@ -110,7 +110,7 @@ const CaptionHistory = window.CaptionHistory || {
         textarea.value = item.caption;
         textarea.focus();
         if (typeof window.showNotification === 'function') {
-          window.showNotification('Caption applied!', 'success');
+          window.showNotification(window.translations?.dashboard?.captionApplied || 'Caption applied!', 'success');
         }
       }
     }
@@ -126,7 +126,7 @@ const CaptionHistory = window.CaptionHistory || {
         return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`;
       }
     }
-    return 'Just now';
+    return window.translations?.dashboard?.justNow || 'Just now';
   },
   
   escapeHtml(text) {
@@ -225,7 +225,7 @@ class PostsDashboard {
               data-platform="profile"
               data-account-id="profile">
         <i class="bi bi-person-circle"></i>
-        <span>My Profile</span>
+        <span>${window.translations?.dashboard?.myProfile || 'My Profile'}</span>
       </button>
     `;
     
@@ -375,7 +375,7 @@ class PostsDashboard {
     } catch (error) {
       console.error('Error loading posts:', error);
       spinner.style.display = 'none';
-      this.showNotification('Failed to load posts', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadPosts || 'Failed to load posts', 'error');
     }
   }
 
@@ -427,7 +427,7 @@ class PostsDashboard {
             </small>
           </div>
           <p class="card-text text-white small mb-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-            ${this.escapeHtml(caption) || '<span class="text-muted">No caption</span>'}
+            ${this.escapeHtml(caption) || '<span class="text-muted">' + (window.translations?.dashboard?.noCaption || 'No caption') + '</span>'}
           </p>
           ${post.scheduledFor ? `
             <div class="text-warning small mb-2">
@@ -507,7 +507,7 @@ class PostsDashboard {
 
     } catch (error) {
       console.error('Error viewing post:', error);
-      this.showNotification('Failed to load post details', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadPostDetails || 'Failed to load post details', 'error');
     }
   }
 
@@ -531,7 +531,7 @@ class PostsDashboard {
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="form-label text-muted small">Status</label>
+            <label class="form-label text-muted small">${window.translations?.dashboard?.statusLabel || 'Status'}</label>
             <div>
               <span class="badge bg-${this.getStatusColor(post.status)}">${this.capitalizeFirst(post.status)}</span>
               ${post.metadata?.nsfw ? '<span class="badge bg-danger ms-1">NSFW</span>' : ''}
@@ -539,53 +539,53 @@ class PostsDashboard {
           </div>
           
           <div class="mb-3">
-            <label class="form-label text-muted small">Source</label>
+            <label class="form-label text-muted small">${window.translations?.dashboard?.sourceLabel || 'Source'}</label>
             <p class="mb-0">${this.formatSource(post.source)}</p>
           </div>
           
           <div class="mb-3">
-            <label class="form-label text-muted small">Created</label>
+            <label class="form-label text-muted small">${window.translations?.dashboard?.createdLabel || 'Created'}</label>
             <p class="mb-0">${this.formatDate(post.createdAt)}</p>
           </div>
           
           ${post.scheduledFor ? `
             <div class="mb-3">
-              <label class="form-label text-muted small">Scheduled For</label>
+              <label class="form-label text-muted small">${window.translations?.dashboard?.scheduledForLabel || 'Scheduled For'}</label>
               <p class="mb-0 text-warning">${this.formatDate(post.scheduledFor)}</p>
             </div>
           ` : ''}
           
           ${post.content?.caption ? `
             <div class="mb-3">
-              <label class="form-label text-muted small">Caption</label>
+              <label class="form-label text-muted small">${window.translations?.dashboard?.captionLabel || 'Caption'}</label>
               <p class="mb-0">${this.escapeHtml(post.content.caption)}</p>
             </div>
           ` : ''}
           
           <div class="mb-3">
-            <label class="form-label text-muted small">Prompt</label>
+            <label class="form-label text-muted small">${window.translations?.dashboard?.promptLabel || 'Prompt'}</label>
             <p class="mb-0 small text-secondary" style="max-height: 100px; overflow-y: auto;">${this.escapeHtml(post.content?.prompt || 'N/A')}</p>
           </div>
           
           ${post.content?.model ? `
             <div class="mb-3">
-              <label class="form-label text-muted small">Model</label>
+              <label class="form-label text-muted small">${window.translations?.dashboard?.modelLabel || 'Model'}</label>
               <p class="mb-0 small">${post.content.model}</p>
             </div>
           ` : ''}
           
           ${post.socialPlatforms && post.socialPlatforms.length > 0 ? `
             <div class="mb-3">
-              <label class="form-label text-muted small">Social Platforms</label>
+              <label class="form-label text-muted small">${window.translations?.dashboard?.socialPlatformsLabel || 'Social Platforms'}</label>
               <p class="mb-0">${post.socialPlatforms.join(', ')}</p>
             </div>
           ` : ''}
           
           <div class="mb-3">
-            <label class="form-label text-muted small">Engagement</label>
+            <label class="form-label text-muted small">${window.translations?.dashboard?.engagementLabel || 'Engagement'}</label>
             <p class="mb-0">
-              <i class="bi bi-heart text-danger me-1"></i>${post.likes || 0} likes
-              <i class="bi bi-chat ms-2 me-1"></i>${post.comments?.length || 0} comments
+              <i class="bi bi-heart text-danger me-1"></i>${post.likes || 0} ${window.translations?.dashboard?.likes || 'likes'}
+              <i class="bi bi-chat ms-2 me-1"></i>${post.comments?.length || 0} ${window.translations?.dashboard?.comments || 'comments'}
             </p>
           </div>
         </div>
@@ -594,15 +594,15 @@ class PostsDashboard {
 
     modalFooter.innerHTML = `
       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-        <i class="bi bi-x me-1"></i>Close
+        <i class="bi bi-x me-1"></i>${window.translations?.dashboard?.close || 'Close'}
       </button>
       ${!isLegacyChat ? `
         <button type="button" class="btn btn-info" onclick="postsDashboard.editCaption('${post._id}')">
-          <i class="bi bi-pencil me-1"></i>Edit Caption
+          <i class="bi bi-pencil me-1"></i>${window.translations?.dashboard?.editCaptionBtn || 'Edit Caption'}
         </button>
         ${post.status === 'draft' ? `
           <button type="button" class="btn btn-primary" onclick="postsDashboard.openScheduleModal('${post._id}')">
-            <i class="bi bi-calendar-plus me-1"></i>Schedule
+            <i class="bi bi-calendar-plus me-1"></i>${window.translations?.dashboard?.schedule || 'Schedule'}
           </button>
         ` : ''}
       ` : ''}
@@ -641,12 +641,12 @@ class PostsDashboard {
     const captionInput = document.getElementById('editCaptionText');
     
     if (!this.currentPost) {
-      this.showNotification('Please wait for post to load', 'warning');
+      this.showNotification(window.translations?.dashboard?.waitForPostToLoad || 'Please wait for post to load', 'warning');
       return;
     }
 
     captionInput.disabled = true;
-    captionInput.placeholder = 'Generating caption...';
+    captionInput.placeholder = window.translations?.dashboard?.generatingCaption || 'Generating caption...';
 
     try {
       // Get style and language from dropdowns
@@ -674,16 +674,16 @@ class PostsDashboard {
         captionInput.value = data.caption;
         // Save to caption history
         CaptionHistory.saveCaption(data.caption, postId);
-        this.showNotification('Caption generated!', 'success');
+        this.showNotification(window.translations?.dashboard?.captionGenerated || 'Caption generated!', 'success');
       } else {
         throw new Error(data.error || 'Failed to generate caption');
       }
     } catch (error) {
       console.error('Error generating caption:', error);
-      this.showNotification('Failed to generate caption', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToGenerateCaption || 'Failed to generate caption', 'error');
     } finally {
       captionInput.disabled = false;
-      captionInput.placeholder = 'Enter your caption...';
+      captionInput.placeholder = window.translations?.dashboard?.enterCaption || 'Enter your caption...';
     }
   }
 
@@ -704,13 +704,13 @@ class PostsDashboard {
         throw new Error(data.error || 'Failed to save caption');
       }
 
-      this.showNotification('Caption saved!', 'success');
+      this.showNotification(window.translations?.dashboard?.captionSaved || 'Caption saved!', 'success');
       this.editCaptionModal?.hide();
       this.loadPosts();
 
     } catch (error) {
       console.error('Error saving caption:', error);
-      this.showNotification('Failed to save caption', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToSaveCaption || 'Failed to save caption', 'error');
     }
   }
 
@@ -762,7 +762,7 @@ class PostsDashboard {
     const selection = this.getSelectedPlatforms();
     
     if (!selection.profile) {
-      this.showNotification('Please select My Profile to publish', 'warning');
+      this.showNotification(window.translations?.dashboard?.selectProfileToPublish || 'Please select My Profile to publish', 'warning');
       return;
     }
 
@@ -799,14 +799,14 @@ class PostsDashboard {
         throw new Error(publishData.error || 'Failed to publish post');
       }
 
-      this.showNotification('Post published to your profile!', 'success');
+      this.showNotification(window.translations?.dashboard?.postPublishedToProfile || 'Post published to your profile!', 'success');
       this.scheduleModal?.hide();
       this.loadPosts();
       this.loadStats();
 
     } catch (error) {
       console.error('Error publishing to profile:', error);
-      this.showNotification('Failed to publish to profile', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToPublishToProfile || 'Failed to publish to profile', 'error');
     }
   }
 
@@ -819,7 +819,7 @@ class PostsDashboard {
     const selection = this.getSelectedPlatforms();
 
     if (!publishNow && !scheduledFor) {
-      this.showNotification('Please select a date and time or check "Publish Now"', 'warning');
+      this.showNotification(window.translations?.dashboard?.selectDateTimeOrPublishNow || 'Please select a date and time or check "Publish Now"', 'warning');
       return;
     }
 
@@ -866,19 +866,19 @@ class PostsDashboard {
         throw new Error(data.error || (publishNow ? 'Failed to publish post' : 'Failed to schedule post'));
       }
 
-      this.showNotification(publishNow ? 'Post published!' : 'Post scheduled successfully!', 'success');
+      this.showNotification(publishNow ? (window.translations?.dashboard?.postPublished || 'Post published!') : (window.translations?.dashboard?.postScheduled || 'Post scheduled successfully!'), 'success');
       this.scheduleModal?.hide();
       this.loadPosts();
       this.loadStats();
 
     } catch (error) {
       console.error('Error publishing/scheduling post:', error);
-      this.showNotification(error.message || 'Failed to complete action', 'error');
+      this.showNotification(error.message || (window.translations?.dashboard?.failedToCompleteAction || 'Failed to complete action'), 'error');
     }
   }
 
   async cancelSchedule(postId) {
-    if (!confirm('Cancel scheduled post? The post will be moved back to drafts.')) return;
+    if (!confirm(window.translations?.dashboard?.confirmCancelSchedule || 'Cancel scheduled post? The post will be moved back to drafts.')) return;
 
     try {
       const response = await fetch(`/api/posts/${postId}/cancel-schedule`, {
@@ -891,18 +891,18 @@ class PostsDashboard {
         throw new Error(data.error || 'Failed to cancel schedule');
       }
 
-      this.showNotification('Schedule cancelled', 'success');
+      this.showNotification(window.translations?.dashboard?.scheduleCancelled || 'Schedule cancelled', 'success');
       this.loadPosts();
       this.loadStats();
 
     } catch (error) {
       console.error('Error cancelling schedule:', error);
-      this.showNotification('Failed to cancel schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToCancelSchedule || 'Failed to cancel schedule', 'error');
     }
   }
 
   async deletePost(postId) {
-    if (!confirm('Are you sure you want to delete this post? This action cannot be undone.')) return;
+    if (!confirm(window.translations?.dashboard?.confirmDeletePost || 'Are you sure you want to delete this post? This action cannot be undone.')) return;
 
     try {
       const response = await fetch(`/api/posts/${postId}`, {
@@ -915,13 +915,13 @@ class PostsDashboard {
         throw new Error(data.error || 'Failed to delete post');
       }
 
-      this.showNotification('Post deleted', 'success');
+      this.showNotification(window.translations?.dashboard?.postDeleted || 'Post deleted', 'success');
       this.loadPosts();
       this.loadStats();
 
     } catch (error) {
       console.error('Error deleting post:', error);
-      this.showNotification('Failed to delete post', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToDeletePost || 'Failed to delete post', 'error');
     }
   }
 
@@ -937,7 +937,7 @@ class PostsDashboard {
     if (pagination.page > 1) {
       const prev = document.createElement('button');
       prev.className = 'btn btn-outline-primary';
-      prev.innerHTML = '<i class="bi bi-chevron-left"></i> Previous';
+      prev.innerHTML = `<i class="bi bi-chevron-left"></i> ${window.translations?.dashboard?.previous || 'Previous'}`;
       prev.onclick = () => {
         this.currentPage--;
         this.loadPosts();
@@ -948,14 +948,14 @@ class PostsDashboard {
     // Page numbers
     const pageInfo = document.createElement('span');
     pageInfo.className = 'mx-3 text-white align-self-center';
-    pageInfo.textContent = `Page ${pagination.page} of ${pagination.totalPages}`;
+    pageInfo.textContent = (window.translations?.dashboard?.pageOf || 'Page {page} of {totalPages}').replace('{page}', pagination.page).replace('{totalPages}', pagination.totalPages);
     container.appendChild(pageInfo);
 
     // Next button
     if (pagination.page < pagination.totalPages) {
       const next = document.createElement('button');
       next.className = 'btn btn-outline-primary';
-      next.innerHTML = 'Next <i class="bi bi-chevron-right"></i>';
+      next.innerHTML = `${window.translations?.dashboard?.next || 'Next'} <i class="bi bi-chevron-right"></i>`;
       next.onclick = () => {
         this.currentPage++;
         this.loadPosts();
@@ -965,15 +965,16 @@ class PostsDashboard {
   }
 
   formatSource(source) {
+    const t = window.translations?.dashboard || {};
     const sources = {
-      'image_dashboard': 'Image Dashboard',
-      'video_dashboard': 'Video Dashboard',
-      'cron_job': 'Automated',
-      'gallery': 'Gallery',
-      'api': 'API',
-      'chat': 'Chat'
+      'image_dashboard': t.imageDashboard || 'Image Dashboard',
+      'video_dashboard': t.videoDashboard || 'Video Dashboard',
+      'cron_job': t.cronJob || 'Automated',
+      'gallery': t.gallery || 'Gallery',
+      'api': t.api || 'API',
+      'chat': t.chatPosts || 'Chat'
     };
-    return sources[source] || source || 'Unknown';
+    return sources[source] || source || (t.unknown || 'Unknown');
   }
 
   formatDate(dateString) {

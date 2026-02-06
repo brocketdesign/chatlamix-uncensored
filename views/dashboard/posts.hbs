@@ -174,11 +174,11 @@
                         </label>
                         <div id="connectedPlatformsContainer" class="d-flex flex-wrap gap-2">
                             <!-- Connected platforms will be loaded dynamically -->
-                            <div class="text-muted small">Loading connected accounts...</div>
+                            <div class="text-muted small">{{translations.dashboard.loadingConnectedAccounts}}</div>
                         </div>
                         <div id="noPlatformsMessage" class="text-warning small mt-2" style="display: none;">
                             <i class="bi bi-exclamation-triangle me-1"></i>
-                            No connected accounts. Connect in Settings to publish to social media.
+                            {{translations.dashboard.noConnectedAccounts}}
                         </div>
                     </div>
 
@@ -235,16 +235,16 @@
                     </div>
                     <div class="row g-2 mb-3">
                         <div class="col-md-6">
-                            <label class="form-label small">Style</label>
+                            <label class="form-label small">{{translations.dashboard.style}}</label>
                             <select class="form-select form-select-sm" id="editCaptionStyle">
-                                <option value="engaging" selected>Engaging</option>
-                                <option value="casual">Casual</option>
-                                <option value="professional">Professional</option>
-                                <option value="funny">Funny</option>
+                                <option value="engaging" selected>{{translations.dashboard.engaging}}</option>
+                                <option value="casual">{{translations.dashboard.casual}}</option>
+                                <option value="professional">{{translations.dashboard.professional}}</option>
+                                <option value="funny">{{translations.dashboard.funny}}</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label small">Language</label>
+                            <label class="form-label small">{{translations.dashboard.language}}</label>
                             <select class="form-select form-select-sm" id="editCaptionLanguage">
                                 <option value="english">🇬🇧 English</option>
                                 <option value="japanese">🇯🇵 日本語</option>
