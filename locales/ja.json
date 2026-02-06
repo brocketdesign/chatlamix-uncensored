@@ -1,25 +1,25 @@
 {
   "lang": "ja",
-    "auth": {
-        "signingIn": "サインイン中...",
-        "signingOut": "サインアウト中...",
-        "redirectingMessage": "リダイレクト中です。しばらくお待ちください",
-        "seeYouSoon": "またお会いしましょう！戻ります..."
-    },
-    "contactUs": "お問い合わせ",
-    "contactDescription": "最新情報やサポートについては、ソーシャルメディアでお気軽にお声かけください。",
-    "quickLinks": "クイックリンク",
-    "legal": "法的情報・サポート",
-    "brandTagline": "つながる。創る。体験する。",
-    "allRightsReserved": "無断転載を禁じます。",
-    "madeWithLove": "愛を込めて",
-    "forYou": "あなたのために",
-    "all": "すべて",
-    "feature": "機能",
+  "auth": {
+    "signingIn": "サインイン中...",
+    "signingOut": "サインアウト中...",
+    "redirectingMessage": "リダイレクト中です。しばらくお待ちください",
+    "seeYouSoon": "またお会いしましょう！戻ります..."
+  },
+  "contactUs": "いつでもこちらからご連絡いただけます",
+  "contactDescription": "最新情報やサポートについては、ソーシャルメディアでお気軽にお声かけください。",
+  "quickLinks": "クイックリンク",
+  "legal": "法的情報・サポート",
+  "brandTagline": "つながる。創る。体験する。",
+  "allRightsReserved": "無断転載を禁じます。",
+  "madeWithLove": "愛を込めて",
+  "forYou": "あなたのために",
+  "all": "すべて",
+  "feature": "機能",
   "sendGiftImageDirectly": "ギフトを送りました、待っててください！",
   "sendPoseRequest": "あなたの新しいポーズの画像をリクエストしました、今生成します。使用したプロンプトはこちら：",
-    "receivedGift": "ギフトを受け取りました！",
-    "image_prompt_result": "リクエストした画像が生成されました！",
+  "receivedGift": "ギフトを受け取りました！",
+  "image_prompt_result": "リクエストした画像が生成されました！",
   "daysAgo": " 日前",
   "unlockAll": "すべてアンロック",
   "customPromptModal": {
@@ -1138,7 +1138,7 @@
   "chats": "チャット",
   "guest": "ゲスト",
   "noChats": "チャットがありません",
-  "startChatting": "AIキャラクターとチャットを始めましょう",
+  "startChatting": " チャットする",
   "startNow": "今すぐ始める",
   "justNow": "たった今",
   "refreshing": "更新中...",
@@ -1252,7 +1252,6 @@
   "continueWithLINE": "で続ける",
   "or": "または",
   "continueWithEmail": "メールで続ける",
-  "contactUs": "いつでもこちらからご連絡いただけます",
   "aboutService": "サービスについて",
   "termsOfUse": "利用規約",
   "privacyPolicy": "プライバシー ポリシー",
@@ -1438,7 +1437,22 @@
     "retry": "再試行"
   },
   "image_tools": {
-    "share_sns": "投稿"
+    "edit": "編集",
+    "like": "いいね",
+    "liked": "いいね済み",
+    "regenerate": "再生成",
+    "upscale": "高解像度化",
+    "upscaled": "高解像度化済み",
+    "video": "動画",
+    "video_generated": "動画生成済み",
+    "merge_face": "顔を合成",
+    "face_merged": "顔を合成済み",
+    "info": "情報",
+    "share": "共有",
+    "download": "ダウンロード",
+    "update_image": "画像を更新",
+    "added_to_chat": "画像がチャットに追加されました",
+    "add_to_chat_failed": "画像をチャットに追加できませんでした"
   },
   "avatar": {
     "affiliation": "アフィリエイト",
@@ -1448,7 +1462,7 @@
     "level": "レベル",
     "lvl": "レベル",
     "history": "履歴",
-    "premium":"プレミアム",
+    "premium": "プレミアム",
     "profile": "プロフィール",
     "characters": "キャラクター",
     "createCharacter": "キャラクター作成",
@@ -1473,11 +1487,9 @@
     "creator": "クリエイター"
   },
   "notifications": {
-    "title": "通知",
-    "empty": "まだ通知はありません",
-    "markAllRead": "すべて既読にする",
-    "new": "新着",
-    "viewAll": "すべての通知を見る"
+    "viewedMarked": "通知が確認済みとしてマークされました",
+    "viewed": "確認済み",
+    "nothing": "新しい通知はありません"
   },
   "tabs": {
     "posts": "投稿一覧",
@@ -1490,7 +1502,7 @@
     "thumbnailAlt": "チャットのサムネイル",
     "posts": "投稿",
     "likes": "いいね",
-    "likesTabInfo":"いいねした画像は自分しか見れません。ß",
+    "likesTabInfo": "いいねした画像は自分しか見れません。ß",
     "characters": "キャラ",
     "following": "フォロー中",
     "followers": "フォロワー",
@@ -1508,7 +1520,6 @@
     "manageContent": "コンテンツ管理",
     "subscribe": "購読する"
   },
-  "startChatting": " チャットする",
   "like": "いいね",
   "backToTop": "トップへ戻る",
   "next": "次へ",
@@ -1518,8 +1529,8 @@
   "newCharacter": {
     "chatPurposeLabel": "キャラクターの背景と目的を説明してください",
     "chatPurposePlaceholder": "例：猫が大好きで日常生活について話すのが好きなかわいい友達。",
-    "imageCompletionDone_message": "画像の補完が完了しました！",
-    "ai_generate_if_empty": "空欄の場合、AIで生成",
+    "imageCompletionDone_message": "新しいキャラクター画像が利用可能です。",
+    "ai_generate_if_empty": "空の場合、AIが生成",
     "selectedKeywords": "選択されたキーワード:",
     "clickKeywordsPlaceholder": "上記のキーワードをクリックして追加してください...",
     "keywordSections": {
@@ -1598,7 +1609,7 @@
     "nsfwDescription": "会話や画像で成熟したテーマや露骨なコンテンツを許可します。",
     "nsfwPremiumRequired": "成人向けコンテンツにはLamix Premiumのサブスクリプションが必要です。",
     "prompt_missing": "プロンプトが必要です",
-    "enhancedPrompt_skipped":  "強化プロンプトをスキップしました。",
+    "enhancedPrompt_skipped": "強化プロンプトをスキップしました。",
     "character_analysis_complete": "キャラクター分析が完了しました！",
     "character_analysis_error": "キャラクター分析中にエラーが発生しました。再試行してください。",
     "enhancedPrompt_complete": "強化プロンプトが正常に生成されました！",
@@ -1612,11 +1623,9 @@
     "regenerate_images": "画像を再生成",
     "enableMergeFace": "顔の結合を有効にする",
     "mergeFaceDescription": "アップロードされた画像の顔をキャラクターの顔として使用します。",
-    "ai_generate_if_empty": "空の場合、AIが生成",
     "errorInitiatingImageGeneration": "画像生成の開始中にエラーが発生しました。",
     "imageTitle_done": "画像タイトル完了",
     "imageCompletionDone_title": "画像完了",
-    "imageCompletionDone_message": "新しいキャラクター画像が利用可能です。",
     "personalityDetailsDone": "性格詳細完了",
     "tagsLabel": "タグ",
     "start_chat_and_image_generation": "チャットと画像生成を開始",
@@ -1806,7 +1815,6 @@
     "debrided_generation_error": "性格の強化が警告付きで完了しました",
     "saving_character_data": "キャラクターデータを保存しています...",
     "comprehensive_generation_started": "包括的なキャラクター生成を開始しています...",
-    
     "step1_title": "スタイルを選択",
     "step1_subtitle": "どのようなキャラクターを作成しますか？",
     "step2_title": "民族と年齢を選択",
@@ -1823,37 +1831,29 @@
     "step7_subtitle": "キャラクターのユニークな画像を作成",
     "step8_title": "確認",
     "step8_subtitle": "キャラクターを確認してチャットを開始",
-    
     "style_realistic": "リアル",
     "style_anime": "アニメ",
-    
     "age_title": "年齢を選択",
     "age_label": "年齢",
     "age_years": "歳",
-    
     "hair_color_title": "髪色を選択",
     "breast_size_title": "バストサイズを選択",
     "butt_size_title": "ヒップサイズを選択",
-    
     "name_title": "キャラクター名",
     "name_placeholder": "名前を入力...",
     "generate_name": "名前を生成",
-    
     "personality_title": "性格",
     "relationship_title": "関係",
     "occupation_title": "職業",
     "kinks_title": "好み",
     "custom_prompt_title": "カスタム詳細",
     "custom_prompt_placeholder": "例: 赤いドレスを着て、カフェに座っている、晴れた日、笑顔...",
-    
     "character_purpose_title": "キャラクターの経歴と目的",
     "character_purpose_description": "キャラクターの背景ストーリー、動機、チャットの目的を説明してください。これは会話中の性格を定義するのに役立ちます（外見の説明ではありません）。",
     "character_purpose_placeholder": "例：小さな町で育ち、夢を追いかけて都会に引っ越しました。芸術に情熱を持ち、人生や哲学についての深い会話が好きです...",
-    
     "outfit_prompt_title": "衣装とディテールをカスタマイズ",
     "outfit_prompt_description": "生成される画像に含めたい衣装、アクセサリー、外見の詳細を説明してください。服のスタイル、色、シチュエーションを具体的に指定してください。",
     "outfit_prompt_placeholder": "例：赤いドレスを着て、カフェに座って、晴れた日、笑顔...",
-    
     "step7_base_face_title": "ベースフェイスをアップロード",
     "step7_base_face_description": "キャラクターのベースとなる顔画像をアップロードします。画像生成時にAIで自動的に顔が合成されます。",
     "step7_base_face_upload": "クリックして顔画像をアップロード",
@@ -1861,13 +1861,10 @@
     "step7_base_face_clear": "クリア",
     "step7_base_face_uploaded": "顔が正常にアップロードされました",
     "step7_base_face_optional": "（オプション）",
-    
     "chat_purpose_label": "チャットの目的",
-    
     "voice_title": "声",
     "play_sample": "サンプル再生",
     "stop_sample": "停止",
-    
     "generate_image": "画像を生成",
     "regenerate_image": "再生成",
     "generating_image": "キャラクターを生成中...",
@@ -1875,14 +1872,11 @@
     "image_selected": "画像が選択されました",
     "no_image_generated": "まだ画像が生成されていません",
     "click_generate": "上のボタンをクリックしてキャラクターの画像を生成してください",
-    
     "review_title": "あなたのキャラクター",
     "start_chatting": "チャットを開始",
     "generating_character": "キャラクターを作成中...",
     "please_wait": "少々お待ちください",
-    
     "next": "次へ",
-    
     "ethnicities": {
       "caucasian": "白人",
       "asian": "アジア人",
@@ -1893,7 +1887,6 @@
       "japanese": "日本人",
       "korean": "韓国人"
     },
-    
     "hair_styles": {
       "straight": "ストレート",
       "bangs": "前髪あり",
@@ -1904,7 +1897,6 @@
       "braids": "三つ編み",
       "wavy": "ウェーブ"
     },
-    
     "hair_colors": {
       "brunette": "ブルネット",
       "blonde": "ブロンド",
@@ -1915,7 +1907,6 @@
       "white": "白",
       "purple": "紫"
     },
-    
     "body_types": {
       "skinny": "スリム",
       "slim": "細身",
@@ -1924,7 +1915,6 @@
       "curvy": "グラマラス",
       "voluptuous": "豊満"
     },
-    
     "breast_sizes": {
       "flat": "フラット",
       "small": "小さめ",
@@ -1932,7 +1922,6 @@
       "large": "大きめ",
       "xl": "特大"
     },
-    
     "butt_sizes": {
       "small": "小さめ",
       "medium": "普通",
@@ -1940,7 +1929,6 @@
       "large": "大きめ",
       "xl": "特大"
     },
-    
     "personalities": {
       "submissive": "従順",
       "dominant": "支配的",
@@ -1953,7 +1941,6 @@
       "caring": "思いやりがある",
       "mysterious": "ミステリアス"
     },
-    
     "relationships": {
       "stranger": "他人",
       "friend": "友達",
@@ -1966,7 +1953,6 @@
       "first_date": "初デート",
       "roommate": "ルームメイト"
     },
-    
     "occupations": {
       "student": "学生",
       "teacher": "教師",
@@ -1979,7 +1965,6 @@
       "scientist": "科学者",
       "musician": "ミュージシャン"
     },
-    
     "kinks": {
       "vanilla": "バニラ",
       "daddy_dom": "パパ系",
@@ -2127,11 +2112,6 @@
     "imageToVideo": "画像から動画へ",
     "convertToVideo": "動画に変換"
   },
-  "notifications": {
-    "viewedMarked": "通知が確認済みとしてマークされました",
-    "viewed": "確認済み",
-    "nothing": "新しい通知はありません"
-  },
   "sitemap": {
     "title": "サイトマップ",
     "description": "当プラットフォームで利用可能なすべてのAIキャラクターとコンテンツを探索",
@@ -2234,24 +2214,6 @@
   "operationCancelled": "操作がキャンセルされました",
   "confirmDelete": "本当に削除しますか？",
   "actionCannotBeUndone": "この操作は元に戻せません！",
-  "image_tools": {
-    "edit": "編集",
-    "like": "いいね",
-    "liked": "いいね済み",
-    "regenerate": "再生成",
-    "upscale": "高解像度化",
-    "upscaled": "高解像度化済み",
-    "video": "動画",
-    "video_generated": "動画生成済み",
-    "merge_face": "顔を合成",
-    "face_merged": "顔を合成済み",
-    "info": "情報",
-    "share": "共有",
-    "download": "ダウンロード",
-    "update_image": "画像を更新",
-    "added_to_chat": "画像がチャットに追加されました",
-    "add_to_chat_failed": "画像をチャットに追加できませんでした"
-  },
   "video_already_generated": "すでに動画が生成されています",
   "convert_to_video": "動画に変換",
   "upscale_image": "画像を高解像度化",
@@ -2359,7 +2321,6 @@
   "try_again": "再試行",
   "loading_leaderboard": "リーダーボードを読み込み中...",
   "analytics_refreshed": "分析データが正常に更新されました",
-  
   "manage": "管理",
   "dashboard": {
     "myPosts": "マイ投稿",
@@ -2477,7 +2438,6 @@
     "prompt": "プロンプト",
     "promptPlaceholder": "生成用のプロンプトを入力...",
     "model": "モデル",
-    "character": "キャラクター",
     "optional": "オプション",
     "noCharacter": "キャラクター未選択",
     "promptType": "プロンプトタイプ",
@@ -2490,9 +2450,148 @@
     "testRunDescription": "生成結果をプレビューするためのテストを実行",
     "generateImageDescription": "AIで新しい画像を生成し、投稿に保存します。下でソーシャルアカウントを選択すると、自動的に投稿されます。",
     "generateVideoDescription": "AIで新しい動画を生成し、投稿に保存します。下でソーシャルアカウントを選択すると、自動的に投稿されます。",
-    "publishPostDescription": "ライブラリの既存の投稿を選択したソーシャルメディアに公開します。新しいコンテンツは生成しません。"
+    "publishPostDescription": "ライブラリの既存の投稿を選択したソーシャルメディアに公開します。新しいコンテンツは生成しません。",
+    "calendars": "カレンダー",
+    "useCalendar": "カレンダーを使用",
+    "manualTimeSelection": "手動で時間を選択",
+    "calendarAutoFillHelp": "カレンダーを選択して次の空きスロットを自動入力",
+    "nextSlotLoading": "次のスロット: 読み込み中...",
+    "useThisSlot": "このスロットを使用",
+    "useCalendarOptionalReplacesCron": "カレンダーを使用",
+    "optionalReplacesCron": "オプション - cronを置き換え",
+    "useCronExpressionInstead": "代わりにcron式を使用",
+    "calendarWeeklySlotsHelp": "cron式の代わりにカレンダーの週間スロットを使用するには、カレンダーを選択してください",
+    "calendarPublishAtSlots": "カレンダーの設定されたスロットで公開されます",
+    "daily9AM": "毎日午前9時",
+    "every6Hours": "6時間ごと",
+    "weekdaysNoon": "平日正午",
+    "weekends10AM": "週末午前10時",
+    "searchCharacters": "キャラクターを検索...",
+    "loadingCharacters": "キャラクターを読み込み中...",
+    "characterStylingHelp": "キャラクターを選択して、生成画像にキャラクター固有のスタイルを適用",
+    "promptTypeHelp": "独自のプロンプトを作成するか、事前作成済みのカスタムプロンプトを使用するかを選択",
+    "loadingCustomPrompts": "カスタムプロンプトを読み込み中...",
+    "customPromptsHelp": "1つまたは複数のカスタムプロンプトを選択してください。スケジュール実行ごとにランダムに使用されます。",
+    "promptsSelected": "個のプロンプトを選択中",
+    "selectModel": "モデルを選択",
+    "textToImageModels": "テキストから画像モデル",
+    "customSDModels": "カスタムSDモデル",
+    "modelSameAsImageDashboard": "画像ダッシュボードと同じモデルが利用可能",
+    "testRunButton": "テスト実行",
+    "generating": "生成中...",
+    "generatingTestImage": "テスト画像を生成中...",
+    "clear": "クリア",
+    "testRunHelp": "生成結果をプレビューするためのテストを実行します。生成された画像は投稿に保存されます。",
+    "loadingConnectedAccounts": "接続済みアカウントを読み込み中...",
+    "noSocialAccountsConnected": "ソーシャルアカウントが接続されていません。",
+    "connectAccounts": "アカウントを接続",
+    "toAutoPublish": "して自動投稿。",
+    "publishCalendars": "公開カレンダー",
+    "calendarCreateHelp": "自動公開用の週間タイムスロットを持つカレンダーを作成",
+    "newCalendar": "新規カレンダー",
+    "calendarName": "カレンダー名",
+    "calendarNamePlaceholder": "例: 毎日の投稿、週末コンテンツ",
+    "calendarDescriptionPlaceholder": "このカレンダーの簡単な説明",
+    "timezone": "タイムゾーン",
+    "timeSlots": "タイムスロット",
+    "addSlot": "スロットを追加",
+    "timeSlotsHelp": "投稿を公開する週間の定期的なタイムスロットを定義",
+    "noCalendarsYet": "まだカレンダーがありません",
+    "createCalendarToSchedule": "定期的な時間に投稿をスケジュールするカレンダーを作成",
+    "noTimeSlotsConfigured": "タイムスロットが設定されていません",
+    "noSlotsConfigured": "スロットが設定されていません",
+    "editCalendar": "カレンダーを編集",
+    "createCalendar": "カレンダーを作成",
+    "saveChanges": "変更を保存",
+    "calendarUpdated": "カレンダーを更新しました！",
+    "calendarCreated": "カレンダーを作成しました！",
+    "calendarDeleted": "カレンダーを削除しました",
+    "deleteCalendarConfirm": "このカレンダーを削除しますか？キュー内のアイテムもキャンセルされます。",
+    "failedToLoadCalendars": "カレンダーの読み込みに失敗しました",
+    "failedToLoadCalendar": "カレンダーの読み込みに失敗しました",
+    "failedToSaveCalendar": "カレンダーの保存に失敗しました",
+    "failedToDeleteCalendar": "カレンダーの削除に失敗しました",
+    "enterCalendarName": "カレンダー名を入力してください",
+    "timeSlotApplied": "タイムスロットを適用しました！",
+    "calendarSlotRecurring": "カレンダースロットが定期スケジュールに使用されます！",
+    "findingNextSlot": "次の空きスロットを検索中...",
+    "noAvailableSlots": "利用可能なスロットがありません",
+    "noAvailableSlotsConfigured": "利用可能なスロットが設定されていません",
+    "weeklySlots": "週間スロット",
+    "next": "次へ",
+    "more": "件以上",
+    "recurring": "定期",
+    "single": "単発",
+    "cron": "Cron",
+    "runs": "実行回数",
+    "lastRun": "最終実行",
+    "created": "作成日",
+    "calendar": "カレンダー",
+    "executions": "実行回数",
+    "nextExecution": "次の実行",
+    "lastExecuted": "最終実行日",
+    "generatedPosts": "生成された投稿",
+    "postsCreated": "件の投稿を作成",
+    "viewPosts": "投稿を表示",
+    "lastError": "最新のエラー",
+    "edit": "編集",
+    "pause": "一時停止",
+    "resume": "再開",
+    "view": "表示",
+    "delete": "削除",
+    "previous": "前へ",
+    "page": "ページ",
+    "of": "/",
+    "createSchedule": "作成",
+    "createRecurringJob": "定期ジョブを作成",
+    "editSchedule": "スケジュールを編集",
+    "scheduleUpdated": "スケジュールを更新しました！",
+    "scheduleCreated": "スケジュールを作成しました！",
+    "schedulePaused": "スケジュールを一時停止しました",
+    "scheduleResumed": "スケジュールを再開しました",
+    "scheduleCancelled": "スケジュールをキャンセルしました",
+    "scheduleDeleted": "スケジュールを削除しました",
+    "failedToLoadSchedule": "スケジュールの読み込みに失敗しました",
+    "failedToSaveSchedule": "スケジュールの保存に失敗しました",
+    "failedToLoadSchedules": "スケジュールの読み込みに失敗しました",
+    "failedToPauseSchedule": "スケジュールの一時停止に失敗しました",
+    "failedToResumeSchedule": "スケジュールの再開に失敗しました",
+    "failedToCancelSchedule": "スケジュールのキャンセルに失敗しました",
+    "failedToDeleteSchedule": "スケジュールの削除に失敗しました",
+    "selectDateAndTime": "日時を選択してください",
+    "selectCalendarOrCron": "カレンダーを選択するかcron式を入力してください",
+    "selectAtLeastOnePrompt": "少なくとも1つのカスタムプロンプトを選択してください",
+    "cancelScheduleConfirm": "このスケジュールをキャンセルしますか？",
+    "deleteScheduleConfirm": "このスケジュールを完全に削除しますか？",
+    "testAlreadyInProgress": "テストが既に実行中です",
+    "enterPromptFirst": "最初にプロンプトを入力してください",
+    "testRunOnlyImage": "テスト実行は画像生成のみサポートしています",
+    "running": "実行中...",
+    "testImageGenerated": "テスト画像の生成に成功しました！",
+    "testRunFailed": "テスト実行に失敗しました",
+    "testRunResult": "テスト実行結果",
+    "openFullSize": "フルサイズで開く",
+    "viewInPosts": "投稿で表示",
+    "savedToPosts": "投稿に保存済み",
+    "failedToLoadScheduleDetails": "スケジュール詳細の読み込みに失敗しました",
+    "sunday": "日曜日",
+    "monday": "月曜日",
+    "tuesday": "火曜日",
+    "wednesday": "水曜日",
+    "thursday": "木曜日",
+    "friday": "金曜日",
+    "saturday": "土曜日",
+    "sunShort": "日",
+    "monShort": "月",
+    "tueShort": "火",
+    "wedShort": "水",
+    "thuShort": "木",
+    "friShort": "金",
+    "satShort": "土",
+    "async": "非同期",
+    "sync": "同期",
+    "inactive": "無効"
   },
-
   "analytics": {
     "title": "アナリティクス",
     "subtitle": "コンテンツのパフォーマンスと成長を追跡",
@@ -2542,7 +2641,6 @@
     "image": "画像",
     "video": "動画"
   },
-
   "subscriptions": {
     "tierManagement": "ティア管理",
     "tierManagementDescription": "ファン向けのサブスクリプションティアを作成・管理",
@@ -2617,7 +2715,6 @@
     "tierRequired": "ティア以上が必要",
     "subscribeToUnlock": "購読してこのコンテンツをロック解除"
   },
-
   "creators": {
     "heroTitle": "素晴らしいクリエイターを発見",
     "heroSubtitle": "お気に入りのAIアーティストをフォローして、限定コンテンツをアンロック",
@@ -2639,10 +2736,8 @@
     "followers": "フォロワー",
     "posts": "投稿",
     "likes": "いいね",
-    
     "applyHeroTitle": "クリエイターになる",
     "applyHeroSubtitle": "AI作品を世界と共有し、オーディエンスを構築し、コンテンツを収益化",
-    
     "benefitBuildAudience": "オーディエンスを構築",
     "benefitBuildAudienceDesc": "あなたのユニークなスタイルと作品を愛するファンとつながる",
     "benefitEarnMoney": "収益を得る",
@@ -2651,7 +2746,6 @@
     "benefitGrowBrandDesc": "プラットフォームで注目され、知名度を高める",
     "benefitCreatorTools": "クリエイターツール",
     "benefitCreatorToolsDesc": "分析、スケジュール、コンテンツ管理ツールにアクセス",
-    
     "applicationForm": "クリエイター申請",
     "displayName": "クリエイター名",
     "displayNamePlaceholder": "公開されるクリエイター名",
@@ -2668,7 +2762,6 @@
     "cancel": "キャンセル",
     "submitApplication": "始める",
     "submitting": "処理中...",
-    
     "faqTitle": "よくある質問",
     "faqQuestion1": "クリエイターとしてどうやって収益を得ますか？",
     "faqAnswer1": "クリエイターは、サブスクリプションティア（近日公開）、フォロワーからの投げ銭、限定コンテンツ販売で収益を得ることができます。収益と分析を表示するダッシュボードにアクセスできます。",
@@ -2678,25 +2771,21 @@
     "faqAnswer3": "認証バッジは、一貫して質の高いコンテンツを制作し、多くのフォロワーを持ち、コミュニティで良好な地位を維持しているクリエイターに付与されます。定期的に認証のためのアカウント審査を行っています。",
     "faqQuestion4": "クリエイタープロフィールは後から変更できますか？",
     "faqAnswer4": "はい！表示名、自己紹介、カテゴリー、タグ、ソーシャルリンクはプロフィール設定からいつでも更新できます。",
-    
     "successTitle": "ようこそ、クリエイター！",
     "successMessage": "クリエイタープロフィールが設定されました。素晴らしいコンテンツを共有しましょう！",
     "errorTitle": "エラー",
     "errorMessage": "問題が発生しました。もう一度お試しください。",
-    
     "categoryAnime": "アニメ",
     "categoryRealistic": "リアル",
     "categoryFantasy": "ファンタジー",
     "categoryMixed": "ミックス",
     "categoryOther": "その他",
-    
     "premiumRequiredTitle": "プレミアム会員限定",
     "premiumRequiredDesc": "Lamix Premiumにアップグレードして、クリエイタープログラムを解放し、AI作品の収益化を始めましょう。",
     "upgradeToPremium": "プレミアムにアップグレード",
     "youAreCreator": "あなたはクリエイターです！",
     "youAreCreatorDesc": "クリエイターコミュニティの一員としてご参加いただきありがとうございます。素晴らしいコンテンツを作り続けてください！",
     "viewProfile": "プロフィールを見る",
-    
     "creatorBenefits": {
       "title": "クリエイターとして解放される特典",
       "monetization": "投げ銭やサブスクリプションでAI作品を収益化",

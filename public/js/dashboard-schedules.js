@@ -714,7 +714,7 @@ class SchedulesDashboard {
         previewEl.style.display = 'block';
       } else {
         this.nextAvailableSlot = null;
-        textEl.textContent = data.message || 'No available slots';
+        textEl.textContent = data.message || (window.translations?.dashboard?.noAvailableSlots || 'No available slots');
         previewEl.style.display = 'block';
       }
     } catch (error) {
@@ -735,7 +735,7 @@ class SchedulesDashboard {
       .slice(0, 16);
 
     document.getElementById('scheduledFor').value = localDateTime;
-    this.showNotification('Time slot applied!', 'success');
+    this.showNotification(window.translations?.dashboard?.timeSlotApplied || 'Time slot applied!', 'success');
   }
 
   // Handle calendar selection for recurring (cron) schedules
@@ -757,7 +757,7 @@ class SchedulesDashboard {
     // Show loading state
     if (previewEl) {
       previewEl.style.display = 'block';
-      document.getElementById('recurringNextSlotText').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Finding next available slot...';
+      document.getElementById('recurringNextSlotText').innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>' + (window.translations?.dashboard?.findingNextSlot || 'Finding next available slot...');
     }
 
     await this.fetchRecurringNextSlot(calendarId);
@@ -779,21 +779,22 @@ class SchedulesDashboard {
         const calendar = this.calendars.find(c => c._id === calendarId);
         const enabledSlots = calendar ? (calendar.slots || []).filter(s => s.isEnabled).length : 0;
         
+        const t = window.translations?.dashboard || {};
         textEl.innerHTML = `
           <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div>
-              <strong>Next:</strong> ${this.formatDate(publishAt)}
-              <span class="text-muted ms-2">(${enabledSlots} weekly slots)</span>
+              <strong>${t.next || 'Next'}:</strong> ${this.formatDate(publishAt)}
+              <span class="text-muted ms-2">(${enabledSlots} ${t.weeklySlots || 'weekly slots'})</span>
             </div>
             <button type="button" class="btn btn-sm btn-outline-success" onclick="schedulesDashboard.useRecurringNextSlot()">
-              <i class="bi bi-check-lg me-1"></i>Use this slot
+              <i class="bi bi-check-lg me-1"></i>${t.useThisSlot || 'Use this slot'}
             </button>
           </div>
         `;
         previewEl.style.display = 'block';
       } else {
         this.recurringNextAvailableSlot = null;
-        textEl.innerHTML = `<i class="bi bi-exclamation-circle me-2"></i>${data.message || 'No available slots configured'}`;
+        textEl.innerHTML = `<i class="bi bi-exclamation-circle me-2"></i>${data.message || (window.translations?.dashboard?.noAvailableSlotsConfigured || 'No available slots configured')}`;
         previewEl.style.display = 'block';
       }
     } catch (error) {
@@ -812,7 +813,7 @@ class SchedulesDashboard {
 
     // For recurring schedules with calendar, we store the calendar ID
     // The next slot is automatically determined by the calendar
-    this.showNotification('Calendar slot will be used for recurring schedule!', 'success');
+    this.showNotification(window.translations?.dashboard?.calendarSlotRecurring || 'Calendar slot will be used for recurring schedule!', 'success');
   }
 
   // Calendar Manager Modal
@@ -829,7 +830,7 @@ class SchedulesDashboard {
     listEl.innerHTML = `
       <div class="text-center py-4">
         <div class="spinner-border spinner-border-sm" role="status">
-          <span class="visually-hidden">Loading...</span>
+          <span class="visually-hidden">${window.translations?.dashboard?.loading || 'Loading...'}</span>
         </div>
       </div>
     `;
@@ -844,13 +845,13 @@ class SchedulesDashboard {
         // Also update the dropdown in the schedule modal
         this.populateCalendarSelect();
       } else {
-        throw new Error(data.error || 'Failed to load calendars');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToLoadCalendars || 'Failed to load calendars'));
       }
     } catch (error) {
       console.error('Error loading calendar list:', error);
       listEl.innerHTML = `
         <div class="text-center py-4 text-danger">
-          <i class="bi bi-exclamation-triangle me-2"></i>Failed to load calendars
+          <i class="bi bi-exclamation-triangle me-2"></i>${window.translations?.dashboard?.failedToLoadCalendars || 'Failed to load calendars'}
         </div>
       `;
     }
@@ -864,28 +865,29 @@ class SchedulesDashboard {
       listEl.innerHTML = `
         <div class="text-center py-4">
           <i class="bi bi-calendar-x" style="font-size: 2rem; color: var(--sched-text-muted);"></i>
-          <p class="text-muted mt-2 mb-0">No calendars yet</p>
-          <p class="text-muted small">Create a calendar to schedule posts at recurring times</p>
+          <p class="text-muted mt-2 mb-0">${window.translations?.dashboard?.noCalendarsYet || 'No calendars yet'}</p>
+          <p class="text-muted small">${window.translations?.dashboard?.createCalendarToSchedule || 'Create a calendar to schedule posts at recurring times'}</p>
         </div>
       `;
       return;
     }
 
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const t = window.translations?.dashboard || {};
+    const dayNames = [t.sunShort || 'Sun', t.monShort || 'Mon', t.tueShort || 'Tue', t.wedShort || 'Wed', t.thuShort || 'Thu', t.friShort || 'Fri', t.satShort || 'Sat'];
 
     listEl.innerHTML = this.calendars.map(calendar => {
       const enabledSlots = (calendar.slots || []).filter(s => s.isEnabled);
       const slotSummary = enabledSlots.length > 0
         ? enabledSlots.slice(0, 3).map(s => `${dayNames[s.dayOfWeek]} ${String(s.hour).padStart(2, '0')}:${String(s.minute || 0).padStart(2, '0')}`).join(', ')
-          + (enabledSlots.length > 3 ? ` +${enabledSlots.length - 3} more` : '')
-        : 'No slots configured';
+          + (enabledSlots.length > 3 ? ` +${enabledSlots.length - 3} ${t.more || 'more'}` : '')
+        : (t.noSlotsConfigured || 'No slots configured');
 
       return `
         <div class="calendar-list-item ${calendar.isActive ? '' : 'inactive'}">
           <div class="calendar-item-info">
             <div class="d-flex align-items-center gap-2">
               <h6 class="mb-0">${this.escapeHtml(calendar.name)}</h6>
-              <span class="badge ${calendar.isActive ? 'bg-success' : 'bg-secondary'}">${calendar.isActive ? 'Active' : 'Inactive'}</span>
+              <span class="badge ${calendar.isActive ? 'bg-success' : 'bg-secondary'}">${calendar.isActive ? (t.active || 'Active') : (t.inactive || 'Inactive')}</span>
             </div>
             ${calendar.description ? `<p class="text-muted small mb-1">${this.escapeHtml(calendar.description)}</p>` : ''}
             <p class="text-muted small mb-0">
@@ -909,7 +911,7 @@ class SchedulesDashboard {
     document.getElementById('calendarListContainer').style.display = 'block';
     document.getElementById('calendarFormContainer').style.display = 'none';
     document.getElementById('calendarModalFooter').innerHTML = `
-      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${window.translations?.dashboard?.close || 'Close'}</button>
     `;
   }
 
@@ -919,7 +921,7 @@ class SchedulesDashboard {
     document.getElementById('calendarName').value = '';
     document.getElementById('calendarDescription').value = '';
     document.getElementById('calendarTimezone').value = 'UTC';
-    document.getElementById('calendarFormTitle').textContent = 'New Calendar';
+    document.getElementById('calendarFormTitle').textContent = window.translations?.dashboard?.newCalendar || 'New Calendar';
 
     // Clear and add default slots
     this.calendarSlots = [];
@@ -929,9 +931,9 @@ class SchedulesDashboard {
     document.getElementById('calendarListContainer').style.display = 'none';
     document.getElementById('calendarFormContainer').style.display = 'block';
     document.getElementById('calendarModalFooter').innerHTML = `
-      <button type="button" class="btn btn-secondary" onclick="schedulesDashboard.showCalendarList()">Cancel</button>
+      <button type="button" class="btn btn-secondary" onclick="schedulesDashboard.showCalendarList()">${window.translations?.dashboard?.cancel || 'Cancel'}</button>
       <button type="button" class="btn btn-primary" onclick="schedulesDashboard.saveCalendar()">
-        <i class="bi bi-check me-1"></i>Create Calendar
+        <i class="bi bi-check me-1"></i>${window.translations?.dashboard?.createCalendar || 'Create Calendar'}
       </button>
     `;
   }
@@ -942,7 +944,7 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to load calendar');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToLoadCalendar || 'Failed to load calendar'));
       }
 
       const calendar = data.calendar;
@@ -952,7 +954,7 @@ class SchedulesDashboard {
       document.getElementById('calendarName').value = calendar.name || '';
       document.getElementById('calendarDescription').value = calendar.description || '';
       document.getElementById('calendarTimezone').value = calendar.timezone || 'UTC';
-      document.getElementById('calendarFormTitle').textContent = 'Edit Calendar';
+      document.getElementById('calendarFormTitle').textContent = window.translations?.dashboard?.editCalendar || 'Edit Calendar';
 
       // Populate slots
       this.calendarSlots = (calendar.slots || []).map(s => ({
@@ -968,15 +970,15 @@ class SchedulesDashboard {
       document.getElementById('calendarListContainer').style.display = 'none';
       document.getElementById('calendarFormContainer').style.display = 'block';
       document.getElementById('calendarModalFooter').innerHTML = `
-        <button type="button" class="btn btn-secondary" onclick="schedulesDashboard.showCalendarList()">Cancel</button>
+        <button type="button" class="btn btn-secondary" onclick="schedulesDashboard.showCalendarList()">${window.translations?.dashboard?.cancel || 'Cancel'}</button>
         <button type="button" class="btn btn-primary" onclick="schedulesDashboard.saveCalendar()">
-          <i class="bi bi-check me-1"></i>Save Changes
+          <i class="bi bi-check me-1"></i>${window.translations?.dashboard?.saveChanges || 'Save Changes'}
         </button>
       `;
 
     } catch (error) {
       console.error('Error loading calendar:', error);
-      this.showNotification('Failed to load calendar', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadCalendar || 'Failed to load calendar', 'error');
     }
   }
 
@@ -1002,20 +1004,21 @@ class SchedulesDashboard {
     if (this.calendarSlots.length === 0) {
       container.innerHTML = `
         <div class="text-center py-3 text-muted">
-          <i class="bi bi-clock me-1"></i>No time slots configured
+          <i class="bi bi-clock me-1"></i>${window.translations?.dashboard?.noTimeSlotsConfigured || 'No time slots configured'}
         </div>
       `;
       return;
     }
 
+    const t = window.translations?.dashboard || {};
     const dayOptions = [
-      { value: 0, label: 'Sunday' },
-      { value: 1, label: 'Monday' },
-      { value: 2, label: 'Tuesday' },
-      { value: 3, label: 'Wednesday' },
-      { value: 4, label: 'Thursday' },
-      { value: 5, label: 'Friday' },
-      { value: 6, label: 'Saturday' }
+      { value: 0, label: t.sunday || 'Sunday' },
+      { value: 1, label: t.monday || 'Monday' },
+      { value: 2, label: t.tuesday || 'Tuesday' },
+      { value: 3, label: t.wednesday || 'Wednesday' },
+      { value: 4, label: t.thursday || 'Thursday' },
+      { value: 5, label: t.friday || 'Friday' },
+      { value: 6, label: t.saturday || 'Saturday' }
     ];
 
     container.innerHTML = this.calendarSlots.map((slot, index) => `
@@ -1062,7 +1065,7 @@ class SchedulesDashboard {
     const timezone = document.getElementById('calendarTimezone').value;
 
     if (!name) {
-      this.showNotification('Please enter a calendar name', 'warning');
+      this.showNotification(window.translations?.dashboard?.enterCalendarName || 'Please enter a calendar name', 'warning');
       return;
     }
 
@@ -1099,21 +1102,21 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to save calendar');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToSaveCalendar || 'Failed to save calendar'));
       }
 
-      this.showNotification(calendarId ? 'Calendar updated!' : 'Calendar created!', 'success');
+      this.showNotification(calendarId ? (window.translations?.dashboard?.calendarUpdated || 'Calendar updated!') : (window.translations?.dashboard?.calendarCreated || 'Calendar created!'), 'success');
       this.showCalendarList();
       this.loadCalendarList();
 
     } catch (error) {
       console.error('Error saving calendar:', error);
-      this.showNotification('Failed to save calendar: ' + error.message, 'error');
+      this.showNotification((window.translations?.dashboard?.failedToSaveCalendar || 'Failed to save calendar') + ': ' + error.message, 'error');
     }
   }
 
   deleteCalendarConfirm(calendarId) {
-    if (!confirm('Delete this calendar? This will also cancel any queued items.')) return;
+    if (!confirm(window.translations?.dashboard?.deleteCalendarConfirm || 'Delete this calendar? This will also cancel any queued items.')) return;
     this.deleteCalendar(calendarId);
   }
 
@@ -1126,15 +1129,15 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to delete calendar');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToDeleteCalendar || 'Failed to delete calendar'));
       }
 
-      this.showNotification('Calendar deleted', 'success');
+      this.showNotification(window.translations?.dashboard?.calendarDeleted || 'Calendar deleted', 'success');
       this.loadCalendarList();
 
     } catch (error) {
       console.error('Error deleting calendar:', error);
-      this.showNotification('Failed to delete calendar', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToDeleteCalendar || 'Failed to delete calendar', 'error');
     }
   }
 
@@ -1285,7 +1288,7 @@ class SchedulesDashboard {
       spinner.style.display = 'none';
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to load schedules');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToLoadSchedules || 'Failed to load schedules'));
       }
 
       if (data.schedules.length === 0) {
@@ -1304,7 +1307,7 @@ class SchedulesDashboard {
     } catch (error) {
       console.error('Error loading schedules:', error);
       spinner.style.display = 'none';
-      this.showNotification('Failed to load schedules', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadSchedules || 'Failed to load schedules', 'error');
     }
   }
 
@@ -1315,13 +1318,14 @@ class SchedulesDashboard {
 
     const isRecurring = schedule.type === 'recurring';
     const actionIcon = this.getActionIcon(schedule.actionType);
+    const t = window.translations?.dashboard || {};
 
     card.innerHTML = `
       <div class="schedule-card h-100">
         <div class="card-header">
           <span class="schedule-type-badge ${isRecurring ? 'recurring' : 'single'}">
             <i class="bi bi-${isRecurring ? 'arrow-repeat' : 'calendar-event'}"></i>
-            ${isRecurring ? 'Recurring' : 'Single'}
+            ${isRecurring ? (t.recurring || 'Recurring') : (t.single || 'Single')}
           </span>
           <span class="schedule-status-badge ${schedule.status}">
             ${this.capitalizeFirst(schedule.status)}
@@ -1337,41 +1341,41 @@ class SchedulesDashboard {
             ${schedule.useCalendar && schedule.calendarName ? `
               <p class="small mb-2" style="color: var(--sched-primary-light);">
                 <i class="bi bi-calendar-week me-1"></i>
-                Calendar: ${this.escapeHtml(schedule.calendarName)}
+                ${t.calendar || 'Calendar'}: ${this.escapeHtml(schedule.calendarName)}
               </p>
             ` : `
               <p class="small mb-2" style="color: var(--sched-primary-light);">
                 <i class="bi bi-clock me-1"></i>
-                Cron: <code>${schedule.cronExpression || 'N/A'}</code>
+                ${t.cron || 'Cron'}: <code>${schedule.cronExpression || 'N/A'}</code>
               </p>
             `}
             <p class="small mb-2" style="color: var(--sched-text-secondary);">
               <i class="bi bi-play-circle me-1"></i>
-              Runs: ${schedule.executionCount || 0}${schedule.maxExecutions ? '/' + schedule.maxExecutions : ''}
+              ${t.runs || 'Runs'}: ${schedule.executionCount || 0}${schedule.maxExecutions ? '/' + schedule.maxExecutions : ''}
             </p>
             ${schedule.nextExecutionAt ? `
               <p class="small mb-2" style="color: #fbbf24;">
                 <i class="bi bi-arrow-right me-1"></i>
-                Next: ${this.formatDate(schedule.nextExecutionAt)}
+                ${t.next || 'Next'}: ${this.formatDate(schedule.nextExecutionAt)}
               </p>
             ` : ''}
           ` : `
             <p class="small mb-2" style="color: #fbbf24;">
               <i class="bi bi-calendar me-1"></i>
-              Scheduled: ${this.formatDate(schedule.scheduledFor)}
+              ${t.scheduled || 'Scheduled'}: ${this.formatDate(schedule.scheduledFor)}
             </p>
           `}
 
           ${schedule.lastExecutedAt ? `
             <p class="small mb-2" style="color: #34d399;">
               <i class="bi bi-check me-1"></i>
-              Last run: ${this.formatDate(schedule.lastExecutedAt)}
+              ${t.lastRun || 'Last run'}: ${this.formatDate(schedule.lastExecutedAt)}
             </p>
           ` : ''}
 
           <p class="small mb-0" style="color: var(--sched-text-muted);">
             <i class="bi bi-calendar-plus me-1"></i>
-            Created: ${this.formatDate(schedule.createdAt)}
+            ${t.created || 'Created'}: ${this.formatDate(schedule.createdAt)}
           </p>
         </div>
         <div class="card-footer">
@@ -1510,8 +1514,9 @@ class SchedulesDashboard {
     this.toggleScheduleType(type);
     
     // Update modal title
+    const t = window.translations?.dashboard || {};
     document.getElementById('scheduleModalTitle').innerHTML = `
-      <i class="bi bi-calendar-plus me-2"></i>Create ${type === 'single' ? 'Schedule' : 'Recurring Job'}
+      <i class="bi bi-calendar-plus me-2"></i>${type === 'single' ? (t.createSchedule || 'Create') + ' ' + (t.singleSchedule || 'Schedule') : (t.createRecurringJob || 'Create Recurring Job')}
     `;
     
     this.scheduleModal?.show();
@@ -1523,7 +1528,7 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to load schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToLoadSchedule || 'Failed to load schedule'));
       }
 
       const schedule = data.schedule;
@@ -1664,14 +1669,14 @@ class SchedulesDashboard {
       
       // Update modal title
       document.getElementById('scheduleModalTitle').innerHTML = `
-        <i class="bi bi-pencil me-2"></i>Edit Schedule
+        <i class="bi bi-pencil me-2"></i>${window.translations?.dashboard?.editSchedule || 'Edit Schedule'}
       `;
       
       this.scheduleModal?.show();
 
     } catch (error) {
       console.error('Error loading schedule:', error);
-      this.showNotification('Failed to load schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadSchedule || 'Failed to load schedule', 'error');
     }
   }
 
@@ -1681,26 +1686,27 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to load schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToLoadSchedule || 'Failed to load schedule'));
       }
 
       const schedule = data.schedule;
       const isRecurring = schedule.type === 'recurring';
+      const t = window.translations?.dashboard || {};
 
       const bodyHtml = `
         <div class="row">
           <div class="col-md-6">
             <div class="mb-3">
-              <label class="form-label">Type</label>
+              <label class="form-label">${t.type || 'Type'}</label>
               <p class="mb-0">
                 <span class="schedule-type-badge ${isRecurring ? 'recurring' : 'single'}">
                   <i class="bi bi-${isRecurring ? 'arrow-repeat' : 'calendar-event'}"></i>
-                  ${isRecurring ? 'Recurring' : 'Single'}
+                  ${isRecurring ? (t.recurring || 'Recurring') : (t.single || 'Single')}
                 </span>
               </p>
             </div>
             <div class="mb-3">
-              <label class="form-label">Status</label>
+              <label class="form-label">${t.status || 'Status'}</label>
               <p class="mb-0">
                 <span class="schedule-status-badge ${schedule.status}">
                   ${this.capitalizeFirst(schedule.status)}
@@ -1708,12 +1714,12 @@ class SchedulesDashboard {
               </p>
             </div>
             <div class="mb-3">
-              <label class="form-label">Action</label>
+              <label class="form-label">${t.action || 'Action'}</label>
               <p class="mb-0">${this.formatActionType(schedule.actionType)}</p>
             </div>
             ${schedule.description ? `
               <div class="mb-3">
-                <label class="form-label">Description</label>
+                <label class="form-label">${t.description || 'Description'}</label>
                 <p class="mb-0">${schedule.description}</p>
               </div>
             ` : ''}
@@ -1722,7 +1728,7 @@ class SchedulesDashboard {
             ${isRecurring ? `
               ${schedule.useCalendar && schedule.calendarName ? `
                 <div class="mb-3">
-                  <label class="form-label">Calendar</label>
+                  <label class="form-label">${t.calendar || 'Calendar'}</label>
                   <p class="mb-0">
                     <i class="bi bi-calendar-week me-1 text-info"></i>
                     ${this.escapeHtml(schedule.calendarName)}
@@ -1730,34 +1736,34 @@ class SchedulesDashboard {
                 </div>
               ` : `
                 <div class="mb-3">
-                  <label class="form-label">Cron Expression</label>
+                  <label class="form-label">${t.cronExpression || 'Cron Expression'}</label>
                   <p class="mb-0"><code>${schedule.cronExpression || 'N/A'}</code></p>
                 </div>
               `}
               <div class="mb-3">
-                <label class="form-label">Executions</label>
+                <label class="form-label">${t.executions || 'Executions'}</label>
                 <p class="mb-0">${schedule.executionCount || 0}${schedule.maxExecutions ? ' / ' + schedule.maxExecutions : ''}</p>
               </div>
               ${schedule.nextExecutionAt ? `
                 <div class="mb-3">
-                  <label class="form-label">Next Execution</label>
+                  <label class="form-label">${t.nextExecution || 'Next Execution'}</label>
                   <p class="mb-0" style="color: #fbbf24;">${this.formatDate(schedule.nextExecutionAt)}</p>
                 </div>
               ` : ''}
             ` : `
               <div class="mb-3">
-                <label class="form-label">Scheduled For</label>
+                <label class="form-label">${t.scheduledFor || 'Scheduled For'}</label>
                 <p class="mb-0" style="color: #fbbf24;">${this.formatDate(schedule.scheduledFor)}</p>
               </div>
             `}
             ${schedule.lastExecutedAt ? `
               <div class="mb-3">
-                <label class="form-label">Last Executed</label>
+                <label class="form-label">${t.lastExecuted || 'Last Executed'}</label>
                 <p class="mb-0" style="color: #34d399;">${this.formatDate(schedule.lastExecutedAt)}</p>
               </div>
             ` : ''}
             <div class="mb-3">
-              <label class="form-label">Created</label>
+              <label class="form-label">${t.created || 'Created'}</label>
               <p class="mb-0">${this.formatDate(schedule.createdAt)}</p>
             </div>
           </div>
@@ -1765,22 +1771,22 @@ class SchedulesDashboard {
 
         ${schedule.actionData?.prompt ? `
           <div class="mt-3 pt-3" style="border-top: 1px solid var(--sched-border);">
-            <label class="form-label">Prompt</label>
+            <label class="form-label">${t.prompt || 'Prompt'}</label>
             <p class="mb-0 small" style="white-space: pre-wrap; color: var(--sched-text-secondary);">${schedule.actionData.prompt}</p>
           </div>
         ` : ''}
         
         ${schedule.generatedPostIds && schedule.generatedPostIds.length > 0 ? `
           <div class="mt-3 pt-3 border-top border-secondary">
-            <label class="form-label text-muted small">Generated Posts</label>
-            <p class="mb-0">${schedule.generatedPostIds.length} posts created</p>
-            <a href="/dashboard/posts" class="btn btn-sm btn-outline-primary mt-2">View Posts</a>
+            <label class="form-label text-muted small">${t.generatedPosts || 'Generated Posts'}</label>
+            <p class="mb-0">${schedule.generatedPostIds.length} ${t.postsCreated || 'posts created'}</p>
+            <a href="/dashboard/posts" class="btn btn-sm btn-outline-primary mt-2">${t.viewPosts || 'View Posts'}</a>
           </div>
         ` : ''}
         
         ${schedule.error ? `
           <div class="mt-3 pt-3 border-top border-danger">
-            <label class="form-label text-danger small">Last Error</label>
+            <label class="form-label text-danger small">${t.lastError || 'Last Error'}</label>
             <p class="mb-0 text-danger small">${schedule.error}</p>
           </div>
         ` : ''}
@@ -1790,18 +1796,18 @@ class SchedulesDashboard {
       
       // Update footer with actions
       const footerHtml = `
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${t.close || 'Close'}</button>
         <button type="button" class="btn btn-info" onclick="schedulesDashboard.editSchedule('${schedule._id}')">
-          <i class="bi bi-pencil me-1"></i>Edit
+          <i class="bi bi-pencil me-1"></i>${t.edit || 'Edit'}
         </button>
         ${schedule.status === 'active' ? `
           <button type="button" class="btn btn-warning" onclick="schedulesDashboard.pauseSchedule('${schedule._id}')">
-            <i class="bi bi-pause me-1"></i>Pause
+            <i class="bi bi-pause me-1"></i>${t.pause || 'Pause'}
           </button>
         ` : ''}
         ${schedule.status === 'paused' ? `
           <button type="button" class="btn btn-success" onclick="schedulesDashboard.resumeSchedule('${schedule._id}')">
-            <i class="bi bi-play me-1"></i>Resume
+            <i class="bi bi-play me-1"></i>${t.resume || 'Resume'}
           </button>
         ` : ''}
       `;
@@ -1812,7 +1818,7 @@ class SchedulesDashboard {
 
     } catch (error) {
       console.error('Error viewing schedule:', error);
-      this.showNotification('Failed to load schedule details', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToLoadScheduleDetails || 'Failed to load schedule details', 'error');
     }
   }
 
@@ -1858,7 +1864,7 @@ class SchedulesDashboard {
     } else {
       // Custom prompts mode
       if (this.selectedCustomPromptIds.size === 0) {
-        this.showNotification('Please select at least one custom prompt', 'warning');
+        this.showNotification(window.translations?.dashboard?.selectAtLeastOnePrompt || 'Please select at least one custom prompt', 'warning');
         return;
       }
       scheduleData.actionData.useCustomPrompts = true;
@@ -1869,7 +1875,7 @@ class SchedulesDashboard {
     if (type === 'single') {
       const scheduledFor = document.getElementById('scheduledFor').value;
       if (!scheduledFor) {
-        this.showNotification('Please select a date and time', 'warning');
+        this.showNotification(window.translations?.dashboard?.selectDateAndTime || 'Please select a date and time', 'warning');
         return;
       }
       scheduleData.scheduledFor = new Date(scheduledFor).toISOString();
@@ -1892,7 +1898,7 @@ class SchedulesDashboard {
         scheduleData.cronExpression = cronExpression;
         scheduleData.useCalendar = false;
       } else {
-        this.showNotification('Please select a calendar or enter a cron expression', 'warning');
+        this.showNotification(window.translations?.dashboard?.selectCalendarOrCron || 'Please select a calendar or enter a cron expression', 'warning');
         return;
       }
       
@@ -1926,17 +1932,17 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to save schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToSaveSchedule || 'Failed to save schedule'));
       }
 
-      this.showNotification(scheduleId ? 'Schedule updated!' : 'Schedule created!', 'success');
+      this.showNotification(scheduleId ? (window.translations?.dashboard?.scheduleUpdated || 'Schedule updated!') : (window.translations?.dashboard?.scheduleCreated || 'Schedule created!'), 'success');
       this.scheduleModal?.hide();
       this.loadSchedules();
       this.loadStats();
 
     } catch (error) {
       console.error('Error saving schedule:', error);
-      this.showNotification('Failed to save schedule: ' + error.message, 'error');
+      this.showNotification((window.translations?.dashboard?.failedToSaveSchedule || 'Failed to save schedule') + ': ' + error.message, 'error');
     }
   }
 
@@ -1949,17 +1955,17 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to pause schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToPauseSchedule || 'Failed to pause schedule'));
       }
 
-      this.showNotification('Schedule paused', 'success');
+      this.showNotification(window.translations?.dashboard?.schedulePaused || 'Schedule paused', 'success');
       this.viewScheduleModal?.hide();
       this.loadSchedules();
       this.loadStats();
 
     } catch (error) {
       console.error('Error pausing schedule:', error);
-      this.showNotification('Failed to pause schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToPauseSchedule || 'Failed to pause schedule', 'error');
     }
   }
 
@@ -1972,22 +1978,22 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to resume schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToResumeSchedule || 'Failed to resume schedule'));
       }
 
-      this.showNotification('Schedule resumed', 'success');
+      this.showNotification(window.translations?.dashboard?.scheduleResumed || 'Schedule resumed', 'success');
       this.viewScheduleModal?.hide();
       this.loadSchedules();
       this.loadStats();
 
     } catch (error) {
       console.error('Error resuming schedule:', error);
-      this.showNotification('Failed to resume schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToResumeSchedule || 'Failed to resume schedule', 'error');
     }
   }
 
   async cancelSchedule(scheduleId) {
-    if (!confirm('Cancel this schedule?')) return;
+    if (!confirm(window.translations?.dashboard?.cancelScheduleConfirm || 'Cancel this schedule?')) return;
 
     try {
       const response = await fetch(`/api/schedules/${scheduleId}/cancel`, {
@@ -1997,21 +2003,21 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to cancel schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToCancelSchedule || 'Failed to cancel schedule'));
       }
 
-      this.showNotification('Schedule cancelled', 'success');
+      this.showNotification(window.translations?.dashboard?.scheduleCancelled || 'Schedule cancelled', 'success');
       this.loadSchedules();
       this.loadStats();
 
     } catch (error) {
       console.error('Error cancelling schedule:', error);
-      this.showNotification('Failed to cancel schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToCancelSchedule || 'Failed to cancel schedule', 'error');
     }
   }
 
   async deleteSchedule(scheduleId) {
-    if (!confirm('Delete this schedule permanently?')) return;
+    if (!confirm(window.translations?.dashboard?.deleteScheduleConfirm || 'Delete this schedule permanently?')) return;
 
     try {
       const response = await fetch(`/api/schedules/${scheduleId}`, {
@@ -2021,16 +2027,16 @@ class SchedulesDashboard {
       const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Failed to delete schedule');
+        throw new Error(data.error || (window.translations?.dashboard?.failedToDeleteSchedule || 'Failed to delete schedule'));
       }
 
-      this.showNotification('Schedule deleted', 'success');
+      this.showNotification(window.translations?.dashboard?.scheduleDeleted || 'Schedule deleted', 'success');
       this.loadSchedules();
       this.loadStats();
 
     } catch (error) {
       console.error('Error deleting schedule:', error);
-      this.showNotification('Failed to delete schedule', 'error');
+      this.showNotification(window.translations?.dashboard?.failedToDeleteSchedule || 'Failed to delete schedule', 'error');
     }
   }
 
@@ -2045,7 +2051,7 @@ class SchedulesDashboard {
     if (pagination.page > 1) {
       const prev = document.createElement('button');
       prev.className = 'btn btn-outline-primary';
-      prev.innerHTML = '<i class="bi bi-chevron-left"></i> Previous';
+      prev.innerHTML = `<i class="bi bi-chevron-left"></i> ${window.translations?.dashboard?.previous || 'Previous'}`;
       prev.onclick = () => {
         this.currentPage--;
         this.loadSchedules();
@@ -2055,13 +2061,14 @@ class SchedulesDashboard {
 
     const pageInfo = document.createElement('span');
     pageInfo.className = 'mx-3 text-white align-self-center';
-    pageInfo.textContent = `Page ${pagination.page} of ${pagination.totalPages}`;
+    const t = window.translations?.dashboard || {};
+    pageInfo.textContent = `${t.page || 'Page'} ${pagination.page} ${t.of || 'of'} ${pagination.totalPages}`;
     container.appendChild(pageInfo);
 
     if (pagination.page < pagination.totalPages) {
       const next = document.createElement('button');
       next.className = 'btn btn-outline-primary';
-      next.innerHTML = 'Next <i class="bi bi-chevron-right"></i>';
+      next.innerHTML = `${window.translations?.dashboard?.next || 'Next'} <i class="bi bi-chevron-right"></i>`;
       next.onclick = () => {
         this.currentPage++;
         this.loadSchedules();
@@ -2092,10 +2099,11 @@ class SchedulesDashboard {
   }
 
   formatActionType(actionType) {
+    const t = window.translations?.dashboard || {};
     const types = {
-      'generate_image': 'Generate Image',
-      'generate_video': 'Generate Video',
-      'publish_post': 'Publish Post'
+      'generate_image': t.generateImage || 'Generate Image',
+      'generate_video': t.generateVideo || 'Generate Video',
+      'publish_post': t.publishPost || 'Publish Post'
     };
     return types[actionType] || actionType;
   }
@@ -2155,7 +2163,7 @@ class SchedulesDashboard {
    */
   async runTestGeneration() {
     if (this.testRunInProgress) {
-      this.showNotification('Test already in progress', 'warning');
+      this.showNotification(window.translations?.dashboard?.testAlreadyInProgress || 'Test already in progress', 'warning');
       return;
     }
 
@@ -2170,17 +2178,17 @@ class SchedulesDashboard {
 
     // Validate: either manual prompt or custom prompts must be provided
     if (!useCustomPrompts && !prompt) {
-      this.showNotification('Please enter a prompt first', 'warning');
+      this.showNotification(window.translations?.dashboard?.enterPromptFirst || 'Please enter a prompt first', 'warning');
       return;
     }
     
     if (useCustomPrompts && customPromptIds.length === 0) {
-      this.showNotification('Please select at least one custom prompt', 'warning');
+      this.showNotification(window.translations?.dashboard?.selectAtLeastOnePrompt || 'Please select at least one custom prompt', 'warning');
       return;
     }
 
     if (actionType !== 'generate_image') {
-      this.showNotification('Test run only supports image generation', 'info');
+      this.showNotification(window.translations?.dashboard?.testRunOnlyImage || 'Test run only supports image generation', 'info');
       return;
     }
 
@@ -2193,7 +2201,7 @@ class SchedulesDashboard {
     const testRunError = document.getElementById('testRunError');
 
     testRunBtn.disabled = true;
-    testRunBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Running...';
+    testRunBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>' + (window.translations?.dashboard?.running || 'Running...');
     testRunPreview.style.display = 'block';
     testRunLoading.style.display = 'block';
     testRunResult.style.display = 'none';
@@ -2236,21 +2244,21 @@ class SchedulesDashboard {
       testRunInfo.innerHTML = `
         <i class="bi bi-clock me-1"></i>${seconds}s · 
         <i class="bi bi-coin me-1"></i>${data.pointsUsed} pts · 
-        <span class="text-success">Saved to Posts</span>
+        <span class="text-success">${window.translations?.dashboard?.savedToPosts || 'Saved to Posts'}</span>
       `;
 
-      this.showNotification('Test image generated successfully!', 'success');
+      this.showNotification(window.translations?.dashboard?.testImageGenerated || 'Test image generated successfully!', 'success');
 
     } catch (error) {
       console.error('Test run error:', error);
       testRunLoading.style.display = 'none';
       testRunError.style.display = 'block';
       document.getElementById('testRunErrorMsg').textContent = error.message;
-      this.showNotification('Test run failed: ' + error.message, 'error');
+      this.showNotification((window.translations?.dashboard?.testRunFailed || 'Test run failed') + ': ' + error.message, 'error');
     } finally {
       this.testRunInProgress = false;
       testRunBtn.disabled = false;
-      testRunBtn.innerHTML = '<i class="bi bi-play-circle me-1"></i>Test Run';
+      testRunBtn.innerHTML = '<i class="bi bi-play-circle me-1"></i>' + (window.translations?.dashboard?.testRunButton || 'Test Run');
     }
   }
 
@@ -2277,6 +2285,7 @@ class SchedulesDashboard {
     if (!this.lastTestRunImage) return;
 
     // Create a fullscreen modal for the image
+    const t = window.translations?.dashboard || {};
     const modal = document.createElement('div');
     modal.className = 'modal fade';
     modal.innerHTML = `
@@ -2284,21 +2293,21 @@ class SchedulesDashboard {
         <div class="modal-content bg-dark border-secondary">
           <div class="modal-header border-secondary">
             <h5 class="modal-title text-white">
-              <i class="bi bi-image me-2"></i>Test Run Result
+              <i class="bi bi-image me-2"></i>${t.testRunResult || 'Test Run Result'}
             </h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body text-center p-2">
-            <img src="${this.lastTestRunImage}" alt="Test Result" class="img-fluid">
+            <img src="${this.lastTestRunImage}" alt="${t.testRunResult || 'Test Result'}" class="img-fluid">
           </div>
           <div class="modal-footer border-secondary">
             <a href="${this.lastTestRunImage}" target="_blank" class="btn btn-outline-info">
-              <i class="bi bi-box-arrow-up-right me-1"></i>Open Full Size
+              <i class="bi bi-box-arrow-up-right me-1"></i>${t.openFullSize || 'Open Full Size'}
             </a>
             <a href="/dashboard/posts" class="btn btn-outline-primary">
-              <i class="bi bi-collection me-1"></i>View in Posts
+              <i class="bi bi-collection me-1"></i>${t.viewInPosts || 'View in Posts'}
             </a>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">${t.close || 'Close'}</button>
           </div>
         </div>
       </div>

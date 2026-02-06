@@ -25,7 +25,7 @@
                             <i class="bi bi-arrow-repeat me-1"></i>{{translations.dashboard.newCronJob}}
                         </button>
                         <button class="btn btn-outline-info flex-fill flex-md-grow-0" onclick="schedulesDashboard.openCalendarManager()">
-                            <i class="bi bi-calendar-week me-1"></i>Calendars
+                            <i class="bi bi-calendar-week me-1"></i>{{translations.dashboard.calendars}}
                         </button>
                     </div>
                 </div>
@@ -198,10 +198,10 @@
                     <div id="singleScheduleFields">
                         <!-- Calendar Selection -->
                         <div class="mb-3">
-                            <label class="form-label">Use Calendar <span class="text-muted">(optional)</span></label>
+                            <label class="form-label">{{translations.dashboard.useCalendar}} <span class="text-muted">({{translations.dashboard.optional}})</span></label>
                             <div class="d-flex gap-2 align-items-start">
                                 <select class="form-select" id="calendarSelect" style="flex: 1;">
-                                    <option value="">Manual time selection</option>
+                                    <option value="">{{translations.dashboard.manualTimeSelection}}</option>
                                     <!-- Calendars loaded dynamically -->
                                 </select>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="schedulesDashboard.openCalendarManager()" title="Manage Calendars">
@@ -209,7 +209,7 @@
                                 </button>
                             </div>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>Select a calendar to auto-fill the next available time slot
+                                <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.calendarAutoFillHelp}}
                             </small>
                         </div>
 
@@ -218,10 +218,10 @@
                             <div class="alert alert-info py-2 mb-0 d-flex align-items-center justify-content-between">
                                 <div>
                                     <i class="bi bi-calendar-check me-2"></i>
-                                    <span id="nextSlotText">Next slot: Loading...</span>
+                                    <span id="nextSlotText">{{translations.dashboard.nextSlotLoading}}</span>
                                 </div>
                                 <button type="button" class="btn btn-sm btn-outline-info" onclick="schedulesDashboard.useNextSlot()">
-                                    Use this slot
+                                    {{translations.dashboard.useThisSlot}}
                                 </button>
                             </div>
                         </div>
@@ -236,10 +236,10 @@
                     <div id="recurringScheduleFields" style="display: none;">
                         <!-- Calendar Selection for Recurring -->
                         <div class="mb-3">
-                            <label class="form-label">Use Calendar <span class="text-muted">(optional - replaces cron)</span></label>
+                            <label class="form-label">{{translations.dashboard.useCalendarOptionalReplacesCron}} <span class="text-muted">({{translations.dashboard.optionalReplacesCron}})</span></label>
                             <div class="d-flex gap-2 align-items-start">
                                 <select class="form-select" id="recurringCalendarSelect" style="flex: 1;">
-                                    <option value="">Use cron expression instead</option>
+                                    <option value="">{{translations.dashboard.useCronExpressionInstead}}</option>
                                     <!-- Calendars loaded dynamically -->
                                 </select>
                                 <button type="button" class="btn btn-outline-secondary btn-sm" onclick="schedulesDashboard.openCalendarManager()" title="Manage Calendars">
@@ -247,14 +247,14 @@
                                 </button>
                             </div>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>Select a calendar to use its weekly time slots instead of a cron expression
+                                <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.calendarWeeklySlotsHelp}}
                             </small>
                         </div>
 
                         <!-- Next Available Slot Preview for Recurring -->
                         <div id="recurringNextSlotPreview" class="mb-3" style="display: none;">
                             <div class="alert alert-success py-2 mb-0">
-                                <span id="recurringNextSlotText">Calendar will publish at configured weekly slots</span>
+                                <span id="recurringNextSlotText">{{translations.dashboard.calendarPublishAtSlots}}</span>
                             </div>
                         </div>
 
@@ -268,10 +268,10 @@
                             <div class="mb-3 cron-presets">
                                 <label class="form-label">{{translations.dashboard.cronPresets}}</label>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 9 * * *')">Daily 9 AM</button>
-                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 */6 * * *')">Every 6 hours</button>
-                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 12 * * 1-5')">Weekdays noon</button>
-                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 10 * * 6,0')">Weekends 10 AM</button>
+                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 9 * * *')">{{translations.dashboard.daily9AM}}</button>
+                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 */6 * * *')">{{translations.dashboard.every6Hours}}</button>
+                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 12 * * 1-5')">{{translations.dashboard.weekdaysNoon}}</button>
+                                    <button type="button" class="btn btn-sm" onclick="setCronPreset('0 10 * * 6,0')">{{translations.dashboard.weekends10AM}}</button>
                                 </div>
                             </div>
                         </div>
@@ -301,19 +301,19 @@
                         <label class="form-label">{{translations.dashboard.character}} <span class="text-muted">({{translations.dashboard.optional}})</span></label>
                         <div class="character-search-wrapper">
                             <i class="bi bi-search character-search-icon"></i>
-                            <input type="text" id="characterSearchInput" class="character-search-input" placeholder="Search characters...">
+                            <input type="text" id="characterSearchInput" class="character-search-input" placeholder="{{translations.dashboard.searchCharacters}}">
                         </div>
                         <div id="characterSelectionContainer" class="character-selection-list">
                             <!-- Characters loaded dynamically -->
                             <div class="text-center py-3">
                                 <div class="spinner-border spinner-border-sm" role="status">
-                                    <span class="visually-hidden">Loading...</span>
+                                    <span class="visually-hidden">{{translations.dashboard.loading}}</span>
                                 </div>
-                                <p class="text-muted mt-2 mb-0 small">Loading characters...</p>
+                                <p class="text-muted mt-2 mb-0 small">{{translations.dashboard.loadingCharacters}}</p>
                             </div>
                         </div>
                         <small class="text-muted">
-                            <i class="bi bi-info-circle me-1"></i>Select a character to apply character-specific styling to generated images
+                            <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.characterStylingHelp}}
                         </small>
                     </div>
 
@@ -333,7 +333,7 @@
                             </label>
                         </div>
                         <small class="text-muted d-block mt-1">
-                            <i class="bi bi-info-circle me-1"></i>Choose between writing your own prompt or using pre-made custom prompts
+                            <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.promptTypeHelp}}
                         </small>
                     </div>
 
@@ -354,17 +354,17 @@
                                 <!-- Custom prompts loaded dynamically -->
                                 <div class="text-center py-3">
                                     <div class="spinner-border spinner-border-sm" role="status">
-                                        <span class="visually-hidden">Loading...</span>
+                                        <span class="visually-hidden">{{translations.dashboard.loading}}</span>
                                     </div>
-                                    <p class="text-muted mt-2 mb-0 small">Loading custom prompts...</p>
+                                    <p class="text-muted mt-2 mb-0 small">{{translations.dashboard.loadingCustomPrompts}}</p>
                                 </div>
                             </div>
                             <small class="text-muted d-block mt-2">
-                                <i class="bi bi-info-circle me-1"></i>Select one or multiple custom prompts. A random one will be used each time the schedule runs.
+                                <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.customPromptsHelp}}
                             </small>
                             <div id="selectedPromptsInfo" class="mt-2" style="display: none;">
                                 <span class="schedule-status-badge pending">
-                                    <span id="selectedPromptsCount">0</span> prompt(s) selected
+                                    <span id="selectedPromptsCount">0</span> {{translations.dashboard.promptsSelected}}
                                 </span>
                             </div>
                         </div>
@@ -377,7 +377,7 @@
                             <div class="model-icon">
                                 <i class="bi bi-cpu"></i>
                             </div>
-                            <span class="model-name">Select Model</span>
+                            <span class="model-name">{{translations.dashboard.selectModel}}</span>
                             <i class="bi bi-chevron-down model-chevron"></i>
                         </button>
                         <input type="hidden" id="actionModel" value="">
@@ -385,7 +385,7 @@
                         <!-- Model Dropdown -->
                         <div class="schedule-model-dropdown" id="modelDropdown">
                             <div class="model-dropdown-header">
-                                <span>Text to Image Models</span>
+                                <span>{{translations.dashboard.textToImageModels}}</span>
                             </div>
                             {{#each scheduleModels}}
                             <div class="model-dropdown-item" data-value="{{this.id}}" data-name="{{this.name}}">
@@ -395,7 +395,7 @@
                                 <div class="model-item-info">
                                     <span class="model-item-name">{{this.name}}</span>
                                     <span class="model-item-badge {{#if this.async}}async{{else}}sync{{/if}}">
-                                        {{#if this.async}}Async{{else}}Sync{{/if}}
+                                        {{#if this.async}}{{../translations.dashboard.async}}{{else}}{{../translations.dashboard.sync}}{{/if}}
                                     </span>
                                 </div>
                                 <i class="bi bi-check-lg model-check"></i>
@@ -403,7 +403,7 @@
                             {{/each}}
                             {{#if activeSDModels.length}}
                             <div class="model-dropdown-header">
-                                <span>Custom SD Models</span>
+                                <span>{{translations.dashboard.customSDModels}}</span>
                             </div>
                             {{#each activeSDModels}}
                             <div class="model-dropdown-item" data-value="sd-{{this.modelId}}" data-name="{{this.name}}">
@@ -420,7 +420,7 @@
                             {{/if}}
                         </div>
                         <small class="text-muted">
-                            <i class="bi bi-info-circle me-1"></i>Same models available as in the Image Dashboard
+                            <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.modelSameAsImageDashboard}}
                         </small>
                     </div>
 
@@ -429,15 +429,15 @@
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <label class="form-label mb-0">{{translations.dashboard.testRun}}</label>
                             <button type="button" class="btn btn-sm btn-outline-warning" id="testRunBtn" onclick="schedulesDashboard.runTestGeneration()">
-                                <i class="bi bi-play-circle me-1"></i>Test Run
+                                <i class="bi bi-play-circle me-1"></i>{{translations.dashboard.testRunButton}}
                             </button>
                         </div>
                         <div id="testRunPreview" class="test-run-preview" style="display: none;">
                             <div id="testRunLoading" class="text-center py-4" style="display: none;">
                                 <div class="spinner-border" role="status">
-                                    <span class="visually-hidden">Generating...</span>
+                                    <span class="visually-hidden">{{translations.dashboard.generating}}</span>
                                 </div>
-                                <p class="text-muted mt-2 mb-0">Generating test image...</p>
+                                <p class="text-muted mt-2 mb-0">{{translations.dashboard.generatingTestImage}}</p>
                             </div>
                             <div id="testRunResult" style="display: none;">
                                 <div class="position-relative">
@@ -449,7 +449,7 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small class="text-muted" id="testRunInfo"></small>
                                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="schedulesDashboard.clearTestRun()">
-                                        <i class="bi bi-x me-1"></i>Clear
+                                        <i class="bi bi-x me-1"></i>{{translations.dashboard.clear}}
                                     </button>
                                 </div>
                             </div>
@@ -459,7 +459,7 @@
                             </div>
                         </div>
                         <small class="text-muted d-block mt-1">
-                            <i class="bi bi-lightbulb me-1"></i>Run a test to preview what will be generated. Generated images are saved to your Posts.
+                            <i class="bi bi-lightbulb me-1"></i>{{translations.dashboard.testRunHelp}}
                         </small>
                     </div>
 
@@ -469,13 +469,13 @@
                         <div id="socialAccountsContainer">
                             <div class="text-muted small">
                                 <span class="spinner-border spinner-border-sm me-1"></span>
-                                Loading connected accounts...
+                                {{translations.dashboard.loadingConnectedAccounts}}
                             </div>
                         </div>
                         <div id="noSocialAccountsMessage" class="text-muted small" style="display: none;">
                             <i class="bi bi-info-circle me-1"></i>
-                            No social accounts connected.
-                            <a href="#" onclick="schedulesDashboard.openConnectionsSettings(); return false;">Connect accounts</a> to auto-publish.
+                            {{translations.dashboard.noSocialAccountsConnected}}
+                            <a href="#" onclick="schedulesDashboard.openConnectionsSettings(); return false;">{{translations.dashboard.connectAccounts}}</a> {{translations.dashboard.toAutoPublish}}
                         </div>
                     </div>
                 </div>
@@ -519,7 +519,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-calendar-week me-2"></i>Publish Calendars
+                        <i class="bi bi-calendar-week me-2"></i>{{translations.dashboard.publishCalendars}}
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -527,9 +527,9 @@
                     <!-- Calendar List -->
                     <div id="calendarListContainer">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <p class="text-muted mb-0">Create calendars with weekly time slots for automated publishing</p>
+                            <p class="text-muted mb-0">{{translations.dashboard.calendarCreateHelp}}</p>
                             <button class="btn btn-primary btn-sm" onclick="schedulesDashboard.openCreateCalendarModal()">
-                                <i class="bi bi-plus me-1"></i>New Calendar
+                                <i class="bi bi-plus me-1"></i>{{translations.dashboard.newCalendar}}
                             </button>
                         </div>
                         <div id="calendarList" class="calendar-list">
@@ -548,23 +548,23 @@
                             <button type="button" class="btn btn-link text-muted p-0 me-2" onclick="schedulesDashboard.showCalendarList()">
                                 <i class="bi bi-arrow-left"></i>
                             </button>
-                            <h6 class="mb-0" id="calendarFormTitle">New Calendar</h6>
+                            <h6 class="mb-0" id="calendarFormTitle">{{translations.dashboard.newCalendar}}</h6>
                         </div>
 
                         <input type="hidden" id="editCalendarId">
 
                         <div class="mb-3">
-                            <label class="form-label">Calendar Name</label>
-                            <input type="text" class="form-control" id="calendarName" placeholder="e.g., Daily Posts, Weekend Content">
+                            <label class="form-label">{{translations.dashboard.calendarName}}</label>
+                            <input type="text" class="form-control" id="calendarName" placeholder="{{translations.dashboard.calendarNamePlaceholder}}">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Description <span class="text-muted">(optional)</span></label>
-                            <input type="text" class="form-control" id="calendarDescription" placeholder="Brief description of this calendar">
+                            <label class="form-label">{{translations.dashboard.description}} <span class="text-muted">({{translations.dashboard.optional}})</span></label>
+                            <input type="text" class="form-control" id="calendarDescription" placeholder="{{translations.dashboard.calendarDescriptionPlaceholder}}">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label">Timezone</label>
+                            <label class="form-label">{{translations.dashboard.timezone}}</label>
                             <select class="form-select" id="calendarTimezone">
                                 <option value="UTC">UTC</option>
                                 <option value="America/New_York">Eastern Time (ET)</option>
@@ -578,28 +578,31 @@
 
                         <div class="mb-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
-                                <label class="form-label mb-0">Time Slots</label>
+                                <label class="form-label mb-0">{{translations.dashboard.timeSlots}}</label>
                                 <button type="button" class="btn btn-outline-primary btn-sm" onclick="schedulesDashboard.addSlotRow()">
-                                    <i class="bi bi-plus me-1"></i>Add Slot
+                                    <i class="bi bi-plus me-1"></i>{{translations.dashboard.addSlot}}
                                 </button>
                             </div>
                             <div id="slotsContainer" class="slots-container">
                                 <!-- Slots added dynamically -->
                             </div>
                             <small class="text-muted">
-                                <i class="bi bi-info-circle me-1"></i>Define weekly recurring time slots when posts should be published
+                                <i class="bi bi-info-circle me-1"></i>{{translations.dashboard.timeSlotsHelp}}
                             </small>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer" id="calendarModalFooter">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{translations.dashboard.close}}</button>
                 </div>
             </div>
         </div>
     </div>
 
     {{> dashboard-footer}}
+    <script>
+        window.translations = {{{json translations}}};
+    </script>
     <script src="/js/dashboard-schedules.js"></script>
 </body>
 </html>
