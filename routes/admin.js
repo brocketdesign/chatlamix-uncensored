@@ -192,6 +192,50 @@ async function routes(fastify, options) {
       const usersCollection = fastify.mongo.db.collection('users');
       const userDataStoryCollection = fastify.mongo.db.collection('userData');
 
+      // Fetch user first to get clerkId or email for Clerk deletion
+      const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
+      if (!user) {
+        return reply.status(404).send({ error: 'User not found' });
+      }
+
+      // Delete user from Clerk if possible
+      const clerkSecretKey = process.env.CLERK_SECRET_KEY;
+      if (clerkSecretKey) {
+        try {
+          let clerkUserId = user.clerkId;
+
+          // If no clerkId stored, try to find by email
+          if (!clerkUserId && user.email) {
+            const checkResponse = await axios.get(
+              `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(user.email)}`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${clerkSecretKey}`,
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+            if (checkResponse.data?.data?.length > 0) {
+              clerkUserId = checkResponse.data.data[0].id;
+            }
+          }
+
+          // Delete from Clerk
+          if (clerkUserId) {
+            await axios.delete(`https://api.clerk.com/v1/users/${clerkUserId}`, {
+              headers: {
+                'Authorization': `Bearer ${clerkSecretKey}`,
+                'Content-Type': 'application/json',
+              },
+            });
+            console.log(`[Admin] Deleted user ${userId} from Clerk (clerkId: ${clerkUserId})`);
+          }
+        } catch (clerkError) {
+          // Log but don't block deletion if Clerk removal fails
+          console.error(`[Admin] Failed to delete user ${userId} from Clerk:`, clerkError.message);
+        }
+      }
+
       const result = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
       if (result.deletedCount === 0) {
         return reply.status(404).send({ error: 'User not found' });

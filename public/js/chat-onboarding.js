@@ -528,21 +528,35 @@ class ChatOnboarding {
         this.showLoading();
         
         const chatId = this.chatData.chatId;
+        const clerkUser = window.Clerk?.user;
+        const clerkId = clerkUser?.id;
+        
+        if (!clerkId) {
+            console.error('[ChatOnboarding] No Clerk user ID available');
+            this.hideLoading();
+            return;
+        }
         
         try {
-            // 1. Sync Clerk user data
-            await fetch('/user/clerk-update', {
-                method: 'POST',
+            // 1. Sync Clerk user data — this creates the user if new AND sets the JWT cookie
+            const authResponse = await fetch('/user/clerk-auth', {
+                method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-Clerk-Session-Id': window.Clerk?.session?.id || '',
+                    'x-clerk-user-id': clerkId,
                 },
                 credentials: 'include',
-                body: JSON.stringify(window.Clerk.user)
             });
             
-            // 2. Save onboarding user data for analytics
-            await fetch('/api/chat-onboarding/save-user-data', {
+            if (!authResponse.ok) {
+                console.error('[ChatOnboarding] clerk-auth failed:', authResponse.status);
+            } else {
+                console.log('[ChatOnboarding] User synced successfully');
+            }
+            
+            // 2. Save onboarding user data (nickname, gender, language, interests)
+            // JWT cookie is now set, so this request will be authenticated
+            const saveResponse = await fetch('/api/chat-onboarding/save-user-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -551,6 +565,12 @@ class ChatOnboarding {
                     chatId: chatId
                 })
             });
+            
+            if (!saveResponse.ok) {
+                console.error('[ChatOnboarding] save-user-data failed:', saveResponse.status);
+            } else {
+                console.log('[ChatOnboarding] Onboarding data saved successfully');
+            }
             
             // 3. Clear saved data
             this.clearSavedData();

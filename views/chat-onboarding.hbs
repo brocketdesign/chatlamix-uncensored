@@ -470,16 +470,17 @@
             if (onboarding) {
                 onboarding.onAuthComplete(window.Clerk.user);
             } else {
-                // Fallback: just sync and redirect
-                fetch('/user/clerk-update', {
-                    method: 'POST',
+                // Fallback: sync user via clerk-auth (creates user + sets JWT cookie)
+                fetch('/user/clerk-auth', {
+                    method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Clerk-Session-Id': window.Clerk?.session?.id || '',
+                        'x-clerk-user-id': window.Clerk.user.id,
                     },
                     credentials: 'include',
-                    body: JSON.stringify(window.Clerk.user)
-                }).finally(() => {
+                }).then(() => {
+                    window.location.href = '/chat/' + window.chatOnboardingData.chatId;
+                }).catch(() => {
                     window.location.href = '/chat/' + window.chatOnboardingData.chatId;
                 });
             }
