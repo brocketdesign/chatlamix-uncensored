@@ -131,9 +131,6 @@ class GiftManager {
                     imageUrl: gift.image,
                     hidden: true,
                 }, function(error, res) {
-                    // Generate assistant message
-                    generateChatCompletion(null, false, true)
-
                     // Generate the gift image
                     const placeholderId = new Date().getTime() + "_gift_" + giftId;
                     displayOrRemoveImageLoader(placeholderId, 'show', giftImagePreview);

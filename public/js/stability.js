@@ -490,9 +490,6 @@ function displaySingleImage(imageData, disableCompletion = false) {
 
     if(!trasckedImageTitles.has(titleText)){
         trasckedImageTitles.add(titleText);
-        if(!disableCompletion){
-            generateChatCompletion(null, false, true);
-        }
     }
 }
 
@@ -520,9 +517,7 @@ function displayBatchedImages(batch) {
         autoSetChatBackgroundIfNeeded(firstSfwImage.imageId, firstSfwImage.imageUrl, firstSfwImage.imageNsfw, userChatId);
     }
 
-    // Trigger chat completion only once for the batch
     if (!trasckedImageTitles.has(firstImage.titleText)) {
         trasckedImageTitles.add(firstImage.titleText);
-        generateChatCompletion(null, false, true);
     }
 }
