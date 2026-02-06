@@ -54,6 +54,9 @@ async function routes(fastify, options) {
       const page = Math.max(1, parseInt(request.query.page) || 1);
       const limit = Math.min(50, Math.max(1, parseInt(request.query.limit) || 10)); // Max 50 per page
       const skip = (page - 1) * limit;
+
+      // Search parameter
+      const search = request.query.search ? request.query.search.trim() : '';
          
       const getUniqueUsers = async () => {
         try {
@@ -66,19 +69,30 @@ async function routes(fastify, options) {
           yesterday.setDate(today.getDate() - 1);
           
           today.toLocaleDateString('ja-JP');
-          yesterday.toLocaleDateString('ja-JP');                    
+          yesterday.toLocaleDateString('ja-JP');
+
+          // Build query with date filter
+          const baseQuery = {
+            _id: { $in: userIds },
+            createdAt: { $gte: yesterday, $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) }
+          };
+
+          // Add search filter if provided
+          if (search) {
+            const searchRegex = { $regex: search, $options: 'i' };
+            baseQuery.$or = [
+              { nickname: searchRegex },
+              { username: searchRegex },
+              { email: searchRegex },
+              { name: searchRegex }
+            ];
+          }
   
           // Count total users
-          const totalUsers = await usersCollection.countDocuments({
-            _id: { $in: userIds },
-            createdAt: { $gte: yesterday, $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) }
-          });
+          const totalUsers = await usersCollection.countDocuments(baseQuery);
 
           // Query the users collection to get the user details for the unique userIds with pagination
-          const users = await usersCollection.find({
-            _id: { $in: userIds },
-            createdAt: { $gte: yesterday, $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) }
-          })
+          const users = await usersCollection.find(baseQuery)
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit)
@@ -100,6 +114,7 @@ async function routes(fastify, options) {
         users,
         title: translations.admin_user.recent_users, 
         translations,
+        searchQuery: search,
         pagination: {
           page,
           limit,
@@ -199,17 +214,30 @@ async function routes(fastify, options) {
       const limit = Math.min(50, Math.max(1, parseInt(request.query.limit) || 10)); // Max 50 per page
       const skip = (page - 1) * limit;
 
+      // Search parameter
+      const search = request.query.search ? request.query.search.trim() : '';
+
       const usersCollection = fastify.mongo.db.collection('users');        
       
+      // Build query
+      const query = { email: { $exists: true } };
+
+      // Add search filter if provided
+      if (search) {
+        const searchRegex = { $regex: search, $options: 'i' };
+        query.$or = [
+          { nickname: searchRegex },
+          { username: searchRegex },
+          { email: searchRegex },
+          { name: searchRegex }
+        ];
+      }
+
       // Count total users
-      const totalUsers = await usersCollection.countDocuments({
-        email: { $exists: true }
-      });
+      const totalUsers = await usersCollection.countDocuments(query);
 
       // Get paginated users
-      const users = await usersCollection.find({
-        email: { $exists: true }
-      })
+      const users = await usersCollection.find(query)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -230,6 +258,7 @@ async function routes(fastify, options) {
         translations,
         mode: process.env.MODE,
         apiurl: process.env.API_URL,
+        searchQuery: search,
         femaleCount, 
         femalePercentage, 
         maleCount,
@@ -1314,6 +1343,7 @@ async function routes(fastify, options) {
       const limit = Math.min(50, Math.max(1, parseInt(request.query.limit) || 10));
       const skip = (page - 1) * limit;
       const userType = request.query.userType || 'registered'; // 'registered' or 'recent'
+      const search = request.query.search ? request.query.search.trim() : '';
 
       const usersCollection = fastify.mongo.db.collection('users');
 
@@ -1328,6 +1358,17 @@ async function routes(fastify, options) {
         query = {
           createdAt: { $gte: yesterday, $lt: new Date(today.getTime() + 24 * 60 * 60 * 1000) }
         };
+      }
+
+      // Add search filter if provided
+      if (search) {
+        const searchRegex = { $regex: search, $options: 'i' };
+        query.$or = [
+          { nickname: searchRegex },
+          { username: searchRegex },
+          { email: searchRegex },
+          { name: searchRegex }
+        ];
       }
 
       const totalUsers = await usersCollection.countDocuments(query);

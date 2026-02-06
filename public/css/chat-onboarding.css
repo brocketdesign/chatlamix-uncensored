@@ -668,6 +668,29 @@
     transform: translateY(0);
 }
 
+.social-btn-direct.loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.social-btn-direct.loading::after {
+    content: '';
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: btn-spin 0.6s linear infinite;
+}
+
+@keyframes btn-spin {
+    to { transform: rotate(360deg); }
+}
+
+.social-btn-direct:disabled {
+    cursor: not-allowed;
+}
+
 .social-btn-direct svg {
     flex-shrink: 0;
 }

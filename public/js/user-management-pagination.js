@@ -65,17 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // ============================================
   const tableRows = document.querySelectorAll('#usersTable tbody tr');
   
-  tableRows.forEach(row => {
-    // Highlight row on hover for better UX
-    row.addEventListener('mouseenter', function() {
-      this.style.backgroundColor = '#f0f7ff';
-      this.style.transition = 'background-color 0.3s ease';
-    });
-    
-    row.addEventListener('mouseleave', function() {
-      this.style.backgroundColor = '';
-    });
-  });
+  // Hover effect is handled by CSS (.table-hover tbody tr:hover)
 
   // ============================================
   // MOBILE-OPTIMIZED ACTION BUTTONS

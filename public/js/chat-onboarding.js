@@ -330,11 +330,10 @@ class ChatOnboarding {
         if (clerk) {
             const container = document.getElementById('clerk-auth-container');
             const chatId = this.chatData.chatId;
-            const redirectTarget = window.location.origin + `/chat/${chatId}?source=chat-onboarding&status=success`;
             
             // Bind direct Google OAuth button
             document.getElementById('directGoogleBtn')?.addEventListener('click', () => {
-                this.startOAuth('oauth_google', redirectTarget);
+                this.startOAuth('oauth_google');
             });
             
             try {
@@ -410,19 +409,26 @@ class ChatOnboarding {
      * Handle Google sign-in (fallback)
      */
     handleGoogleSignIn() {
-        const chatId = this.chatData.chatId;
-        const redirectTarget = window.location.origin + `/chat/${chatId}?source=chat-onboarding&status=success`;
-        this.startOAuth('oauth_google', redirectTarget);
+        this.startOAuth('oauth_google');
     }
     
     /**
      * Start OAuth flow directly (single click)
      */
-    async startOAuth(strategy, redirectUrl) {
+    async startOAuth(strategy) {
         const clerk = this.clerk || window.Clerk;
         if (!clerk) {
             this.showError(this.t('errors.auth_failed'));
             return;
+        }
+        
+        // Disable the button and show spinner to prevent double clicks
+        const btn = document.getElementById('directGoogleBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.classList.add('loading');
+            const label = btn.querySelector('span');
+            if (label) label.textContent = '';
         }
         
         try {
@@ -430,22 +436,35 @@ class ChatOnboarding {
             this.saveData();
             await this.saveProgressToServer();
             
+            // Both redirectUrl and redirectUrlComplete point back to THIS page.
+            // After OAuth completes, user lands here with Clerk session active,
+            // handleClerkAuth() fires → onAuthComplete() syncs data → redirects to chat.
+            const currentUrl = window.location.origin + window.location.pathname;
+            
             await clerk.client.signUp.authenticateWithRedirect({
                 strategy: strategy,
-                redirectUrl: window.location.href,
-                redirectUrlComplete: redirectUrl
+                redirectUrl: currentUrl,
+                redirectUrlComplete: currentUrl
             });
         } catch (error) {
-            console.error('[ChatOnboarding] OAuth error:', error);
+            console.error('[ChatOnboarding] OAuth signUp error:', error);
             // If signUp fails (user already exists), try signIn
             try {
+                const currentUrl = window.location.origin + window.location.pathname;
                 await clerk.client.signIn.authenticateWithRedirect({
                     strategy: strategy,
-                    redirectUrl: window.location.href,
-                    redirectUrlComplete: redirectUrl
+                    redirectUrl: currentUrl,
+                    redirectUrlComplete: currentUrl
                 });
             } catch (signInError) {
                 console.error('[ChatOnboarding] OAuth signIn fallback error:', signInError);
+                // Re-enable button on error
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('loading');
+                    const label = btn.querySelector('span');
+                    if (label) label.textContent = this.t('step4.google_button', 'Continue with Google');
+                }
                 this.showError(this.t('errors.auth_failed'));
             }
         }

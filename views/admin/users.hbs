@@ -7,9 +7,9 @@
     {{> dashboard-nav}}
     
     <div class="analytics-wrapper">
-        <div class="container-fluid px-4 py-4">
+        <div class="container-fluid px-3 py-3">
             <!-- Header Section -->
-            <div class="dashboard-header-section mb-4">
+            <div class="dashboard-header-section mb-3">
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <div class="page-title-wrapper">
@@ -17,33 +17,35 @@
                                 <i class="bi bi-people-fill"></i>
                             </div>
                             <div>
-                                <h1 class="dashboard-title mb-1">{{title}}</h1>
-                                <p class="text-muted mb-0">Manage and monitor user accounts</p>
+                                <h1 class="dashboard-title">{{title}}</h1>
+                                <p class="text-muted mb-0" style="font-size: 0.8rem;">Manage and monitor user accounts</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6 text-md-end mt-3 mt-md-0">
-                        <a href="/admin/users/analytics" class="btn btn-primary btn-shadow me-2">
-                            <i class="bi bi-graph-up me-2"></i>Analytics
-                        </a>
-                        <a href="/admin/nsfw-analytics" class="btn btn-danger btn-shadow me-2">
-                            <i class="bi bi-fire me-2"></i>NSFW Analytics
-                        </a>
-                        <button id="openCsvModal" class="btn btn-success btn-shadow">
-                            <i class="bi bi-download me-2"></i>Export CSV
-                        </button>
+                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                        <div class="d-flex justify-content-md-end gap-1 flex-wrap">
+                            <a href="/admin/users/analytics" class="btn btn-primary btn-shadow btn-sm">
+                                <i class="bi bi-graph-up me-1"></i>Analytics
+                            </a>
+                            <a href="/admin/nsfw-analytics" class="btn btn-danger btn-shadow btn-sm">
+                                <i class="bi bi-fire me-1"></i>NSFW
+                            </a>
+                            <button id="openCsvModal" class="btn btn-success btn-shadow btn-sm">
+                                <i class="bi bi-download me-1"></i>CSV
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Stats Cards Section -->
-            <div class="section-header mb-3">
+            <div class="section-header mb-2">
                 <h5 class="section-title">
                     <i class="bi bi-speedometer2 me-2"></i>Quick Stats
                 </h5>
             </div>
             
-            <div class="row g-3 g-lg-4 mb-4">
+            <div class="row g-2 mb-3">
                 <div class="col-xl-3 col-lg-6 col-md-6">
                     <div class="stat-card stat-card-primary">
                         <div class="stat-card-body">
@@ -52,16 +54,10 @@
                                     <div class="stat-label-wrapper">
                                         <span class="stat-label">Total Users</span>
                                     </div>
-                                    <h2 class="stat-value mb-2">{{pagination.totalUsers}}</h2>
-                                    <p class="stat-change mb-0 text-white-50">
-                                        <i class="bi bi-people-fill me-1"></i>
-                                        <span class="change-period">All registered users</span>
-                                    </p>
+                                    <h2 class="stat-value mb-0">{{pagination.totalUsers}}</h2>
                                 </div>
                                 <div class="stat-icon-wrapper">
-                                    <div class="stat-icon">
-                                        <i class="bi bi-people-fill"></i>
-                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
                                 </div>
                             </div>
                         </div>
@@ -76,17 +72,11 @@
                                     <div class="stat-label-wrapper">
                                         <span class="stat-label">Female Users</span>
                                     </div>
-                                    <h2 class="stat-value mb-2">{{femaleCount}}</h2>
-                                    <p class="stat-change mb-0 text-white-50">
-                                        <i class="bi bi-gender-female me-1"></i>
-                                        <span class="change-value">{{femalePercentage}}%</span>
-                                        <span class="change-period">of total</span>
-                                    </p>
+                                    <h2 class="stat-value mb-0">{{femaleCount}}</h2>
+                                    <p class="stat-change mb-0" style="opacity:0.75"><span class="change-value">{{femalePercentage}}%</span></p>
                                 </div>
                                 <div class="stat-icon-wrapper">
-                                    <div class="stat-icon">
-                                        <i class="bi bi-gender-female"></i>
-                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-gender-female"></i></div>
                                 </div>
                             </div>
                         </div>
@@ -101,17 +91,11 @@
                                     <div class="stat-label-wrapper">
                                         <span class="stat-label">Male Users</span>
                                     </div>
-                                    <h2 class="stat-value mb-2">{{maleCount}}</h2>
-                                    <p class="stat-change mb-0 text-white-50">
-                                        <i class="bi bi-gender-male me-1"></i>
-                                        <span class="change-value">{{malePercentage}}%</span>
-                                        <span class="change-period">of total</span>
-                                    </p>
+                                    <h2 class="stat-value mb-0">{{maleCount}}</h2>
+                                    <p class="stat-change mb-0" style="opacity:0.75"><span class="change-value">{{malePercentage}}%</span></p>
                                 </div>
                                 <div class="stat-icon-wrapper">
-                                    <div class="stat-icon">
-                                        <i class="bi bi-gender-male"></i>
-                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-gender-male"></i></div>
                                 </div>
                             </div>
                         </div>
@@ -126,16 +110,14 @@
                                     <div class="stat-label-wrapper">
                                         <span class="stat-label">Quick Actions</span>
                                     </div>
-                                    <div class="d-flex flex-column gap-2 mt-3">
-                                        <button id="bulkAddToClerk" class="btn btn-light btn-sm">
-                                            <i class="bi bi-key me-1"></i> Bulk Add to Clerk
+                                    <div class="mt-2">
+                                        <button id="bulkAddToClerk" class="btn btn-secondary btn-sm" style="font-size: 0.75rem;">
+                                            <i class="bi bi-key me-1"></i>Bulk Clerk
                                         </button>
                                     </div>
                                 </div>
                                 <div class="stat-icon-wrapper">
-                                    <div class="stat-icon">
-                                        <i class="bi bi-lightning-charge-fill"></i>
-                                    </div>
+                                    <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
                                 </div>
                             </div>
                         </div>
@@ -143,35 +125,34 @@
                 </div>
             </div>
 
-            <!-- Action Buttons Section -->
-            <div class="section-header mb-3 mt-4">
-                <h5 class="section-title">
-                    <i class="bi bi-filter me-2"></i>Filter & View Options
-                </h5>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="chart-card card-shadow">
-                        <div class="chart-card-body p-3">
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="/admin/users" class="btn btn-outline-dark">
-                                    <i class="bi bi-clock-history me-1"></i>{{translations.admin_user.recent_users}}
-                                </a>
-                                <a href="/admin/users/registered" class="btn btn-outline-dark">
-                                    <i class="bi bi-person-check me-1"></i>{{translations.admin_user.registered_users}}
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+            <!-- Filter Tabs & Search -->
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 mt-2">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="/admin/users" class="btn btn-sm btn-outline-dark" style="font-size: 0.8rem;">
+                        <i class="bi bi-clock-history me-1"></i>{{translations.admin_user.recent_users}}
+                    </a>
+                    <a href="/admin/users/registered" class="btn btn-sm btn-outline-dark" style="font-size: 0.8rem;">
+                        <i class="bi bi-person-check me-1"></i>{{translations.admin_user.registered_users}}
+                    </a>
                 </div>
-            </div>
-
-            <!-- Users Table Section -->
-            <div class="section-header mb-3">
-                <h5 class="section-title">
-                    <i class="bi bi-table me-2"></i>User Management
-                </h5>
+                <div class="user-search-bar">
+                    <form id="userSearchForm" method="GET" class="d-flex align-items-center gap-2" style="margin: 0;">
+                        <div class="input-group input-group-sm" style="width: 280px;">
+                            <span class="input-group-text" style="background: #fff; border-right: 0; border-color: #ddd;">
+                                <i class="bi bi-search" style="font-size: 0.75rem; color: #999;"></i>
+                            </span>
+                            <input type="text" id="userSearchInput" name="search" class="form-control form-control-sm"
+                                placeholder="Search by name, nickname, or email..."
+                                value="{{searchQuery}}"
+                                style="font-size: 0.8rem; border-left: 0; border-color: #ddd;">
+                            {{#if searchQuery}}
+                            <button type="button" id="clearSearch" class="btn btn-sm btn-outline-secondary" style="font-size: 0.75rem; border-color: #ddd;">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            {{/if}}
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <div class="table-with-pagination">
@@ -180,109 +161,103 @@
                     <div class="pagination-info">
                         <span>Showing</span>
                         <strong id="start-index">{{#if users}}1{{else}}0{{/if}}</strong>
-                        <span>to</span>
+                        <span>-</span>
                         <strong id="end-index">{{users.length}}</strong>
                         <span>of</span>
                         <strong id="total-count">{{pagination.totalUsers}}</strong>
-                        <span>users</span>
                     </div>
                     <div class="items-per-page">
-                        <label for="pageSize">Per page:</label>
+                        <label for="pageSize">Rows:</label>
                         <select id="pageSize">
                             <option value="10" {{#if (eq pagination.limit 10)}}selected{{/if}}>10</option>
                             <option value="15" {{#if (eq pagination.limit 15)}}selected{{/if}}>15</option>
                             <option value="25" {{#if (eq pagination.limit 25)}}selected{{/if}}>25</option>
                             <option value="50" {{#if (eq pagination.limit 50)}}selected{{/if}}>50</option>
+                            <option value="100" {{#if (eq pagination.limit 100)}}selected{{/if}}>100</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="chart-card card-shadow">
                     <div class="chart-card-body p-0">
-                        <div class="table-responsive">
+                        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
                             <table class="table table-hover mb-0" id="usersTable">
-                                <thead style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 2px solid #dee2e6;">
+                                <thead>
                                     <tr>
-                                        <th class="px-4 py-3" style="font-weight: 600; color: #2c3e50;">#</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.avatar}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.date}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.email}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.gender}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.language}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.subscription}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.actions}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">{{translations.admin_user.profile}}</th>
-                                        <th class="py-3" style="font-weight: 600; color: #2c3e50;">Clerk</th>
+                                        <th>#</th>
+                                        <th>{{translations.admin_user.avatar}}</th>
+                                        <th>{{translations.admin_user.date}}</th>
+                                        <th>{{translations.admin_user.email}}</th>
+                                        <th>{{translations.admin_user.gender}}</th>
+                                        <th>{{translations.admin_user.language}}</th>
+                                        <th>{{translations.admin_user.subscription}}</th>
+                                        <th>{{translations.admin_user.actions}}</th>
+                                        <th>{{translations.admin_user.profile}}</th>
+                                        <th>Clerk</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {{#each users}}
-                                    <tr data-user-id="{{this._id}}" style="border-bottom: 1px solid #f0f0f0;">
-                                        <td class="px-4 py-3" style="font-weight: 600;">{{increment (add @index (subtract (multiply (subtract pagination.page 1) pagination.limit) 1))}}</td>
-                                        <td class="py-3">
-                                            <a href="/user/{{this._id}}" target="_blank">
-                                                <div class="d-flex flex-column justify-content-center align-items-center">
+                                    <tr data-user-id="{{this._id}}">
+                                        <td>{{increment (add @index (subtract (multiply (subtract pagination.page 1) pagination.limit) 1))}}</td>
+                                        <td>
+                                            <a href="/user/{{this._id}}" target="_blank" style="text-decoration:none;">
+                                                <div class="d-flex align-items-center gap-2">
                                                     {{#if this.profileUrl}}
-                                                        <img src="{{this.profileUrl}}" alt="{{this.nickname}}" class="rounded-circle shadow-sm" style="width: 45px;height: 45px;object-fit: cover;border: 2px solid #e9ecef;">
+                                                        <img src="{{this.profileUrl}}" alt="{{this.nickname}}" class="rounded-circle" style="width:28px;height:28px;object-fit:cover;">
                                                     {{else}}
-                                                        <div class="rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 45px;height: 45px;background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);color: white;font-weight: 600;">
+                                                        <div class="rounded-circle d-flex align-items-center justify-content-center" style="width:28px;height:28px;background:#1a73e8;color:white;font-size:0.7rem;font-weight:600;">
                                                             {{substring this.nickname 0 1}}
                                                         </div>
                                                     {{/if}}
-                                                    <span class="nickname mt-1" style="font-size: 11px;font-weight: 500;">{{this.nickname}}</span>
+                                                    <span class="nickname" style="font-size:0.75rem;color:#333;">{{this.nickname}}</span>
                                                 </div>
                                             </a>
                                         </td>
-                                        <td class="jp-d py-3" style="font-size: 0.875rem;">{{this.createdAt}}</td>
-                                        <td class="py-3" style="font-size: 0.875rem;">{{this.email}}</td>
-                                        <td class="py-3">
+                                        <td class="jp-d" style="font-size:0.75rem;color:#666;">{{this.createdAt}}</td>
+                                        <td style="font-size:0.75rem;">{{this.email}}</td>
+                                        <td>
                                             {{#if (eq this.gender "female")}}
-                                                <span class="badge" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 12px; font-weight: 600;">
-                                                    <i class="bi bi-gender-female me-1"></i>Female
-                                                </span>
+                                                <span class="badge" style="background:#e91e63;color:#fff;">F</span>
                                             {{else}}
-                                                <span class="badge" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 12px; font-weight: 600;">
-                                                    <i class="bi bi-gender-male me-1"></i>Male
-                                                </span>
+                                                <span class="badge" style="background:#2196f3;color:#fff;">M</span>
                                             {{/if}}
                                         </td>
-                                        <td class="py-3">
-                                            <span class="badge bg-secondary" style="padding: 0.5rem 0.75rem; border-radius: 12px; font-weight: 600;">{{this.lang}}</span>
+                                        <td>
+                                            <span class="badge" style="background:#f5f5f5;color:#333;">{{this.lang}}</span>
                                         </td>
-                                        <td class="subscriptionStatus py-3">
+                                        <td class="subscriptionStatus">
                                             {{#if (eq this.subscriptionStatus "premium")}}
-                                                <span class="badge" style="background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%); color: white; padding: 0.5rem 0.75rem; border-radius: 12px; font-weight: 600;">
-                                                    <i class="bi bi-star-fill me-1"></i>Premium
-                                                </span>
+                                                <span class="badge" style="background:#ff9800;color:#fff;"><i class="bi bi-star-fill" style="font-size:0.6rem;"></i> Pro</span>
                                             {{else}}
-                                                <span class="badge bg-light text-dark" style="padding: 0.5rem 0.75rem; border-radius: 12px; font-weight: 600;">Free</span>
+                                                <span class="badge" style="background:#f5f5f5;color:#999;">Free</span>
                                             {{/if}}
                                         </td>
-                                        <td class="py-3">
-                                            <div class="btn-group" role="group">
-                                                <button class="btn btn-sm btn-outline-secondary subscriptionToggle" data-user-id="{{this._id}}" title="Toggle Subscription" style="border-radius: 8px 0 0 8px;">
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <button class="btn btn-sm btn-outline-secondary subscriptionToggle" data-user-id="{{this._id}}" title="Toggle Subscription">
                                                     <i class="bi bi-pencil-square"></i>
                                                 </button>
-                                                <a class="btn btn-sm btn-outline-secondary" href="/admin/chat/{{this._id}}" title="View Chat" style="border-radius: 0;">
+                                                <a class="btn btn-sm btn-outline-secondary" href="/admin/chat/{{this._id}}" title="View Chat">
                                                     <i class="bi bi-chat-dots"></i>
                                                 </a>
-                                                <button class="btn btn-sm btn-outline-danger delete-user" data-user-id="{{this._id}}" title="Delete User" style="border-radius: 0 8px 8px 0;">
+                                                <button class="btn btn-sm btn-outline-danger delete-user" data-user-id="{{this._id}}" title="Delete User">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
-                                        <td class="py-3">
-                                            <a href="/user/{{this._id}}" target="_blank" class="btn btn-sm btn-primary" style="border-radius: 10px; min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center;">
+                                        <td>
+                                            <a href="/user/{{this._id}}" target="_blank" class="btn btn-sm btn-outline-primary">
                                                 <i class="bi bi-box-arrow-up-right"></i>
                                             </a>
                                         </td>
-                                        <td class="py-3">
+                                        <td>
                                             {{#if this.clerkId}}
-                                                <button class="btn btn-sm btn-success check-clerk-status" data-user-id="{{this._id}}" data-user-email="{{this.email}}" data-clerk-id="{{this.clerkId}}" style="border-radius: 10px; min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center;" title="Already in Clerk">
+                                                <button class="btn btn-sm btn-success check-clerk-status" data-user-id="{{this._id}}" data-user-email="{{this.email}}" data-clerk-id="{{this.clerkId}}" title="In Clerk">
                                                     <i class="bi bi-check-circle-fill"></i>
                                                 </button>
                                             {{else}}
-                                                <button class="btn btn-sm btn-outline-info check-clerk-status" data-user-id="{{this._id}}" data-user-email="{{this.email}}" style="border-radius: 10px; min-width: 40px; min-height: 40px; display: inline-flex; align-items: center; justify-content: center;" title="Add to Clerk">
+                                                <button class="btn btn-sm btn-outline-info check-clerk-status" data-user-id="{{this._id}}" data-user-email="{{this.email}}" title="Add to Clerk">
                                                     <i class="bi bi-key-fill"></i>
                                                 </button>
                                             {{/if}}
@@ -305,10 +280,10 @@
                     </div>
                     <div class="pagination-controls" id="paginationControls">
                         {{#if pagination.hasPrevPage}}
-                            <a href="?page=1&limit={{pagination.limit}}" class="pagination-btn prev-btn" title="First Page">
+                            <a href="?page=1&limit={{pagination.limit}}{{#if searchQuery}}&search={{searchQuery}}{{/if}}" class="pagination-btn prev-btn" title="First Page">
                                 <i class="bi bi-chevron-double-left"></i>
                             </a>
-                            <a href="?page={{subtract pagination.page 1}}&limit={{pagination.limit}}" class="pagination-btn prev-btn" title="Previous Page">
+                            <a href="?page={{subtract pagination.page 1}}&limit={{pagination.limit}}{{#if searchQuery}}&search={{searchQuery}}{{/if}}" class="pagination-btn prev-btn" title="Previous Page">
                                 <i class="bi bi-chevron-left"></i> Prev
                             </a>
                         {{else}}
@@ -325,16 +300,16 @@
                                 <button class="pagination-btn page-number active" disabled>{{this}}</button>
                             {{else}}
                                 {{#if (and (gte this (subtract ../pagination.page 2)) (lte this (add ../pagination.page 2)))}}
-                                    <a href="?page={{this}}&limit={{../pagination.limit}}" class="pagination-btn page-number">{{this}}</a>
+                                    <a href="?page={{this}}&limit={{../pagination.limit}}{{#if ../searchQuery}}&search={{../searchQuery}}{{/if}}" class="pagination-btn page-number">{{this}}</a>
                                 {{/if}}
                             {{/if}}
                         {{/each}}
 
                         {{#if pagination.hasNextPage}}
-                            <a href="?page={{add pagination.page 1}}&limit={{pagination.limit}}" class="pagination-btn next-btn" title="Next Page">
+                            <a href="?page={{add pagination.page 1}}&limit={{pagination.limit}}{{#if searchQuery}}&search={{searchQuery}}{{/if}}" class="pagination-btn next-btn" title="Next Page">
                                 Next <i class="bi bi-chevron-right"></i>
                             </a>
-                            <a href="?page={{pagination.totalPages}}&limit={{pagination.limit}}" class="pagination-btn next-btn" title="Last Page">
+                            <a href="?page={{pagination.totalPages}}&limit={{pagination.limit}}{{#if searchQuery}}&search={{searchQuery}}{{/if}}" class="pagination-btn next-btn" title="Last Page">
                                 <i class="bi bi-chevron-double-right"></i>
                             </a>
                         {{else}}
@@ -638,6 +613,37 @@
     
     <script>
     $(document).ready(function(){
+        // ============================================
+        // USER SEARCH HANDLER
+        // ============================================
+        const searchForm = document.getElementById('userSearchForm');
+        const searchInput = document.getElementById('userSearchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+
+        if (searchForm) {
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const searchValue = searchInput.value.trim();
+                const currentUrl = new URL(window.location);
+                if (searchValue) {
+                    currentUrl.searchParams.set('search', searchValue);
+                } else {
+                    currentUrl.searchParams.delete('search');
+                }
+                currentUrl.searchParams.set('page', 1);
+                window.location.href = currentUrl.toString();
+            });
+        }
+
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', function() {
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.delete('search');
+                currentUrl.searchParams.set('page', 1);
+                window.location.href = currentUrl.toString();
+            });
+        }
+
         $("#openCsvModal").click(function(){
             $("#csvModal").modal('show');
             updateExportInfo(); // Initialize export info when modal opens
