@@ -9,20 +9,13 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 
-// Admin emails loaded from environment variable for security
-// Set ADMIN_EMAILS as comma-separated list in .env file
-// Example: ADMIN_EMAILS=admin1@example.com,admin2@example.com
-const adminEmails = process.env.ADMIN_EMAILS 
-    ? process.env.ADMIN_EMAILS.split(',').map(email => email.trim()).filter(Boolean)
-    : [];
-
 async function checkUserAdmin(fastify, userId) {
     const usersCollection = fastify.mongo.db.collection('users');
     const user = await usersCollection.findOne({_id: new ObjectId(userId)});
     if (!user) {
         return false;
     }
-    return user.role === 'admin' || adminEmails.includes(user.email);
+    return user.role === 'admin';
 }
 // add  role: 'admin'  to an array of admin emails
 async function addAdminEmails(fastify, emails) {
@@ -865,7 +858,6 @@ module.exports = {
     saveChatImageToDB,
     saveUserChatBackgroundImageToDB,
     addAdminEmails,
-    adminEmails,
     getApiUrl,
     generateSeoMetadata,
     // Thumbnail functions
