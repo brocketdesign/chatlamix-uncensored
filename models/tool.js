@@ -9,14 +9,12 @@ const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
 
-const adminEmails = [
-    'akamatsutaro07@gmail.com',
-    'japanclassicstore@gmail.com',
-    'didier@line.com',
-    'didier@hatoltd.com',
-    'e2@gmail.com',
-    'hotta.yuki@hatoltd.com'
-]; // Add your admin emails here
+// Admin emails loaded from environment variable for security
+// Set ADMIN_EMAILS as comma-separated list in .env file
+// Example: ADMIN_EMAILS=admin1@example.com,admin2@example.com
+const adminEmails = process.env.ADMIN_EMAILS 
+    ? process.env.ADMIN_EMAILS.split(',').map(email => email.trim()).filter(Boolean)
+    : [];
 
 async function checkUserAdmin(fastify, userId) {
     const usersCollection = fastify.mongo.db.collection('users');
@@ -24,7 +22,7 @@ async function checkUserAdmin(fastify, userId) {
     if (!user) {
         return false;
     }
-    return adminEmails.includes(user.email);
+    return user.role === 'admin' || adminEmails.includes(user.email);
 }
 // add  role: 'admin'  to an array of admin emails
 async function addAdminEmails(fastify, emails) {
