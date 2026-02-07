@@ -62,6 +62,7 @@ const POST_VISIBILITY = {
 async function createPostFromImage(data, db) {
   const {
     userId,
+    characterId = null,
     testId, // From imageModelTests
     imageUrl,
     prompt,
@@ -83,6 +84,7 @@ async function createPostFromImage(data, db) {
 
   const post = {
     userId: new ObjectId(userId),
+    characterId: characterId ? new ObjectId(characterId) : null,
     type: POST_TYPES.IMAGE,
     source: POST_SOURCES.IMAGE_DASHBOARD,
     
@@ -154,6 +156,7 @@ async function createPostFromImage(data, db) {
 async function createPostFromVideo(data, db) {
   const {
     userId,
+    characterId = null,
     testId, // From videoModelTests
     videoUrl,
     thumbnailUrl,
@@ -176,6 +179,7 @@ async function createPostFromVideo(data, db) {
 
   const post = {
     userId: new ObjectId(userId),
+    characterId: characterId ? new ObjectId(characterId) : null,
     type: POST_TYPES.VIDEO,
     source: POST_SOURCES.VIDEO_DASHBOARD,
     
@@ -887,6 +891,7 @@ async function getCombinedUserPosts(db, userId, filters = {}) {
     source,
     status,
     nsfw,
+    characterId, // Filter by character
     page = 1,
     limit = 20,
     sortBy = 'createdAt',
@@ -898,6 +903,7 @@ async function getCombinedUserPosts(db, userId, filters = {}) {
   // Query for social posts (posted via late.dev API)
   const socialQuery = { userId: userObjId };
   if (status) socialQuery.status = status;
+  if (characterId) socialQuery.characterId = new ObjectId(characterId);
   
   // Get social posts
   const socialPosts = await db.collection('socialPosts')
@@ -909,6 +915,7 @@ async function getCombinedUserPosts(db, userId, filters = {}) {
   const transformedSocialPosts = socialPosts.map(post => ({
     _id: post._id,
     userId: post.userId,
+    characterId: post.characterId || null,
     type: POST_TYPES.IMAGE,
     source: POST_SOURCES.API,
     content: {
@@ -941,6 +948,7 @@ async function getCombinedUserPosts(db, userId, filters = {}) {
   if (type) unifiedQuery.type = type;
   if (source && source !== 'api') unifiedQuery.source = source;
   if (status) unifiedQuery.status = status;
+  if (characterId) unifiedQuery.characterId = new ObjectId(characterId);
   if (typeof nsfw === 'boolean') unifiedQuery['metadata.nsfw'] = nsfw;
   
   const unifiedPosts = await db.collection('unifiedPosts')
