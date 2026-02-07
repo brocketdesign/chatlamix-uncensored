@@ -37,6 +37,7 @@ const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Frid
 async function createCalendar(data, db) {
   const {
     userId,
+    characterId = null,
     name,
     description = '',
     timezone = 'UTC',
@@ -71,6 +72,7 @@ async function createCalendar(data, db) {
 
   const calendar = {
     userId: new ObjectId(userId),
+    characterId: characterId ? new ObjectId(characterId) : null,
     name: name.trim(),
     description: description.trim(),
     isActive: true,
@@ -96,6 +98,7 @@ async function createCalendar(data, db) {
 async function getUserCalendars(db, userId, filters = {}) {
   const {
     isActive,
+    characterId,
     page = 1,
     limit = 20
   } = filters;
@@ -104,6 +107,13 @@ async function getUserCalendars(db, userId, filters = {}) {
 
   if (isActive !== undefined) {
     query.isActive = isActive;
+  }
+
+  if (characterId) {
+    query.characterId = new ObjectId(characterId);
+  } else if (characterId === null) {
+    // Explicitly looking for calendars without a character (if needed)
+    // or we can treat undefined as "all"
   }
 
   const skip = (page - 1) * limit;

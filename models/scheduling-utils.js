@@ -45,6 +45,7 @@ const ACTION_TYPES = {
 async function createSingleSchedule(data, db) {
   const {
     userId,
+    characterId = null,
     actionType,
     scheduledFor,
     actionData, // Contains generation parameters
@@ -58,6 +59,7 @@ async function createSingleSchedule(data, db) {
 
   const schedule = {
     userId: new ObjectId(userId),
+    characterId: characterId ? new ObjectId(characterId) : null,
     type: SCHEDULE_TYPES.SINGLE,
     actionType,
     scheduledFor: new Date(scheduledFor),
@@ -85,6 +87,7 @@ async function createSingleSchedule(data, db) {
 async function createRecurringSchedule(data, db) {
   const {
     userId,
+    characterId = null,
     actionType,
     cronExpression,
     calendarId,
@@ -129,6 +132,7 @@ async function createRecurringSchedule(data, db) {
 
   const schedule = {
     userId: new ObjectId(userId),
+    characterId: characterId ? new ObjectId(characterId) : null,
     type: SCHEDULE_TYPES.RECURRING,
     actionType,
     cronExpression: cronExpression || null,
