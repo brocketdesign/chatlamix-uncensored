@@ -1,0 +1,101 @@
+<div class="social-manager-dashboard">
+    {{> dashboard-nav}}
+    
+    <div class="main-content">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="character-identity">
+                <div class="character-thumbnail">
+                    {{#if character.chatImageUrl}}
+                    <img src="{{character.chatImageUrl}}" alt="{{character.name}}">
+                    {{else}}
+                    <div class="placeholder-avatar">{{initials character.name}}</div>
+                    {{/if}}
+                </div>
+                <div class="character-info">
+                    <h1>{{character.name}}</h1>
+                    <span class="status-badge active">Active</span>
+                </div>
+            </div>
+            
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <span class="value">{{stats.totalPosts}}</span>
+                    <span class="label">Total Posts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">{{stats.upcomingSchedules}}</span>
+                    <span class="label">Upcoming</span>
+                </div>
+                <div class="stat-item">
+                    <span class="value">{{formatDate stats.lastPostTime "MMM D, HH:mm"}}</span>
+                    <span class="label">Last Post</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-grid">
+            <!-- Left Column: Scheduler & Calendar -->
+            <div class="main-column">
+                <!-- Schedules Section -->
+                <section class="card schedules-section">
+                    <div class="card-header">
+                        <h2>Recurring Schedules</h2>
+                        <button class="btn btn-sm btn-primary" onclick="socialManager.openScheduleModal()">
+                            <i class="bi bi-plus"></i> New Schedule
+                        </button>
+                    </div>
+                    <div class="card-body" id="activeSchedulesList">
+                        <div class="loading-spinner">Loading schedules...</div>
+                    </div>
+                </section>
+
+                <!-- Calendar Preview -->
+                <section class="card calendar-section">
+                    <div class="card-header">
+                        <h2>Posting Calendar</h2>
+                        <div class="calendar-controls">
+                            <button class="btn-icon"><i class="bi bi-chevron-left"></i></button>
+                            <span>This Week</span>
+                            <button class="btn-icon"><i class="bi bi-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mini-calendar" id="miniCalendar">
+                            <!-- JS will populate grid -->
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Recent Activity & Quick Actions -->
+            <div class="side-column">
+                <section class="card quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-primary w-100 mb-2" onclick="socialManager.generateNow()">
+                            <i class="bi bi-lightning"></i> Generate Post Now
+                        </button>
+                        <button class="btn btn-outline-secondary w-100" onclick="socialManager.editCharacter()">
+                            <i class="bi bi-pencil"></i> Edit Profile
+                        </button>
+                    </div>
+                </section>
+
+                <section class="card recent-activity">
+                    <h3>Recent Posts</h3>
+                    <div class="recent-grid" id="recentPostsGrid">
+                        <!-- Thumbnails loaded via JS -->
+                    </div>
+                    <a href="/dashboard/posts?character={{character._id}}" class="view-all-link">View All History</a>
+                </section>
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="/css/dashboard-social.css">
+<script>
+    window.characterId = "{{character._id}}";
+</script>
+<script src="/js/dashboard-social.js"></script>
