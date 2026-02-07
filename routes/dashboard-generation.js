@@ -3,6 +3,7 @@
  * Mobile-first dashboard for image and video generation
  */
 
+const { ObjectId } = require('mongodb');
 const { checkUserAdmin } = require('../models/tool');
 const { getUserPoints } = require('../models/user-points-utils');
 const { PRICING_CONFIG } = require('../config/pricing');
@@ -27,12 +28,43 @@ async function routes(fastify, options) {
 
       const db = fastify.mongo.db;
       const translations = request.translations;
+      const { characterId, mode } = request.query;
+      const initialMode = (mode === 'video') ? 'video' : 'image';
       
       // Check if user is admin
       const isAdmin = await checkUserAdmin(fastify, user._id);
 
       // Get user's current points
       const userPoints = await getUserPoints(db, user._id);
+
+      // Fetch user's characters for the character selector
+      // Characters are chats that have a chatImageUrl (profile image) and a name set
+      const userCharacters = await db.collection('chats')
+        .find({ 
+          userId: new ObjectId(user._id),
+          chatImageUrl: { $exists: true, $nin: [null, ''] },
+          name: { $exists: true, $nin: [null, ''] }
+        })
+        .project({
+          _id: 1,
+          name: 1,
+          chatImageUrl: 1,
+          faceImageUrl: 1,
+          basePromptForImageGeneration: 1,
+          nsfw: 1
+        })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+
+      // If characterId is provided, fetch that character's details
+      let selectedCharacter = null;
+      if (characterId && ObjectId.isValid(characterId)) {
+        selectedCharacter = await db.collection('chats').findOne({
+          _id: new ObjectId(characterId),
+          userId: new ObjectId(user._id)
+        });
+      }
 
       // Prepare image models list with complete configuration
       const imageModels = await buildImageModelsList(db);
@@ -61,7 +93,11 @@ async function routes(fastify, options) {
         videoCostPerUnit: PRICING_CONFIG.VIDEO_GENERATION?.COST || 100,
         faceMergeCost: PRICING_CONFIG.FACE_MERGE?.COST || 20,
         imageModels,
-        videoModels
+        videoModels,
+        userCharacters,
+        selectedCharacter,
+        selectedCharacterId: characterId || null,
+        initialMode
       });
     } catch (error) {
       console.error('[GenerationDashboard] Error loading dashboard:', error);

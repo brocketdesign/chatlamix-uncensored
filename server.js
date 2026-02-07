@@ -987,6 +987,10 @@ fastify.get('/character/slug/:slug', async (request, reply) => {
       ? imageSource
       : `${baseUrl}${imageSource.startsWith('/') ? imageSource : `/${imageSource}`}`;
 
+    // Determine if current user is the owner of this character
+    const isOwner = !user.isTemporary && currentUserId && chat.userId && 
+      (chat.userId.toString() === currentUserId.toString());
+
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'Person',
@@ -1011,6 +1015,7 @@ fastify.get('/character/slug/:slug', async (request, reply) => {
       chatId: chatIdParam,
       isBlur,
       isAdmin,
+      isOwner,
       similarChats: [], // Will be populated via websocket
       user: currentUserData,
       canonicalUrl,

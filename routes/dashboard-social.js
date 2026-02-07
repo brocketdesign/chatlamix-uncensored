@@ -26,10 +26,11 @@ async function routes(fastify, options) {
         return reply.code(400).send('Invalid Character ID');
       }
 
-      // Fetch character details
-      const character = await db.collection('characters').findOne({
+      // Fetch character details from chats collection
+      // (Characters are stored in 'chats' collection in this codebase)
+      const character = await db.collection('chats').findOne({
         _id: new ObjectId(characterId),
-        userId: user._id.toString() // Ensure ownership
+        userId: new ObjectId(user._id) // Ensure ownership
       });
 
       if (!character) {
@@ -39,23 +40,25 @@ async function routes(fastify, options) {
       const lang = request.lang || 'en';
       const translations = request.translations;
 
+      const characterObjectId = new ObjectId(characterId);
+
       // Get stats (reuse logic from existing dashboards where possible or simple counts)
-      // 1. Total Posts
+      // 1. Total Posts - posts collection uses chatId for character
       const totalPosts = await db.collection('posts').countDocuments({
-        userId: user._id.toString(),
-        characterId: characterId
+        userId: new ObjectId(user._id),
+        chatId: characterObjectId
       });
 
-      // 2. Upcoming Schedules
-      const upcomingSchedules = await db.collection('posts_schedules').countDocuments({
-        userId: user._id.toString(),
-        characterId: characterId,
+      // 2. Upcoming Schedules - schedules collection uses characterId
+      const upcomingSchedules = await db.collection('schedules').countDocuments({
+        userId: new ObjectId(user._id),
+        characterId: characterObjectId,
         status: { $in: ['pending', 'active'] }
       });
 
       // 3. Last Post Time
       const lastPost = await db.collection('posts').findOne(
-        { userId: user._id.toString(), characterId: characterId },
+        { userId: new ObjectId(user._id), chatId: characterObjectId },
         { sort: { createdAt: -1 }, projection: { createdAt: 1 } }
       );
       const lastPostTime = lastPost ? lastPost.createdAt : null;

@@ -1,101 +1,673 @@
-<div class="social-manager-dashboard">
+<!DOCTYPE html>
+<html lang="{{lang}}">
+{{> dashboard-header}}
+<body class="bg-dark">
     {{> dashboard-nav}}
-    
-    <div class="main-content">
-        <!-- Header -->
-        <header class="dashboard-header">
-            <div class="character-identity">
-                <div class="character-thumbnail">
-                    {{#if character.chatImageUrl}}
-                    <img src="{{character.chatImageUrl}}" alt="{{character.name}}">
-                    {{else}}
-                    <div class="placeholder-avatar">{{initials character.name}}</div>
-                    {{/if}}
-                </div>
-                <div class="character-info">
-                    <h1>{{character.name}}</h1>
-                    <span class="status-badge active">Active</span>
-                </div>
-            </div>
-            
-            <div class="quick-stats">
-                <div class="stat-item">
-                    <span class="value">{{stats.totalPosts}}</span>
-                    <span class="label">Total Posts</span>
-                </div>
-                <div class="stat-item">
-                    <span class="value">{{stats.upcomingSchedules}}</span>
-                    <span class="label">Upcoming</span>
-                </div>
-                <div class="stat-item">
-                    <span class="value">{{formatDate stats.lastPostTime "MMM D, HH:mm"}}</span>
-                    <span class="label">Last Post</span>
-                </div>
-            </div>
-        </header>
+    <link rel="stylesheet" href="/css/dashboard-posts.css">
 
-        <div class="dashboard-grid">
-            <!-- Left Column: Scheduler & Calendar -->
-            <div class="main-column">
-                <!-- Schedules Section -->
-                <section class="card schedules-section">
-                    <div class="card-header">
-                        <h2>Recurring Schedules</h2>
-                        <button class="btn btn-sm btn-primary" onclick="socialManager.openScheduleModal()">
-                            <i class="bi bi-plus"></i> New Schedule
-                        </button>
-                    </div>
-                    <div class="card-body" id="activeSchedulesList">
-                        <div class="loading-spinner">Loading schedules...</div>
-                    </div>
-                </section>
-
-                <!-- Calendar Preview -->
-                <section class="card calendar-section">
-                    <div class="card-header">
-                        <h2>Posting Calendar</h2>
-                        <div class="calendar-controls">
-                            <button class="btn-icon"><i class="bi bi-chevron-left"></i></button>
-                            <span>This Week</span>
-                            <button class="btn-icon"><i class="bi bi-chevron-right"></i></button>
+    <section class="container-fluid py-4 social-manager-page">
+        <!-- Header with Character Info -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Character Avatar -->
+                        <div class="character-avatar-wrapper">
+                            {{#if character.chatImageUrl}}
+                            <img src="{{character.chatImageUrl}}" alt="{{character.name}}" class="character-avatar">
+                            {{else}}
+                            <div class="character-avatar-placeholder">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                            {{/if}}
+                        </div>
+                        <div class="flex-grow-1">
+                            <h1 class="text-white mb-1 d-flex align-items-center gap-2">
+                                <span>{{character.name}}</span>
+                                <span class="badge bg-success badge-sm">Active</span>
+                            </h1>
+                            <p class="text-muted mb-0">Social Management Dashboard</p>
                         </div>
                     </div>
-                    <div class="card-body">
-                        <div class="mini-calendar" id="miniCalendar">
-                            <!-- JS will populate grid -->
-                        </div>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="/dashboard/generation?mode=image&characterId={{character._id}}" class="btn btn-primary">
+                            <i class="bi bi-lightning-fill me-1"></i>Generate Post
+                        </a>
+                        <a href="/dashboard/schedules?characterId={{character._id}}" class="btn btn-outline-secondary">
+                            <i class="bi bi-calendar-event me-1"></i>Schedules
+                        </a>
+                        <a href="/character/{{character._id}}" class="btn btn-outline-info">
+                            <i class="bi bi-eye me-1"></i>View Profile
+                        </a>
                     </div>
-                </section>
-            </div>
-
-            <!-- Right Column: Recent Activity & Quick Actions -->
-            <div class="side-column">
-                <section class="card quick-actions">
-                    <h3>Quick Actions</h3>
-                    <div class="action-buttons">
-                        <button class="btn btn-outline-primary w-100 mb-2" onclick="socialManager.generateNow()">
-                            <i class="bi bi-lightning"></i> Generate Post Now
-                        </button>
-                        <button class="btn btn-outline-secondary w-100" onclick="socialManager.editCharacter()">
-                            <i class="bi bi-pencil"></i> Edit Profile
-                        </button>
-                    </div>
-                </section>
-
-                <section class="card recent-activity">
-                    <h3>Recent Posts</h3>
-                    <div class="recent-grid" id="recentPostsGrid">
-                        <!-- Thumbnails loaded via JS -->
-                    </div>
-                    <a href="/dashboard/posts?character={{character._id}}" class="view-all-link">View All History</a>
-                </section>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
-<link rel="stylesheet" href="/css/dashboard-social.css">
-<script>
-    window.characterId = "{{character._id}}";
-</script>
-<script src="/js/dashboard-social.js"></script>
+        <!-- Stats -->
+        <div class="stats-grid mb-4">
+            <div class="stats-card total">
+                <div class="stats-card-icon">
+                    <i class="bi bi-file-image"></i>
+                </div>
+                <div class="stats-card-value">{{stats.totalPosts}}</div>
+                <div class="stats-card-label">Total Posts</div>
+            </div>
+            <div class="stats-card scheduled">
+                <div class="stats-card-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+                <div class="stats-card-value">{{stats.upcomingSchedules}}</div>
+                <div class="stats-card-label">Upcoming</div>
+            </div>
+            <div class="stats-card published">
+                <div class="stats-card-icon">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stats-card-value">{{#if stats.lastPostTime}}{{formatDate stats.lastPostTime "MMM D"}}{{else}}-{{/if}}</div>
+                <div class="stats-card-label">Last Post</div>
+            </div>
+            <div class="stats-card active">
+                <div class="stats-card-icon">
+                    <i class="bi bi-bar-chart-fill"></i>
+                </div>
+                <div class="stats-card-value" id="engagementRate">-</div>
+                <div class="stats-card-label">Engagement</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="row g-4">
+            <!-- Left Column: Schedules & Calendar -->
+            <div class="col-12 col-lg-8">
+                <!-- Active Schedules Card -->
+                <div class="content-card mb-4">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-arrow-repeat me-2"></i>Recurring Schedules
+                        </h3>
+                        <a href="/dashboard/schedules?characterId={{character._id}}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-plus-lg me-1"></i>New Schedule
+                        </a>
+                    </div>
+                    <div class="content-card-body" id="activeSchedulesList">
+                        <div class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posting Calendar Card -->
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-calendar3 me-2"></i>Posting Calendar
+                        </h3>
+                        <div class="calendar-nav">
+                            <button class="btn btn-sm btn-outline-secondary" id="calendarPrev">
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+                            <span class="calendar-range mx-2" id="calendarRange">This Week</span>
+                            <button class="btn btn-sm btn-outline-secondary" id="calendarNext">
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="content-card-body">
+                        <div class="mini-calendar" id="miniCalendar">
+                            <div class="calendar-loading text-center py-4">
+                                <div class="spinner-border spinner-border-sm" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Quick Actions & Recent Posts -->
+            <div class="col-12 col-lg-4">
+                <!-- Quick Actions Card -->
+                <div class="content-card mb-4">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-lightning-fill me-2"></i>Quick Actions
+                        </h3>
+                    </div>
+                    <div class="content-card-body">
+                        <div class="quick-actions-grid">
+                            <a href="/dashboard/generation?mode=image&characterId={{character._id}}" class="quick-action-item">
+                                <div class="quick-action-icon bg-primary-subtle">
+                                    <i class="bi bi-image text-primary"></i>
+                                </div>
+                                <span>Generate Image</span>
+                            </a>
+                            <a href="/dashboard/generation?mode=video&characterId={{character._id}}" class="quick-action-item">
+                                <div class="quick-action-icon bg-info-subtle">
+                                    <i class="bi bi-camera-video text-info"></i>
+                                </div>
+                                <span>Generate Video</span>
+                            </a>
+                            <a href="/dashboard/posts?characterId={{character._id}}" class="quick-action-item">
+                                <div class="quick-action-icon bg-success-subtle">
+                                    <i class="bi bi-grid text-success"></i>
+                                </div>
+                                <span>View Posts</span>
+                            </a>
+                            <a href="/character-update/{{character._id}}" class="quick-action-item">
+                                <div class="quick-action-icon bg-warning-subtle">
+                                    <i class="bi bi-pencil text-warning"></i>
+                                </div>
+                                <span>Edit Character</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Posts Card -->
+                <div class="content-card">
+                    <div class="content-card-header">
+                        <h3 class="content-card-title">
+                            <i class="bi bi-clock-history me-2"></i>Recent Posts
+                        </h3>
+                    </div>
+                    <div class="content-card-body" id="recentPostsContainer">
+                        <div class="text-center py-4">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="content-card-footer">
+                        <a href="/dashboard/posts?characterId={{character._id}}" class="text-primary-custom">
+                            View All Posts <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{> dashboard-footer}}
+
+    <style>
+        /* Social Manager Page Specific Styles */
+        .social-manager-page {
+            min-height: 100vh;
+            background: #0f0f1a;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Character Avatar */
+        .character-avatar-wrapper {
+            position: relative;
+        }
+
+        .character-avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(130, 64, 255, 0.5);
+            box-shadow: 0 4px 16px rgba(130, 64, 255, 0.3);
+        }
+
+        .character-avatar-placeholder {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #D2B8FF 0%, #8240FF 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+        }
+
+        .badge-sm {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            font-weight: 500;
+        }
+
+        /* Content Cards */
+        .content-card {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .content-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .content-card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #fff;
+            margin: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .content-card-title i {
+            color: rgba(130, 64, 255, 0.8);
+        }
+
+        .content-card-body {
+            padding: 1.25rem;
+        }
+
+        .content-card-footer {
+            padding: 0.75rem 1.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            text-align: center;
+        }
+
+        .content-card-footer a {
+            font-size: 0.875rem;
+            text-decoration: none;
+        }
+
+        .content-card-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .text-primary-custom {
+            color: #D2B8FF !important;
+        }
+
+        /* Quick Actions Grid */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .quick-action-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(130, 64, 255, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .quick-action-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+            font-size: 1.25rem;
+        }
+
+        .bg-primary-subtle { background: rgba(130, 64, 255, 0.15); }
+        .bg-info-subtle { background: rgba(59, 130, 246, 0.15); }
+        .bg-success-subtle { background: rgba(16, 185, 129, 0.15); }
+        .bg-warning-subtle { background: rgba(245, 158, 11, 0.15); }
+
+        .quick-action-item .text-primary { color: #D2B8FF !important; }
+        .quick-action-item .text-info { color: #60a5fa !important; }
+        .quick-action-item .text-success { color: #34d399 !important; }
+        .quick-action-item .text-warning { color: #fbbf24 !important; }
+
+        /* Calendar Nav */
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+        }
+
+        .calendar-range {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            min-width: 100px;
+            text-align: center;
+        }
+
+        /* Mini Calendar */
+        .mini-calendar {
+            min-height: 120px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 0.5rem 0;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            position: relative;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-day:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .calendar-day.today {
+            background: rgba(130, 64, 255, 0.3);
+            border: 1px solid rgba(130, 64, 255, 0.5);
+            color: #fff;
+        }
+
+        .calendar-day.has-posts::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            position: absolute;
+            bottom: 4px;
+        }
+
+        /* Schedule Item */
+        .schedule-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+        }
+
+        .schedule-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .schedule-item-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(130, 64, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+            color: #D2B8FF;
+        }
+
+        .schedule-item-info {
+            flex: 1;
+        }
+
+        .schedule-item-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 0.125rem;
+        }
+
+        .schedule-item-meta {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .schedule-item-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+
+        .schedule-item-status.active {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .schedule-item-status.paused {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+        }
+
+        /* Recent Posts Grid */
+        .recent-posts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .recent-post-thumb {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .recent-post-thumb:hover {
+            transform: scale(1.05);
+        }
+
+        .recent-post-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .no-posts-message {
+            text-align: center;
+            padding: 1.5rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .no-posts-message i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            margin-bottom: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 767px) {
+            .character-avatar {
+                width: 56px;
+                height: 56px;
+            }
+
+            .character-avatar-placeholder {
+                width: 56px;
+                height: 56px;
+                font-size: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .quick-actions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+
+    <script>
+        // Character ID for API calls
+        window.characterId = "{{character._id}}";
+        window.characterChatId = "{{character._id}}";
+
+        // Initialize Social Manager Dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            loadActiveSchedules();
+            loadRecentPosts();
+            initializeCalendar();
+        });
+
+        // Load Active Schedules
+        async function loadActiveSchedules() {
+            const container = document.getElementById('activeSchedulesList');
+            try {
+                const response = await fetch(`/api/schedules?characterId=${window.characterId}&type=recurring&status=active&limit=5`);
+                const data = await response.json();
+
+                if (data.success && data.schedules && data.schedules.length > 0) {
+                    container.innerHTML = data.schedules.map(schedule => `
+                        <div class="schedule-item">
+                            <div class="schedule-item-icon">
+                                <i class="bi bi-${schedule.actionType === 'generate_image' ? 'image' : 'camera-video'}"></i>
+                            </div>
+                            <div class="schedule-item-info">
+                                <div class="schedule-item-title">${schedule.description || schedule.actionType.replace(/_/g, ' ')}</div>
+                                <div class="schedule-item-meta">
+                                    ${schedule.useCalendar ? `Calendar: ${schedule.calendarName || 'Custom'}` : `Cron: ${schedule.cronExpression || 'N/A'}`}
+                                </div>
+                            </div>
+                            <span class="schedule-item-status ${schedule.status}">${schedule.status}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-calendar-x"></i>
+                            <p>No active recurring schedules.</p>
+                            <a href="/dashboard/schedules?characterId=${window.characterId}" class="btn btn-sm btn-outline-primary">
+                                Create Schedule
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading schedules:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-x"></i>
+                        <p>No active recurring schedules.</p>
+                        <a href="/dashboard/schedules?characterId=${window.characterId}" class="btn btn-sm btn-outline-primary">
+                            Create Schedule
+                        </a>
+                    </div>
+                `;
+            }
+        }
+
+        // Load Recent Posts
+        async function loadRecentPosts() {
+            const container = document.getElementById('recentPostsContainer');
+            try {
+                const response = await fetch(`/api/posts?characterId=${window.characterId}&limit=6&sortBy=createdAt&sortOrder=desc`);
+                const data = await response.json();
+
+                if (data.success && data.posts && data.posts.length > 0) {
+                    container.innerHTML = `
+                        <div class="recent-posts-grid">
+                            ${data.posts.map(post => `
+                                <div class="recent-post-thumb" onclick="window.location='/dashboard/posts?postId=${post._id}'">
+                                    <img src="${post.content?.imageUrl || post.content?.thumbnailUrl || post.imageUrl || '/img/placeholder.png'}" alt="Post" onerror="this.src='/img/placeholder.png'">
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="no-posts-message">
+                            <i class="bi bi-inbox"></i>
+                            <p>No posts yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                container.innerHTML = `
+                    <div class="no-posts-message">
+                        <i class="bi bi-inbox"></i>
+                        <p>No recent posts found</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Initialize Calendar
+        function initializeCalendar() {
+            const container = document.getElementById('miniCalendar');
+            const today = new Date();
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            // Get start of current week (Sunday)
+            const startOfWeek = new Date(today);
+            startOfWeek.setDate(today.getDate() - today.getDay());
+
+            let html = '<div class="calendar-grid">';
+            
+            // Day headers
+            dayNames.forEach(day => {
+                html += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // Days
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(startOfWeek);
+                date.setDate(startOfWeek.getDate() + i);
+                const isToday = date.toDateString() === today.toDateString();
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''}">
+                        ${date.getDate()}
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

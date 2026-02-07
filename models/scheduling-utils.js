@@ -225,6 +225,7 @@ async function getUserSchedules(db, userId, filters = {}) {
     type,
     status,
     actionType,
+    characterId,
     page = 1,
     limit = 20
   } = filters;
@@ -234,6 +235,7 @@ async function getUserSchedules(db, userId, filters = {}) {
   if (type) query.type = type;
   if (status) query.status = status;
   if (actionType) query.actionType = actionType;
+  if (characterId) query.characterId = new ObjectId(characterId);
 
   const skip = (page - 1) * limit;
 

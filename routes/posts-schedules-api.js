@@ -139,6 +139,7 @@ async function routes(fastify, options) {
         status: request.query.status,
         nsfw: request.query.nsfw === 'true' ? true : request.query.nsfw === 'false' ? false : undefined,
         scheduledOnly: request.query.scheduledOnly === 'true',
+        characterId: request.query.characterId,
         page: parseInt(request.query.page) || 1,
         limit: parseInt(request.query.limit) || 20,
         sortBy: request.query.sortBy || 'createdAt',
@@ -575,6 +576,7 @@ Return ONLY the caption text with hashtags, nothing else.`;
         type: request.query.type,
         status: request.query.status,
         actionType: request.query.actionType,
+        characterId: request.query.characterId,
         page: parseInt(request.query.page) || 1,
         limit: parseInt(request.query.limit) || 20
       };

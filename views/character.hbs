@@ -67,6 +67,13 @@
                     <span class="text-white">{{translations.startChattingNow}}</span>
                 </a>
                 {{#unless user.isTemporary}}
+                    {{#if isOwner}}
+                    <a href="/dashboard/social/{{chat._id}}" 
+                       class="ig-secondary-btn"
+                       title="Social Manager">
+                        <i class="bi bi-megaphone-fill"></i>
+                    </a>
+                    {{/if}}
                     <button class="ig-secondary-btn character-follow-btn" 
                             data-chat-id="{{chat._id}}"
                             title="{{translations.follow.follow}}">
