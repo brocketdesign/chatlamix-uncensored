@@ -23,6 +23,7 @@ const {
 const { removeUserPoints, getUserPoints } = require('../models/user-points-utils');
 const { PRICING_CONFIG, getImageGenerationCost, getFaceMergeCost } = require('../config/pricing');
 const { moderateImage } = require('../models/openai');
+const { createPostFromImage, POST_STATUSES, POST_VISIBILITY } = require('../models/unified-post-utils');
 
 /**
  * Check if an image is NSFW using OpenAI Content Moderation API
@@ -744,6 +745,73 @@ async function routes(fastify, options) {
       }
     } catch (error) {
       console.error('[ImageDashboard] Error getting rating:', error);
+      return reply.status(500).send({ error: error.message });
+    }
+  });
+
+  /**
+   * POST /dashboard/image/save-as-post
+   * Save a generated image as a pending post for a character
+   */
+  fastify.post('/dashboard/image/save-as-post', async (request, reply) => {
+    try {
+      const user = request.user;
+      
+      if (!user) {
+        return reply.status(401).send({ error: 'Unauthorized' });
+      }
+
+      const db = fastify.mongo.db;
+      const { 
+        characterId, 
+        imageUrl, 
+        prompt, 
+        negativePrompt,
+        model,
+        parameters,
+        nsfw = false,
+        caption = ''
+      } = request.body;
+
+      if (!characterId || !imageUrl) {
+        return reply.status(400).send({ error: 'Character ID and image URL are required' });
+      }
+
+      // Verify user owns this character
+      const character = await db.collection('chats').findOne({
+        _id: new ObjectId(characterId),
+        userId: new ObjectId(user._id)
+      });
+
+      if (!character) {
+        return reply.status(403).send({ error: 'Character not found or you do not have permission' });
+      }
+
+      // Create the post as draft (pending)
+      const postData = {
+        userId: user._id.toString(),
+        characterId: characterId,
+        imageUrl: imageUrl,
+        prompt: prompt || '',
+        negativePrompt: negativePrompt || '',
+        model: model || 'unknown',
+        parameters: parameters || {},
+        nsfw: nsfw,
+        caption: caption,
+        visibility: POST_VISIBILITY.PRIVATE // Start as private/draft
+      };
+
+      const post = await createPostFromImage(postData, db);
+
+      console.log(`[ImageDashboard] Created pending post ${post._id} for character ${characterId}`);
+
+      return reply.send({ 
+        success: true, 
+        postId: post._id,
+        message: 'Image saved as pending post'
+      });
+    } catch (error) {
+      console.error('[ImageDashboard] Error saving as post:', error);
       return reply.status(500).send({ error: error.message });
     }
   });

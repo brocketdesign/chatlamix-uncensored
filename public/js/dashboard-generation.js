@@ -11,9 +11,10 @@ const CUSTOM_MODEL_PREFIX = 'custom-';
 
 class GenerationDashboard {
   constructor(config = {}) {
-    // Core state
+    // Core state - initialMode comes from URL param (?mode=video)
+    const initialMode = (config.initialMode === 'video') ? 'video' : 'image';
     this.state = {
-      mode: 'image', // 'image' or 'video'
+      mode: initialMode, // 'image' or 'video'
       selectedModel: null,
       isGenerating: false,
       results: [],
@@ -33,12 +34,31 @@ class GenerationDashboard {
       userPoints: config.userPoints || 0,
       imageCostPerUnit: config.imageCostPerUnit || 10,
       videoCostPerUnit: config.videoCostPerUnit || 100,
-      faceMergeCost: config.faceMergeCost || 20
+      faceMergeCost: config.faceMergeCost || 20,
+      // Character selection
+      selectedCharacter: config.selectedCharacter || null,
+      selectedCharacterId: config.selectedCharacterId || null
     };
+    
+    // Apply face image fallback if character is pre-selected
+    if (this.state.selectedCharacter) {
+      const char = this.state.selectedCharacter;
+      const faceImage = char.faceImageUrl || char.chatImageUrl;
+      if (faceImage) {
+        this.state.tools.faceImage = faceImage;
+        // Also set fallback on the character object
+        if (!char.faceImageUrl && char.chatImageUrl) {
+          this.state.selectedCharacter.faceImageUrl = char.chatImageUrl;
+        }
+      }
+    }
     
     // Model configurations passed from server
     this.imageModels = config.imageModels || [];
     this.videoModels = config.videoModels || [];
+    
+    // User's characters
+    this.userCharacters = config.userCharacters || [];
     
     // User's custom models
     this.userModels = [];
@@ -221,10 +241,21 @@ class GenerationDashboard {
   init() {
     this.cacheElements();
     this.bindEvents();
+    
+    // Apply initial mode from URL parameter to the mode buttons UI
+    if (this.state.mode !== 'image') {
+      this.elements.modeButtons.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === this.state.mode);
+      });
+    }
+    
     this.setInitialState();
     this.loadStoredResults();
     this.loadUserModels(); // Load user's custom models
     this.updateUI();
+    
+    // Update tools visibility for initial mode
+    this.updateToolsForMode();
 
     console.log('[GenerationDashboard] Initialized with mode:', this.state.mode);
   }
@@ -236,7 +267,7 @@ class GenerationDashboard {
     this.elements.modelNameDisplay = document.querySelector('.gen-model-selector .model-name');
     
     // Main content
-    this.elements.mainContent = document.querySelector('.gen-main-content');
+    this.elements.mainContent = document.querySelector('.studio-results') || document.querySelector('.gen-main-content');
     this.elements.contentInner = document.querySelector('.gen-content-inner');
     this.elements.emptyState = document.querySelector('.gen-empty-state');
     
@@ -821,6 +852,23 @@ class GenerationDashboard {
       return;
     }
     
+    // Validate face merge: requires both face image and target image
+    if (isFaceMerge || model?.requiresTwoImages) {
+      const hasFace = this.state.tools.faceImage || 
+        this.state.selectedCharacter?.faceImageUrl || 
+        this.state.selectedCharacter?.chatImageUrl;
+      const hasTarget = this.state.tools.baseImage || this.state.tools.targetImage;
+      
+      if (!hasFace) {
+        this.showNotification('Face merge requires a face image. Upload one or select a character.', 'error');
+        return;
+      }
+      if (!hasTarget) {
+        this.showNotification('Face merge requires a target image. Upload a base image with the body/scene.', 'error');
+        return;
+      }
+    }
+    
     this.state.isGenerating = true;
     this.updateGeneratingState(true);
     
@@ -828,6 +876,19 @@ class GenerationDashboard {
       // Create pending result card
       const pendingResult = this.createPendingResult(prompt);
       this.addResultToFeed(pendingResult);
+      
+      // Store face image info for potential post-processing face merge
+      const faceImageForMerge = this.state.tools.faceImage || 
+        this.state.selectedCharacter?.faceImageUrl || 
+        this.state.selectedCharacter?.chatImageUrl || null;
+      const selectedModelCategory = this.state.selectedModel?.category || 'txt2img';
+      
+      // If we have a face image but are NOT using a face merge model,
+      // we'll need to do post-processing face merge after generation
+      if (faceImageForMerge && selectedModelCategory !== 'face') {
+        pendingResult._pendingFaceMerge = true;
+        pendingResult._faceImageForMerge = faceImageForMerge;
+      }
       
       // Call appropriate API based on mode
       const endpoint = this.state.mode === 'image' 
@@ -1031,6 +1092,14 @@ class GenerationDashboard {
     if (completedCount >= expectedCount) {
       // All tasks complete
       if (result.mediaUrls && result.mediaUrls.length > 0) {
+        // Check if post-processing face merge is needed
+        if (result._pendingFaceMerge && result._faceImageForMerge) {
+          console.log(`[GenerationDashboard] 🔄 Starting post-processing face merge for ${result.mediaUrls.length} image(s)`);
+          result.status = 'pending'; // Keep as pending during face merge
+          this.applyPostProcessingFaceMerge(result);
+          return; // Don't finalize yet, applyPostProcessingFaceMerge will handle it
+        }
+        
         result.status = 'completed';
         console.log(`[GenerationDashboard] ✅ All tasks complete! Total images: ${result.mediaUrls.length}`);
       } else {
@@ -1057,6 +1126,176 @@ class GenerationDashboard {
     if (result.status === 'completed') {
       this.saveResults();
     }
+  }
+  
+  /**
+   * Apply face merge as post-processing step after image generation
+   * Takes each generated image and merges the character's face onto it
+   * @param {Object} result - The completed result with generated images
+   */
+  async applyPostProcessingFaceMerge(result) {
+    const faceImage = result._faceImageForMerge;
+    const originalUrls = [...result.mediaUrls];
+    const originalItems = [...(result.mediaItems || [])];
+    
+    console.log(`[GenerationDashboard] 🔄 Face merge post-processing: ${originalUrls.length} image(s) with face: ${faceImage?.substring(0, 60)}...`);
+    
+    // Show notification
+    this.showNotification('Applying face swap to generated images...', 'info');
+    
+    // Update card to show face merge in progress
+    result.status = 'pending';
+    result._faceMergeStatus = 'processing';
+    const card = document.getElementById(`result-${result.id}`);
+    if (card) {
+      const newCard = this.createResultCard(result);
+      card.replaceWith(newCard);
+    }
+    
+    // Process each generated image through face merge
+    const mergedUrls = [];
+    const mergedItems = [];
+    let hasAnySuccess = false;
+    
+    for (let i = 0; i < originalUrls.length; i++) {
+      const targetImageUrl = originalUrls[i];
+      console.log(`[GenerationDashboard] 🔄 Face merge for image ${i + 1}/${originalUrls.length}`);
+      
+      try {
+        const mergePayload = {
+          models: ['merge-face-segmind'],
+          selectedSDModels: [],
+          prompt: result.prompt || '',
+          generationMode: 'face',
+          face_image_file: faceImage,
+          image_file: targetImageUrl,
+          size: '1024*1024',
+          imagesPerModel: 1
+        };
+        
+        const response = await fetch('/dashboard/image/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(mergePayload)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.tasks && data.tasks.length > 0) {
+          const mergeTask = data.tasks[0];
+          
+          if (mergeTask.status === 'completed' && mergeTask.images?.length > 0) {
+            // Synchronous completion
+            const img = mergeTask.images[0];
+            const url = img?.imageUrl || img?.image_url || img?.url || (typeof img === 'string' ? img : null);
+            if (url) {
+              mergedUrls.push(url);
+              mergedItems.push({ url, nsfw: img?.nsfw || originalItems[i]?.nsfw || false });
+              hasAnySuccess = true;
+              console.log(`[GenerationDashboard] ✅ Face merge ${i + 1} completed (sync)`);
+            } else {
+              // Fallback to original
+              mergedUrls.push(targetImageUrl);
+              mergedItems.push(originalItems[i] || { url: targetImageUrl, nsfw: false });
+            }
+          } else if (mergeTask.async && (mergeTask.taskId || mergeTask.task_id)) {
+            // Async merge - poll for result
+            const taskId = mergeTask.taskId || mergeTask.task_id;
+            const mergedResult = await this.pollForFaceMergeResult(taskId);
+            if (mergedResult) {
+              mergedUrls.push(mergedResult.url);
+              mergedItems.push(mergedResult);
+              hasAnySuccess = true;
+              console.log(`[GenerationDashboard] ✅ Face merge ${i + 1} completed (async)`);
+            } else {
+              mergedUrls.push(targetImageUrl);
+              mergedItems.push(originalItems[i] || { url: targetImageUrl, nsfw: false });
+              console.log(`[GenerationDashboard] ⚠️ Face merge ${i + 1} failed, using original`);
+            }
+          } else {
+            // Failed, use original
+            mergedUrls.push(targetImageUrl);
+            mergedItems.push(originalItems[i] || { url: targetImageUrl, nsfw: false });
+          }
+        } else {
+          console.error(`[GenerationDashboard] ❌ Face merge ${i + 1} API error:`, data.error);
+          mergedUrls.push(targetImageUrl);
+          mergedItems.push(originalItems[i] || { url: targetImageUrl, nsfw: false });
+        }
+      } catch (error) {
+        console.error(`[GenerationDashboard] ❌ Face merge ${i + 1} error:`, error);
+        mergedUrls.push(targetImageUrl);
+        mergedItems.push(originalItems[i] || { url: targetImageUrl, nsfw: false });
+      }
+    }
+    
+    // Update result with merged images
+    result.mediaUrls = mergedUrls;
+    result.mediaItems = mergedItems;
+    result.mediaUrl = mergedUrls[0] || result.mediaUrl;
+    result._pendingFaceMerge = false;
+    result._faceMergeStatus = 'completed';
+    result._faceMergeApplied = hasAnySuccess;
+    result.status = 'completed';
+    
+    console.log(`[GenerationDashboard] ✅ Face merge post-processing complete. ${hasAnySuccess ? 'Face swap applied!' : 'Using original images.'}`);
+    
+    if (hasAnySuccess) {
+      this.showNotification('Face swap applied successfully!', 'success');
+    } else {
+      this.showNotification('Face swap could not be applied, showing original images.', 'warning');
+    }
+    
+    // Update card and save
+    const finalCard = document.getElementById(`result-${result.id}`);
+    if (finalCard) {
+      const newCard = this.createResultCard(result);
+      finalCard.replaceWith(newCard);
+    }
+    this.saveResults();
+  }
+  
+  /**
+   * Poll for a face merge async task result
+   * @param {string} taskId - The task ID to poll
+   * @returns {Object|null} - { url, nsfw } or null if failed
+   */
+  async pollForFaceMergeResult(taskId) {
+    const maxAttempts = 60; // 5 minutes max (5s intervals)
+    let attempts = 0;
+    
+    return new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        attempts++;
+        try {
+          const response = await fetch(`/dashboard/image/status/${taskId}`);
+          const data = await response.json();
+          
+          if (data.status === 'completed' || data.status === 'TASK_STATUS_SUCCEED') {
+            clearInterval(interval);
+            const images = data.images || [];
+            if (images.length > 0) {
+              const img = images[0];
+              const url = img?.imageUrl || img?.image_url || img?.url || (typeof img === 'string' ? img : null);
+              resolve(url ? { url, nsfw: img?.nsfw || false } : null);
+            } else if (data.imageUrl) {
+              resolve({ url: data.imageUrl, nsfw: data.nsfw || false });
+            } else {
+              resolve(null);
+            }
+          } else if (data.status === 'failed' || data.status === 'TASK_STATUS_FAILED' || attempts >= maxAttempts) {
+            clearInterval(interval);
+            resolve(null);
+          }
+        } catch (error) {
+          console.error('[GenerationDashboard] Face merge poll error:', error);
+          if (attempts >= maxAttempts) {
+            clearInterval(interval);
+            resolve(null);
+          }
+        }
+      }, 5000);
+    });
   }
   
   /**
@@ -1140,6 +1379,12 @@ class GenerationDashboard {
     const model = this.state.selectedModel;
     const payload = {};
     
+    // Add character data if a character is selected
+    if (this.state.selectedCharacterId) {
+      payload.characterId = this.state.selectedCharacterId;
+      payload.saveAsPendingPost = true; // Flag to save as pending post for character
+    }
+    
     // Check if this is a custom SD model
     if (model.isCustom || model.isSDModel) {
       // For SD models, use selectedSDModels array
@@ -1156,9 +1401,12 @@ class GenerationDashboard {
       payload.selectedSDModels = []; // Empty array for SD models
     }
     
+    // Use enhanced prompt if character selected, otherwise use raw prompt
+    const finalPrompt = this.state.selectedCharacterId ? this.getEnhancedPrompt(prompt) : prompt;
+    
     // Prompt is optional for face merge models
-    if (prompt || model.category !== 'face') {
-      payload.prompt = prompt || '';
+    if (finalPrompt || model.category !== 'face') {
+      payload.prompt = finalPrompt || '';
     }
     
     if (this.state.mode === 'image') {
@@ -1188,9 +1436,15 @@ class GenerationDashboard {
         payload.image_base64 = this.state.tools.baseImage;
         payload.image_file = this.state.tools.baseImage;
       }
-      if (this.state.tools.faceImage) {
-        payload.face_image_file = this.state.tools.faceImage;
+      
+      // Face image handling - use character's face if available, otherwise use uploaded face
+      const faceImageToUse = this.state.tools.faceImage || 
+        (this.state.selectedCharacter?.faceImageUrl ? this.state.selectedCharacter.faceImageUrl : 
+         this.state.selectedCharacter?.chatImageUrl ? this.state.selectedCharacter.chatImageUrl : null);
+      if (faceImageToUse) {
+        payload.face_image_file = faceImageToUse;
       }
+      
       if (this.state.tools.targetImage) {
         payload.image_file = this.state.tools.targetImage;
       }
@@ -1203,9 +1457,15 @@ class GenerationDashboard {
       if (this.state.tools.baseImage) {
         payload.baseImageUrl = this.state.tools.baseImage;
       }
-      if (this.state.tools.faceImage) {
-        payload.faceImageFile = this.state.tools.faceImage;
+      
+      // Face image handling - use character's face if available, otherwise use uploaded face
+      const faceImageToUse = this.state.tools.faceImage || 
+        (this.state.selectedCharacter?.faceImageUrl ? this.state.selectedCharacter.faceImageUrl : 
+         this.state.selectedCharacter?.chatImageUrl ? this.state.selectedCharacter.chatImageUrl : null);
+      if (faceImageToUse) {
+        payload.faceImageFile = faceImageToUse;
       }
+      
       if (this.state.tools.baseVideo) {
         payload.videoFile = this.state.tools.baseVideo;
       }
@@ -1425,6 +1685,11 @@ class GenerationDashboard {
             <button class="gen-action-btn" onclick="genDashboard.reusePrompt('${result.id}')" title="Reuse">
               <i class="bi bi-arrow-repeat"></i>
             </button>
+            ${this.state.selectedCharacterId ? `
+              <button class="gen-action-btn gen-save-post-btn" onclick="genDashboard.saveAsPost('${result.id}')" title="Save as Post">
+                <i class="bi bi-bookmark-plus"></i>
+              </button>
+            ` : ''}
           ` : ''}
         </div>
       </div>
@@ -1720,11 +1985,80 @@ class GenerationDashboard {
         }
       }
       
-      this.showNotification(`${type} uploaded successfully`, 'success');
+      // Update the upload area with a preview of the uploaded image
+      this.updateUploadAreaPreview(type, dataUrl);
+      
+      this.showNotification(`${type === 'baseImage' ? 'Base image' : type === 'faceImage' ? 'Face image' : type === 'targetImage' ? 'Target image' : 'File'} uploaded`, 'success');
     } catch (error) {
       console.error('[GenerationDashboard] File upload error:', error);
       this.showNotification('Failed to upload file', 'error');
     }
+  }
+  
+  /**
+   * Update the upload area with an image preview
+   */
+  updateUploadAreaPreview(type, dataUrl) {
+    const areaMap = {
+      'baseImage': 'baseImageUploadArea',
+      'faceImage': 'faceImageUploadArea',
+      'targetImage': 'targetImageUploadArea'
+    };
+    
+    const areaId = areaMap[type];
+    if (!areaId) return;
+    
+    const uploadArea = document.getElementById(areaId);
+    if (!uploadArea) return;
+    
+    if (type === 'faceImage') {
+      this.updateFaceUploadUI(dataUrl);
+      return;
+    }
+    
+    uploadArea.classList.add('has-image');
+    uploadArea.innerHTML = `
+      <button class="upload-clear-btn" onclick="event.stopPropagation(); genDashboard.clearUploadArea('${type}');" title="Remove">
+        <i class="bi bi-x"></i>
+      </button>
+      <img src="${dataUrl}" class="upload-preview" alt="${type}">
+    `;
+  }
+  
+  /**
+   * Clear an upload area and reset its state
+   */
+  clearUploadArea(type) {
+    this.state.tools[type] = null;
+    
+    const areaMap = {
+      'baseImage': { id: 'baseImageUploadArea', icon: 'bi-image', text: 'Drop or click to upload' },
+      'faceImage': { id: 'faceImageUploadArea', icon: 'bi-person-bounding-box', text: 'Drop or click to upload' },
+      'targetImage': { id: 'targetImageUploadArea', icon: 'bi-image', text: 'Drop or click to upload' }
+    };
+    
+    const config = areaMap[type];
+    if (!config) return;
+    
+    const uploadArea = document.getElementById(config.id);
+    if (uploadArea) {
+      uploadArea.classList.remove('has-image');
+      uploadArea.innerHTML = `
+        <i class="bi ${config.icon} upload-area-icon"></i>
+        <span class="upload-area-text">${config.text}</span>
+      `;
+    }
+    
+    // Update tool button
+    const toolSelector = this.getToolButtonSelector(type);
+    if (toolSelector) {
+      const toolBtn = document.querySelector(`[data-tool="${toolSelector}"]`);
+      if (toolBtn) {
+        toolBtn.classList.remove('has-content');
+      }
+    }
+    
+    this.showNotification('Image removed', 'info');
   }
   
   fileToDataUrl(file) {
@@ -2023,10 +2357,17 @@ class GenerationDashboard {
           <i class="bi bi-person-plus"></i>
           <span>Character${!this.isPremium() ? ' <i class="bi bi-gem" style="font-size:0.75em;color:#a78bfa;"></i>' : ''}</span>
         </button>
-        <button class="gen-preview-action" onclick="genDashboard.createPost('${result.id}')">
-          <i class="bi bi-share"></i>
-          <span>Post</span>
-        </button>
+        ${this.state.selectedCharacterId ? `
+          <button class="gen-preview-action gen-save-post-action" onclick="genDashboard.saveAsPost('${result.id}')">
+            <i class="bi bi-bookmark-plus"></i>
+            <span>Save as Post</span>
+          </button>
+        ` : `
+          <button class="gen-preview-action" onclick="genDashboard.createPost('${result.id}')">
+            <i class="bi bi-share"></i>
+            <span>Post</span>
+          </button>
+        `}
       ` : ''}
     `;
   }
@@ -2083,6 +2424,66 @@ class GenerationDashboard {
       this.elements.promptInput.value = result.prompt;
       this.resizePromptInput();
       this.elements.promptInput.focus();
+    }
+  }
+  
+  /**
+   * Save a generated image as a pending post for the selected character
+   * @param {string} resultId - Result ID to save
+   */
+  async saveAsPost(resultId) {
+    const result = this.state.results.find(r => r.id === resultId);
+    if (!result) {
+      this.showNotification('Result not found', 'error');
+      return;
+    }
+    
+    if (!this.state.selectedCharacterId) {
+      this.showNotification('Please select a character first', 'error');
+      return;
+    }
+    
+    // Get the image URL - if in preview with multiple images, save the current one
+    let imageUrl = result.mediaUrl;
+    let imageIndex = 0;
+    
+    if (result.mediaUrls && result.mediaUrls.length > 1 && this._currentPreviewResult?.id === resultId) {
+      imageIndex = this._previewImageIndex || 0;
+      imageUrl = result.mediaUrls[imageIndex] || result.mediaUrl;
+    }
+    
+    if (!imageUrl) {
+      this.showNotification('No image to save', 'error');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/dashboard/image/save-as-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          characterId: this.state.selectedCharacterId,
+          imageUrl: imageUrl,
+          prompt: result.prompt,
+          model: result.model,
+          parameters: {
+            aspectRatio: this.state.tools.aspectRatio,
+            style: this.state.tools.style
+          },
+          nsfw: result.mediaItems?.[imageIndex]?.nsfw || false
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        this.showNotification('Saved as pending post! Manage it in Social Manager.', 'success');
+      } else {
+        throw new Error(data.error || 'Failed to save');
+      }
+    } catch (error) {
+      console.error('[GenerationDashboard] Error saving as post:', error);
+      this.showNotification(error.message || 'Failed to save as post', 'error');
     }
   }
   
@@ -2301,6 +2702,297 @@ class GenerationDashboard {
     document.body.appendChild(toast);
     
     setTimeout(() => toast.remove(), 3000);
+  }
+
+  // ============================================================================
+  // CHARACTER SELECTION METHODS
+  // ============================================================================
+
+  /**
+   * Select a character for generation
+   * @param {HTMLElement|null} element - The character option element or null to clear
+   */
+  selectCharacter(element) {
+    if (!element) {
+      // Clear character selection
+      this.state.selectedCharacter = null;
+      this.state.selectedCharacterId = null;
+      this.state.tools.faceImage = null;
+      
+      // Reset face upload UI back to default
+      this.clearFaceImageUI();
+      
+      // Update UI
+      this.updateCharacterUI();
+      this.closeCharacterDropdown();
+      
+      // Update URL without page reload
+      const url = new URL(window.location);
+      url.searchParams.delete('characterId');
+      window.history.replaceState({}, '', url);
+      
+      this.showNotification('Character cleared', 'info');
+      return;
+    }
+    
+    const characterId = element.dataset.characterId;
+    const characterName = element.dataset.characterName;
+    const characterImage = element.dataset.characterImage;
+    const characterFace = element.dataset.characterFace;
+    const characterPrompt = element.dataset.characterPrompt;
+    
+    // Use face image if available, otherwise fallback to character thumbnail
+    const faceImage = characterFace || characterImage;
+    
+    // Update state
+    this.state.selectedCharacter = {
+      _id: characterId,
+      name: characterName,
+      chatImageUrl: characterImage,
+      faceImageUrl: faceImage,
+      basePromptForImageGeneration: characterPrompt
+    };
+    this.state.selectedCharacterId = characterId;
+    
+    // Auto-set face image (use face if available, otherwise use thumbnail)
+    if (faceImage) {
+      this.state.tools.faceImage = faceImage;
+      this.updateFaceUploadUI(faceImage);
+    }
+    
+    // Update UI
+    this.updateCharacterUI();
+    this.closeCharacterDropdown();
+    
+    // Update URL without page reload
+    const url = new URL(window.location);
+    url.searchParams.set('characterId', characterId);
+    window.history.replaceState({}, '', url);
+    
+    this.showNotification(`Selected: ${characterName}`, 'success');
+  }
+
+  /**
+   * Update character-related UI elements
+   */
+  updateCharacterUI() {
+    const selectorBtn = document.getElementById('characterSelectorBtn');
+    const dropdown = document.getElementById('characterDropdown');
+    
+    if (selectorBtn) {
+      if (this.state.selectedCharacter) {
+        selectorBtn.classList.add('has-character');
+        selectorBtn.innerHTML = `
+          <img src="${this.state.selectedCharacter.chatImageUrl || '/img/avatar.png'}" alt="" class="character-selector-avatar">
+          <span class="character-selector-text">${this.state.selectedCharacter.name}</span>
+          <i class="bi bi-chevron-down"></i>
+        `;
+      } else {
+        selectorBtn.classList.remove('has-character');
+        selectorBtn.innerHTML = `
+          <div class="character-selector-placeholder">
+            <i class="bi bi-person"></i>
+          </div>
+          <span class="character-selector-text placeholder">No Character</span>
+          <i class="bi bi-chevron-down"></i>
+        `;
+      }
+    }
+    
+    // Update dropdown selected state
+    if (dropdown) {
+      dropdown.querySelectorAll('.character-option').forEach(opt => {
+        // Remove old check icons
+        const existingCheck = opt.querySelector('.bi-check-circle-fill');
+        if (existingCheck) existingCheck.remove();
+        
+        if (opt.dataset.characterId === this.state.selectedCharacterId) {
+          opt.classList.add('selected');
+          // Add check icon
+          const check = document.createElement('i');
+          check.className = 'bi bi-check-circle-fill';
+          check.style.cssText = 'color: var(--studio-primary); font-size: 16px; flex-shrink: 0;';
+          opt.appendChild(check);
+        } else {
+          opt.classList.remove('selected');
+        }
+      });
+    }
+    
+    // Update prompt meta area
+    const promptMeta = document.querySelector('.prompt-meta');
+    if (promptMeta && this.state.selectedCharacter) {
+      let metaHtml = `
+        <div class="cost-indicator">
+          <i class="bi bi-coin"></i>
+          <span id="costAmount">${this.calculateCost()}</span> points
+        </div>
+        <span style="color: var(--studio-primary-light, #a78bfa);">
+          <i class="bi bi-person-check"></i> Posting to ${this.state.selectedCharacter.name}
+        </span>
+      `;
+      promptMeta.innerHTML = metaHtml;
+    } else if (promptMeta) {
+      // Reset to default cost display
+      promptMeta.innerHTML = `
+        <div class="cost-indicator">
+          <i class="bi bi-coin"></i>
+          <span id="costAmount">${this.calculateCost()}</span> points
+        </div>
+      `;
+    }
+    
+    // Update character info section in controls panel
+    this.updateCharacterInfoSection();
+    
+    // Refresh result cards to show/hide "Save as Post" buttons
+    this.refreshResultCards();
+  }
+  
+  /**
+   * Refresh all result cards to reflect current state (like character selection)
+   */
+  refreshResultCards() {
+    this.state.results.forEach(result => {
+      const card = document.getElementById(`result-${result.id}`);
+      if (card && result.status === 'completed') {
+        const newCard = this.createResultCard(result);
+        card.replaceWith(newCard);
+      }
+    });
+  }
+
+  /**
+   * Update the character info section in the controls panel
+   */
+  updateCharacterInfoSection() {
+    let section = document.getElementById('characterSection');
+    
+    if (this.state.selectedCharacter) {
+      if (!section) {
+        // Create section if it doesn't exist
+        const controls = document.getElementById('studioControls');
+        if (controls) {
+          section = document.createElement('div');
+          section.id = 'characterSection';
+          section.className = 'control-section';
+          controls.insertBefore(section, controls.firstChild);
+        }
+      }
+      
+      if (section) {
+        const char = this.state.selectedCharacter;
+        const originalFace = this.userCharacters?.find(c => c._id === char._id)?.faceImageUrl;
+        const faceLabel = originalFace 
+          ? '<span class="character-info-badge">Face Set</span>' 
+          : '<span class="character-info-badge" style="background:var(--studio-warning,#f59e0b);color:#000;">Using Thumbnail</span>';
+        section.innerHTML = `
+          <div class="control-section-header">
+            <span class="control-section-title">Character</span>
+            <button class="btn btn-sm btn-link text-muted p-0" onclick="genDashboard.clearCharacter()">
+              <i class="bi bi-x"></i>
+            </button>
+          </div>
+          <div class="character-info-card">
+            <img src="${char.chatImageUrl || '/img/avatar.png'}" alt="" class="character-info-avatar">
+            <div class="character-info-details">
+              <div class="character-info-name">${char.name}</div>
+              <div class="character-info-meta">
+                ${faceLabel}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    } else if (section) {
+      section.remove();
+    }
+  }
+
+  /**
+   * Update the face upload UI with an image
+   */
+  updateFaceUploadUI(imageUrl) {
+    const uploadArea = document.getElementById('faceImageUploadArea');
+    if (uploadArea) {
+      uploadArea.classList.add('has-image');
+      uploadArea.innerHTML = `
+        <button class="upload-clear-btn" onclick="event.stopPropagation(); genDashboard.clearFaceImage();" title="Remove">
+          <i class="bi bi-x"></i>
+        </button>
+        <img src="${imageUrl}" class="upload-preview" alt="Face image">
+      `;
+    }
+  }
+
+  /**
+   * Clear the selected character
+   */
+  clearCharacter() {
+    this.selectCharacter(null);
+  }
+
+  /**
+   * Clear the face image (with notification)
+   */
+  clearFaceImage() {
+    this.state.tools.faceImage = null;
+    this.clearFaceImageUI();
+    this.showNotification('Face image cleared', 'info');
+  }
+  
+  /**
+   * Reset face upload UI to default state (no notification)
+   */
+  clearFaceImageUI() {
+    const uploadArea = document.getElementById('faceImageUploadArea');
+    if (uploadArea) {
+      uploadArea.classList.remove('has-image');
+      uploadArea.innerHTML = `
+        <i class="bi bi-person-bounding-box upload-area-icon"></i>
+        <span class="upload-area-text">Drop or click to upload</span>
+      `;
+    }
+    
+    // Also update tool button
+    const toolBtn = document.querySelector('[data-tool="upload-face"]');
+    if (toolBtn) {
+      toolBtn.classList.remove('has-content');
+    }
+  }
+
+  /**
+   * Close the character dropdown
+   */
+  closeCharacterDropdown() {
+    const dropdown = document.getElementById('characterDropdown');
+    const overlay = document.getElementById('studioOverlay');
+    
+    if (dropdown) dropdown.classList.remove('visible');
+    if (overlay) overlay.classList.remove('visible');
+  }
+
+  /**
+   * Toggle mobile controls panel
+   */
+  toggleMobileControls() {
+    const controls = document.getElementById('studioControls');
+    if (controls) {
+      controls.classList.toggle('mobile-visible');
+    }
+  }
+
+  /**
+   * Get the prompt to use for generation, potentially enhanced with character prompt
+   */
+  getEnhancedPrompt(userPrompt) {
+    // If a character with a base prompt is selected, combine them
+    if (this.state.selectedCharacter?.basePromptForImageGeneration) {
+      const charPrompt = this.state.selectedCharacter.basePromptForImageGeneration;
+      // Combine character's base prompt with user's prompt
+      return `${charPrompt}, ${userPrompt}`;
+    }
+    return userPrompt;
   }
   
   // ============================================================================

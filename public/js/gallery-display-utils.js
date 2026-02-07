@@ -91,6 +91,23 @@ window.displayChats = function (chatData, targetGalleryId = 'chat-gallery', moda
                         <i class="bi bi-images multi-indicator"></i>
                     ` : ''}
                     
+                    <!-- Owner Badge & Social Manager Button -->
+                    ${isOwner ? `
+                        <div class="position-absolute top-0 start-0 p-2 d-flex align-items-center gap-1" style="z-index: 10;">
+                            <span class="badge rounded-pill px-2 py-1" 
+                                  style="background: rgba(139, 92, 246, 0.9); font-size: 0.65rem; font-weight: 600;">
+                                <i class="bi bi-person-fill"></i> My Character
+                            </span>
+                        </div>
+                        <a href="/dashboard/social/${chatId}" 
+                           class="position-absolute bottom-0 end-0 m-2 btn btn-sm rounded-pill d-flex align-items-center gap-1"
+                           onclick="event.stopPropagation();"
+                           style="background: linear-gradient(135deg, #8B5CF6 0%, #6366F1 100%); border: none; color: white; font-size: 0.7rem; padding: 4px 10px; z-index: 10;"
+                           title="Manage Social Presence">
+                            <i class="bi bi-megaphone-fill"></i>
+                        </a>
+                    ` : ''}
+                    
                     <!-- Floating Like Button -->
                     <button class="gallery-like-btn d-none" 
                             data-chat-id="${chatId}"

@@ -9,10 +9,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#0f0f1a">
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" href="/img/logo.webp" type="image/webp">
-    <title>{{#if seoTitle}}{{seoTitle}}{{else}}AI Generation Dashboard{{/if}}</title>
+    <title>{{#if seoTitle}}{{seoTitle}}{{else}}AI Studio{{/if}}</title>
     
     <!-- Core CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,245 +20,1183 @@
     <link href="/css/style.css" rel="stylesheet">
     <link href="/css/dashboard-generation.css" rel="stylesheet">
     <link href="/css/civitai-model-search.css" rel="stylesheet">
+    
+    <style>
+    /* ================================================================
+       REACT-STYLE COMPACT STUDIO DESIGN
+       ================================================================ */
+    :root {
+        --studio-bg: #0a0a0f;
+        --studio-surface: #12121a;
+        --studio-surface-2: #1a1a24;
+        --studio-border: rgba(255,255,255,0.08);
+        --studio-border-active: rgba(130,64,255,0.5);
+        --studio-primary: #8240FF;
+        --studio-primary-light: #a78bfa;
+        --studio-text: #ffffff;
+        --studio-text-muted: rgba(255,255,255,0.5);
+        --studio-success: #22c55e;
+        --studio-warning: #f59e0b;
+    }
+    
+    /* Override base dashboard styles for studio */
+    html, body {
+        background: var(--studio-bg) !important;
+        overflow: hidden !important;
+        height: 100dvh;
+    }
+    
+    .gen-dashboard {
+        background: var(--studio-bg);
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+        height: 100dvh;
+        max-height: 100dvh;
+        overflow: hidden;
+    }
+    
+    /* Top Bar - Compact */
+    .gen-top-bar {
+        background: var(--studio-surface);
+        border-bottom: 1px solid var(--studio-border);
+        padding: 8px 12px;
+        padding-top: max(8px, env(safe-area-inset-top));
+    }
+    
+    .gen-top-bar-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .gen-logo-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #D2B8FF 0%, #8240FF 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-decoration: none;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    
+    /* Mode Pills */
+    .gen-mode-selector {
+        display: flex;
+        background: var(--studio-surface-2);
+        border-radius: 8px;
+        padding: 2px;
+        gap: 2px;
+    }
+    
+    .gen-mode-btn {
+        padding: 6px 12px;
+        border: none;
+        background: transparent;
+        color: var(--studio-text-muted);
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        transition: all 0.15s ease;
+    }
+    
+    .gen-mode-btn i { font-size: 14px; }
+    
+    .gen-mode-btn.active {
+        background: var(--studio-primary);
+        color: white;
+    }
+    
+    /* Character Selector - New */
+    .character-selector {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 10px;
+        background: var(--studio-surface-2);
+        border: 1px solid var(--studio-border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        min-width: 140px;
+        max-width: 200px;
+    }
+    
+    .character-selector:hover {
+        border-color: var(--studio-border-active);
+    }
+    
+    .character-selector.has-character {
+        border-color: var(--studio-primary);
+        background: rgba(130,64,255,0.1);
+    }
+    
+    .character-selector-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: var(--studio-surface);
+    }
+    
+    .character-selector-placeholder {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--studio-surface);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--studio-text-muted);
+        font-size: 12px;
+    }
+    
+    .character-selector-text {
+        flex: 1;
+        font-size: 12px;
+        color: var(--studio-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .character-selector-text.placeholder {
+        color: var(--studio-text-muted);
+    }
+    
+    .character-selector i.bi-chevron-down {
+        font-size: 10px;
+        color: var(--studio-text-muted);
+    }
+    
+    /* Model Selector - Compact */
+    .gen-model-selector {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        background: var(--studio-surface-2);
+        border: 1px solid var(--studio-border);
+        border-radius: 8px;
+        color: var(--studio-text);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        max-width: 160px;
+    }
+    
+    .gen-model-selector:hover {
+        border-color: var(--studio-border-active);
+    }
+    
+    .model-icon { 
+        width: 20px; 
+        height: 20px; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(130,64,255,0.2);
+        border-radius: 4px;
+        font-size: 10px;
+        color: var(--studio-primary-light);
+    }
+    
+    .model-name {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .model-chevron { font-size: 10px; opacity: 0.5; }
+    
+    /* Points Display */
+    .points-display {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(251,191,36,0.05) 100%);
+        border: 1px solid rgba(251,191,36,0.2);
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #fbbf24;
+        margin-left: auto;
+    }
+    
+    .points-display i { font-size: 12px; }
+    
+    /* Main Content - Split View */
+    .gen-main-content {
+        display: grid;
+        grid-template-columns: 1fr;
+        overflow: hidden;
+        background: var(--studio-bg);
+        min-height: 0;
+    }
+    
+    @media (min-width: 1024px) {
+        .gen-main-content {
+            grid-template-columns: 320px 1fr;
+        }
+    }
+    
+    /* Left Panel - Controls */
+    .studio-controls {
+        background: var(--studio-surface);
+        border-right: 1px solid var(--studio-border);
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    @media (max-width: 1023px) {
+        .studio-controls {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 1000;
+            border-right: none;
+        }
+        
+        .studio-controls.mobile-visible {
+            display: flex;
+        }
+    }
+    
+    .control-section {
+        background: var(--studio-surface-2);
+        border: 1px solid var(--studio-border);
+        border-radius: 12px;
+        padding: 12px;
+    }
+    
+    .control-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .control-section-title {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--studio-text-muted);
+    }
+    
+    /* Character Info Card */
+    .character-info-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: rgba(130,64,255,0.1);
+        border: 1px solid rgba(130,64,255,0.2);
+        border-radius: 10px;
+    }
+    
+    .character-info-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--studio-primary);
+    }
+    
+    .character-info-details {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .character-info-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--studio-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .character-info-meta {
+        font-size: 11px;
+        color: var(--studio-text-muted);
+    }
+    
+    .character-info-badge {
+        padding: 2px 6px;
+        background: var(--studio-primary);
+        border-radius: 4px;
+        font-size: 9px;
+        font-weight: 600;
+        color: white;
+        text-transform: uppercase;
+    }
+    
+    /* Aspect Ratio Grid */
+    .aspect-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+    
+    .aspect-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 4px;
+        background: var(--studio-surface-2);
+        border: 1px solid rgba(255,255,255,0.12);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        color: rgba(255,255,255,0.7);
+    }
+    
+    .aspect-btn:hover {
+        border-color: var(--studio-border-active);
+        background: rgba(130,64,255,0.1);
+        color: var(--studio-text);
+    }
+    
+    .aspect-btn.active {
+        background: var(--studio-primary);
+        border-color: var(--studio-primary);
+        color: #fff;
+    }
+    
+    .aspect-btn-icon {
+        width: 20px;
+        height: 20px;
+        border: 2px solid currentColor;
+        border-radius: 2px;
+        margin-bottom: 4px;
+    }
+    
+    .aspect-btn-label {
+        font-size: 10px;
+        font-weight: 500;
+        color: inherit;
+    }
+    
+    /* Image Count Selector */
+    .count-selector {
+        display: flex;
+        gap: 6px;
+    }
+    
+    .count-btn {
+        flex: 1;
+        padding: 8px;
+        background: var(--studio-surface);
+        border: 1px solid var(--studio-border);
+        border-radius: 8px;
+        color: var(--studio-text);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    
+    .count-btn:hover {
+        border-color: var(--studio-border-active);
+    }
+    
+    .count-btn.active {
+        background: var(--studio-primary);
+        border-color: var(--studio-primary);
+    }
+    
+    /* Upload Areas */
+    .upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        background: var(--studio-surface);
+        border: 2px dashed var(--studio-border);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        min-height: 80px;
+    }
+    
+    .upload-area:hover {
+        border-color: var(--studio-primary);
+        background: rgba(130,64,255,0.05);
+    }
+    
+    .upload-area.has-image {
+        border-style: solid;
+        border-color: var(--studio-success);
+        padding: 8px;
+        position: relative;
+    }
+    
+    .upload-area-icon {
+        font-size: 20px;
+        color: var(--studio-text-muted);
+        margin-bottom: 4px;
+    }
+    
+    .upload-area-text {
+        font-size: 11px;
+        color: var(--studio-text-muted);
+    }
+    
+    .upload-preview {
+        width: 100%;
+        max-height: 100px;
+        object-fit: contain;
+        border-radius: 6px;
+        display: block;
+    }
+    
+    .upload-clear-btn {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: rgba(220,53,69,0.9);
+        border: none;
+        color: white;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        padding: 0;
+        line-height: 1;
+    }
+    
+    .upload-clear-btn:hover {
+        background: rgba(220,53,69,1);
+    }
+    
+    /* Right Panel - Results */
+    .studio-results {
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-height: 0;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .studio-results .gen-content-inner {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding-bottom: 16px;
+    }
+    
+    .studio-results .gen-result-card {
+        flex-shrink: 0;
+    }
+    
+    .studio-results .gen-result-media {
+        aspect-ratio: auto;
+        max-height: 400px;
+        min-height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .studio-results .gen-result-media img,
+    .studio-results .gen-result-media video {
+        width: 100%;
+        height: 100%;
+        max-height: 400px;
+        object-fit: contain;
+    }
+    
+    .gen-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        text-align: center;
+        color: var(--studio-text-muted);
+    }
+    
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--studio-surface-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        margin-bottom: 16px;
+    }
+    
+    .gen-empty-state h3 {
+        font-size: 18px;
+        color: var(--studio-text);
+        margin-bottom: 8px;
+    }
+    
+    .gen-empty-state p {
+        font-size: 13px;
+        max-width: 280px;
+    }
+    
+    /* Bottom Bar - Prompt Input */
+    .gen-bottom-bar {
+        background: var(--studio-surface);
+        border-top: 1px solid var(--studio-border);
+        padding: 12px;
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+    
+    .gen-bottom-bar-content {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    /* Mobile Tools Toggle */
+    .mobile-tools-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 10px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+    
+    @media (min-width: 1024px) {
+        .mobile-tools-row {
+            display: none;
+        }
+    }
+    
+    .mobile-tool-btn {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        background: var(--studio-surface-2);
+        border: 1px solid var(--studio-border);
+        border-radius: 8px;
+        color: var(--studio-text);
+        font-size: 11px;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    
+    .mobile-tool-btn:hover,
+    .mobile-tool-btn.active {
+        border-color: var(--studio-primary);
+        color: var(--studio-primary-light);
+    }
+    
+    .mobile-tool-btn i { font-size: 12px; }
+    
+    /* Prompt Area */
+    .gen-prompt-area {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        background: var(--studio-surface-2);
+        border: 1px solid var(--studio-border);
+        border-radius: 12px;
+        padding: 8px;
+        transition: border-color 0.15s ease;
+    }
+    
+    .gen-prompt-area:focus-within {
+        border-color: var(--studio-primary);
+    }
+    
+    .gen-prompt-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--studio-text);
+        font-size: 14px;
+        resize: none;
+        min-height: 24px;
+        max-height: 120px;
+        line-height: 1.5;
+    }
+    
+    .gen-prompt-input::placeholder {
+        color: var(--studio-text-muted);
+    }
+    
+    .gen-prompt-input:focus {
+        outline: none;
+    }
+    
+    .gen-submit-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: var(--studio-primary);
+        border: none;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+    }
+    
+    .gen-submit-btn:hover:not(:disabled) {
+        background: #9557ff;
+        transform: scale(1.05);
+    }
+    
+    .gen-submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Cost indicator below prompt */
+    .prompt-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 8px;
+        font-size: 11px;
+        color: var(--studio-text-muted);
+    }
+    
+    .cost-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    
+    .cost-indicator i { color: #fbbf24; }
+    
+    /* Character Dropdown */
+    .character-dropdown {
+        position: fixed;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 320px;
+        max-width: 90vw;
+        max-height: 400px;
+        background: var(--studio-surface);
+        border: 1px solid var(--studio-border);
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        z-index: 1001;
+        display: none;
+        flex-direction: column;
+        overflow: hidden;
+    }
+    
+    .character-dropdown.visible {
+        display: flex;
+    }
+    
+    .character-dropdown-header {
+        padding: 12px;
+        border-bottom: 1px solid var(--studio-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .character-dropdown-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--studio-text);
+    }
+    
+    .character-dropdown-close {
+        background: none;
+        border: none;
+        color: var(--studio-text-muted);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 4px;
+    }
+    
+    .character-dropdown-body {
+        overflow-y: auto;
+        max-height: 300px;
+    }
+    
+    .character-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+    
+    .character-option:hover {
+        background: var(--studio-surface-2);
+    }
+    
+    .character-option.selected {
+        background: rgba(130,64,255,0.15);
+    }
+    
+    .character-option-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid transparent;
+    }
+    
+    .character-option.selected .character-option-avatar {
+        border-color: var(--studio-primary);
+    }
+    
+    .character-option-info {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .character-option-name {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--studio-text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .character-option-meta {
+        font-size: 11px;
+        color: var(--studio-text-muted);
+    }
+    
+    .character-option-none {
+        padding: 12px;
+        text-align: center;
+        color: var(--studio-text-muted);
+        font-size: 12px;
+    }
+    
+    .no-character-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 10px 12px;
+        border-top: 1px solid var(--studio-border);
+        cursor: pointer;
+        color: var(--studio-text-muted);
+        font-size: 12px;
+        transition: background 0.15s ease;
+    }
+    
+    .no-character-btn:hover {
+        background: var(--studio-surface-2);
+        color: var(--studio-text);
+    }
+    
+    /* Overlay backdrop */
+    .studio-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 1000;
+        display: none;
+    }
+    
+    .studio-overlay.visible {
+        display: block;
+    }
+    
+    /* Hide old elements */
+    .gen-tools-row,
+    .gen-cost-display { display: none !important; }
+    </style>
 </head>
 <body>
-    <!-- ====================================================================
-         UNIFIED GENERATION DASHBOARD
-         Mobile-first, chat-style interface for image and video generation
-         ==================================================================== -->
     <div class="gen-dashboard">
         
-        <!-- ================================================================
-             TOP CONTROL BAR - Fixed
-             ================================================================ -->
+        <!-- Top Bar -->
         <header class="gen-top-bar">
             <div class="gen-top-bar-content">
-                <!-- Logo Button - Links to Dashboard -->
-                <a href="/dashboard" class="gen-logo-btn" title="Go to Dashboard">
-                    <i class="bi bi-chat-heart-fill"></i>
+                <a href="/dashboard" class="gen-logo-btn" title="Dashboard">
+                    <i class="bi bi-grid-fill"></i>
                 </a>
                 
-                <!-- Mode Selector (Image / Video) -->
                 <div class="gen-mode-selector">
-                    <button class="gen-mode-btn active" data-mode="image" title="{{#if translations.generation}}{{translations.generation.image}}{{else}}Image{{/if}}">
-                        <i class="bi bi-images"></i>
+                    <button class="gen-mode-btn active" data-mode="image">
+                        <i class="bi bi-image"></i>
+                        <span>Image</span>
                     </button>
-                    <button class="gen-mode-btn" data-mode="video" title="{{#if translations.generation}}{{translations.generation.video}}{{else}}Video{{/if}}">
-                        <i class="bi bi-film"></i>{{#ifNotEquals user.subscriptionStatus "active"}}<i class="bi bi-gem" style="font-size:0.6em;color:#a78bfa;margin-left:2px;"></i>{{/ifNotEquals}}
+                    <button class="gen-mode-btn" data-mode="video">
+                        <i class="bi bi-play-circle"></i>
+                        <span>Video</span>
+                        {{#ifNotEquals user.subscriptionStatus "active"}}<i class="bi bi-gem" style="font-size:8px;color:#a78bfa;"></i>{{/ifNotEquals}}
                     </button>
                 </div>
                 
-                <!-- Model Selector Button -->
-                <button class="gen-model-selector" type="button">
-                    <div class="model-icon">
-                        <i class="bi bi-cpu"></i>
+                <!-- Character Selector -->
+                <button class="character-selector {{#if selectedCharacter}}has-character{{/if}}" id="characterSelectorBtn">
+                    {{#if selectedCharacter}}
+                    <img src="{{selectedCharacter.chatImageUrl}}" alt="" class="character-selector-avatar">
+                    <span class="character-selector-text">{{selectedCharacter.name}}</span>
+                    {{else}}
+                    <div class="character-selector-placeholder">
+                        <i class="bi bi-person"></i>
                     </div>
+                    <span class="character-selector-text placeholder">No Character</span>
+                    {{/if}}
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                
+                <!-- Model Selector -->
+                <button class="gen-model-selector" type="button">
+                    <div class="model-icon"><i class="bi bi-cpu"></i></div>
                     <span class="model-name">Select Model</span>
                     <i class="bi bi-chevron-down model-chevron"></i>
                 </button>
+                
+                <!-- Points -->
+                <div class="points-display">
+                    <i class="bi bi-coin"></i>
+                    <span id="userPointsDisplay">{{userPoints}}</span>
+                </div>
             </div>
         </header>
         
-        <!-- ================================================================
-             MAIN CONTENT AREA - Scrollable Feed
-             ================================================================ -->
+        <!-- Main Content -->
         <main class="gen-main-content">
-            <div class="gen-content-inner">
-                <!-- Empty State -->
-                <div class="gen-empty-state">
-                    <div class="empty-icon">
-                        <i class="bi bi-images"></i>
+            <!-- Left Panel: Controls (Desktop) -->
+            <aside class="studio-controls" id="studioControls">
+                <!-- Character Info (when selected) -->
+                {{#if selectedCharacter}}
+                <div class="control-section" id="characterSection">
+                    <div class="control-section-header">
+                        <span class="control-section-title">Character</span>
+                        <button class="btn btn-sm btn-link text-muted p-0" onclick="genDashboard.clearCharacter()">
+                            <i class="bi bi-x"></i>
+                        </button>
                     </div>
-                    <h3>{{#if translations.generation}}{{translations.generation.readyToCreate}}{{else}}Ready to create{{/if}}</h3>
-                    <p>{{#if translations.generation}}{{translations.generation.enterPromptHint}}{{else}}Enter a prompt below to generate your first creation{{/if}}</p>
+                    <div class="character-info-card">
+                        <img src="{{selectedCharacter.chatImageUrl}}" alt="" class="character-info-avatar">
+                        <div class="character-info-details">
+                            <div class="character-info-name">{{selectedCharacter.name}}</div>
+                            <div class="character-info-meta">
+                                {{#if selectedCharacter.faceImageUrl}}
+                                <span class="character-info-badge">Face Set</span>
+                                {{else}}
+                                <span style="color: var(--studio-warning);">No face image</span>
+                                {{/if}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{/if}}
+                
+                <!-- Aspect Ratio -->
+                <div class="control-section" id="aspectSection">
+                    <div class="control-section-header">
+                        <span class="control-section-title">Aspect Ratio</span>
+                    </div>
+                    <div class="aspect-grid">
+                        <button class="aspect-btn active" data-ratio="1:1" title="Square">
+                            <div class="aspect-btn-icon" style="width:18px;height:18px;"></div>
+                            <span class="aspect-btn-label">1:1</span>
+                        </button>
+                        <button class="aspect-btn" data-ratio="4:3" title="Landscape">
+                            <div class="aspect-btn-icon" style="width:20px;height:15px;"></div>
+                            <span class="aspect-btn-label">4:3</span>
+                        </button>
+                        <button class="aspect-btn" data-ratio="16:9" title="Wide">
+                            <div class="aspect-btn-icon" style="width:22px;height:12px;"></div>
+                            <span class="aspect-btn-label">16:9</span>
+                        </button>
+                        <button class="aspect-btn" data-ratio="3:4" title="Portrait">
+                            <div class="aspect-btn-icon" style="width:15px;height:20px;"></div>
+                            <span class="aspect-btn-label">3:4</span>
+                        </button>
+                        <button class="aspect-btn" data-ratio="9:16" title="Story">
+                            <div class="aspect-btn-icon" style="width:11px;height:20px;"></div>
+                            <span class="aspect-btn-label">9:16</span>
+                        </button>
+                        <button class="aspect-btn" data-ratio="21:9" title="Ultra Wide">
+                            <div class="aspect-btn-icon" style="width:24px;height:10px;"></div>
+                            <span class="aspect-btn-label">21:9</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <!-- Results will be dynamically inserted here -->
+                <!-- Image Count -->
+                <div class="control-section" id="countSection">
+                    <div class="control-section-header">
+                        <span class="control-section-title">Images</span>
+                    </div>
+                    <div class="count-selector">
+                        <button class="count-btn active" data-count="1">1</button>
+                        <button class="count-btn" data-count="2">2</button>
+                        <button class="count-btn" data-count="4">4</button>
+                    </div>
+                </div>
+                
+                <!-- Base Image Upload -->
+                <div class="control-section" id="baseImageSection">
+                    <div class="control-section-header">
+                        <span class="control-section-title">Base Image</span>
+                        <span class="text-muted" style="font-size:10px;">Optional</span>
+                    </div>
+                    <div class="upload-area" id="baseImageUploadArea" onclick="document.getElementById('baseImageInput').click()">
+                        <i class="bi bi-image upload-area-icon"></i>
+                        <span class="upload-area-text">Drop or click to upload</span>
+                    </div>
+                </div>
+                
+                <!-- Face Image Upload -->
+                <div class="control-section" id="faceImageSection">
+                    <div class="control-section-header">
+                        <span class="control-section-title">Face Image</span>
+                        {{#if selectedCharacter}}
+                        {{#if selectedCharacter.faceImageUrl}}
+                        <span class="text-success" style="font-size:10px;"><i class="bi bi-check-circle"></i> From character</span>
+                        {{else}}
+                        <span class="text-warning" style="font-size:10px;"><i class="bi bi-info-circle"></i> Using thumbnail</span>
+                        {{/if}}
+                        {{/if}}
+                    </div>
+                    <div class="upload-area {{#if selectedCharacter}}has-image{{/if}}" id="faceImageUploadArea" onclick="document.getElementById('faceImageInput').click()">
+                        {{#if selectedCharacter}}
+                        {{#if selectedCharacter.faceImageUrl}}
+                        <button class="upload-clear-btn" onclick="event.stopPropagation(); genDashboard.clearFaceImage();" title="Remove">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <img src="{{selectedCharacter.faceImageUrl}}" class="upload-preview" alt="Character face">
+                        {{else}}
+                        <button class="upload-clear-btn" onclick="event.stopPropagation(); genDashboard.clearFaceImage();" title="Remove">
+                            <i class="bi bi-x"></i>
+                        </button>
+                        <img src="{{selectedCharacter.chatImageUrl}}" class="upload-preview" alt="Character thumbnail as face">
+                        {{/if}}
+                        {{else}}
+                        <i class="bi bi-person-bounding-box upload-area-icon"></i>
+                        <span class="upload-area-text">Drop or click to upload</span>
+                        {{/if}}
+                    </div>
+                </div>
+            </aside>
+            
+            <!-- Right Panel: Results -->
+            <div class="studio-results" id="studioResults">
+                <div class="gen-content-inner">
+                    <div class="gen-empty-state">
+                        <div class="empty-icon">
+                            <i class="bi bi-sparkles"></i>
+                        </div>
+                        <h3>Ready to create</h3>
+                        <p>Enter a prompt below and let AI bring your imagination to life</p>
+                    </div>
+                </div>
             </div>
         </main>
         
-        <!-- ================================================================
-             BOTTOM PROMPT BAR - Fixed, Chat Input Style
-             ================================================================ -->
+        <!-- Bottom Bar -->
         <footer class="gen-bottom-bar">
             <div class="gen-bottom-bar-content">
-                <!-- Cost Display -->
-                <div class="gen-cost-display">
-                    <span class="cost-label">{{#if translations.generation}}{{translations.generation.generationCost}}{{else}}Generation Cost{{/if}}</span>
-                    <span class="cost-value">
-                        <i class="bi bi-coin"></i>
-                        <span id="costAmount">{{imageCostPerUnit}}</span> points
-                    </span>
-                </div>
-                
-                <!-- Tool Icons Row -->
-                <div class="gen-tools-row">
-                    <!-- Image Upload (for img2img / i2v) -->
-                    <button class="gen-tool-btn" data-tool="upload-base" title="Upload base image">
-                        <i class="bi bi-image"></i>
-                        <span>{{#if translations.generation}}{{translations.generation.baseImage}}{{else}}Base Image{{/if}}</span>
+                <!-- Mobile Tools -->
+                <div class="mobile-tools-row">
+                    <button class="mobile-tool-btn" onclick="genDashboard.toggleMobileControls()">
+                        <i class="bi bi-sliders"></i> Controls
                     </button>
-                    
-                    <!-- Face Upload (for face merge) -->
-                    <button class="gen-tool-btn" data-tool="upload-face" title="Upload face image">
-                        <i class="bi bi-person-bounding-box"></i>
-                        <span>{{#if translations.generation}}{{translations.generation.face}}{{else}}Face{{/if}}</span>
+                    <button class="mobile-tool-btn" data-tool="aspect-ratio">
+                        <i class="bi bi-aspect-ratio"></i> <span id="mobileAspectLabel">1:1</span>
                     </button>
-                    
-                    <!-- Aspect Ratio (Image mode) -->
-                    <button class="gen-tool-btn" data-tool="aspect-ratio" title="Aspect ratio">
-                        <i class="bi bi-aspect-ratio"></i>
-                        <span>1:1</span>
+                    <button class="mobile-tool-btn" data-tool="image-count">
+                        <i class="bi bi-grid-3x3"></i> <span id="mobileCountLabel">1x</span>
                     </button>
-                    
-                    <!-- Image Count (Image mode) -->
-                    <button class="gen-tool-btn" data-tool="image-count" title="Number of images">
-                        <i class="bi bi-grid-3x3"></i>
-                        <span>1x</span>
-                    </button>
-                    
-                    <!-- Duration (Video mode) -->
-                    <button class="gen-tool-btn gen-hidden" data-tool="duration" title="Video duration">
-                        <i class="bi bi-clock"></i>
-                        <span>5s</span>
-                    </button>
-                    
-                    <!-- Video Upload (for video face merge) -->
-                    <button class="gen-tool-btn gen-hidden" data-tool="upload-video" title="Upload video">
-                        <i class="bi bi-camera-video"></i>
-                        <span>{{#if translations.generation}}{{translations.generation.sourceVideo}}{{else}}Video{{/if}}</span>
-                    </button>
-                    
-                    <!-- Advanced Settings -->
-                    <button class="gen-tool-btn" data-tool="settings" title="Settings">
-                        <i class="bi bi-sliders"></i>
+                    <button class="mobile-tool-btn" data-tool="upload-face">
+                        <i class="bi bi-person-bounding-box"></i> Face
                     </button>
                 </div>
                 
-                <!-- Prompt Input Area -->
+                <!-- Prompt Input -->
                 <div class="gen-prompt-area">
                     <textarea class="gen-prompt-input" 
-                              placeholder="{{#if translations.generation}}{{translations.generation.promptPlaceholder}}{{else}}Describe what you want to create...{{/if}}"
-                              rows="1"></textarea>
-                    <button class="gen-submit-btn" type="button" disabled>
+                              placeholder="Describe what you want to create..."
+                              rows="1" id="promptInput"></textarea>
+                    <button class="gen-submit-btn" type="button" id="generateBtn" disabled>
                         <i class="bi bi-arrow-up"></i>
                     </button>
+                </div>
+                
+                <div class="prompt-meta">
+                    <div class="cost-indicator">
+                        <i class="bi bi-coin"></i>
+                        <span id="costAmount">{{imageCostPerUnit}}</span> points
+                    </div>
+                    {{#if selectedCharacter}}
+                    <span style="color: var(--studio-primary-light);">
+                        <i class="bi bi-person-check"></i> Posting to {{selectedCharacter.name}}
+                    </span>
+                    {{/if}}
                 </div>
             </div>
         </footer>
         
-        <!-- ================================================================
-             OVERLAYS
-             ================================================================ -->
-        
-        <!-- Overlay Backdrop -->
+        <!-- Overlays -->
         <div class="gen-overlay-backdrop"></div>
+        <div class="studio-overlay" id="studioOverlay"></div>
+        
+        <!-- Character Dropdown -->
+        <div class="character-dropdown" id="characterDropdown">
+            <div class="character-dropdown-header">
+                <span class="character-dropdown-title">Select Character</span>
+                <button class="character-dropdown-close" onclick="genDashboard.closeCharacterDropdown()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="character-dropdown-body">
+                {{#if userCharacters.length}}
+                {{#each userCharacters}}
+                <div class="character-option {{#ifEquals this._id ../selectedCharacterId}}selected{{/ifEquals}}" 
+                     data-character-id="{{this._id}}"
+                     data-character-name="{{this.name}}"
+                     data-character-image="{{this.chatImageUrl}}"
+                     data-character-face="{{this.faceImageUrl}}"
+                     data-character-prompt="{{this.basePromptForImageGeneration}}"
+                     onclick="genDashboard.selectCharacter(this)">
+                    <img src="{{this.chatImageUrl}}" alt="" class="character-option-avatar">
+                    <div class="character-option-info">
+                        <div class="character-option-name">{{this.name}}</div>
+                        <div class="character-option-meta">
+                            {{#if this.faceImageUrl}}<i class="bi bi-check-circle text-success"></i> Face image set{{else}}<i class="bi bi-image text-warning"></i> Will use thumbnail{{/if}}
+                        </div>
+                    </div>
+                    {{#ifEquals this._id ../selectedCharacterId}}
+                    <i class="bi bi-check-circle-fill" style="color: var(--studio-primary); font-size: 16px;"></i>
+                    {{/ifEquals}}
+                </div>
+                {{/each}}
+                {{else}}
+                <div class="character-option-none">
+                    <i class="bi bi-person-plus d-block mb-2" style="font-size:24px;"></i>
+                    No characters yet. Create one from a generated image!
+                </div>
+                {{/if}}
+            </div>
+            <div class="no-character-btn" onclick="genDashboard.selectCharacter(null)">
+                <i class="bi bi-x-circle"></i> Generate without character
+            </div>
+        </div>
         
         <!-- Model Selection Bottom Sheet -->
         <div class="gen-bottom-sheet" id="modelSheet">
             <div class="gen-bottom-sheet-handle"></div>
             <div class="gen-bottom-sheet-header">
-                <h3>{{#if translations.generation}}{{translations.generation.selectModel}}{{else}}Select Model{{/if}}</h3>
-                <p>{{#if translations.generation}}{{translations.generation.selectModelDesc}}{{else}}Choose an AI model for generation{{/if}}</p>
+                <h3>Select Model</h3>
+                <p>Choose an AI model for generation</p>
             </div>
-            <div class="gen-bottom-sheet-body">
-                <!-- Models will be rendered here dynamically -->
-            </div>
+            <div class="gen-bottom-sheet-body"></div>
         </div>
         
         <!-- Settings Bottom Sheet -->
         <div class="gen-bottom-sheet" id="settingsSheet">
             <div class="gen-bottom-sheet-handle"></div>
             <div class="gen-bottom-sheet-header">
-                <h3>{{#if translations.generation}}{{translations.generation.settings}}{{else}}Settings{{/if}}</h3>
-                <p>{{#if translations.generation}}{{translations.generation.settingsDesc}}{{else}}Configure generation parameters{{/if}}</p>
+                <h3>Settings</h3>
+                <p>Configure generation parameters</p>
             </div>
-            <div class="gen-bottom-sheet-body">
-                <!-- Settings will be rendered here dynamically -->
-            </div>
+            <div class="gen-bottom-sheet-body"></div>
         </div>
         
         <!-- Full Screen Preview Overlay -->
         <div class="gen-preview-overlay">
             <div class="gen-preview-header">
-                <button class="gen-preview-close" type="button">
-                    <i class="bi bi-x-lg"></i>
-                </button>
+                <button class="gen-preview-close" type="button"><i class="bi bi-x-lg"></i></button>
                 <div></div>
             </div>
-            <div class="gen-preview-content">
-                <!-- Preview media will be inserted here -->
-            </div>
-            <div class="gen-preview-footer">
-                <!-- Footer will be dynamically populated -->
-            </div>
+            <div class="gen-preview-content"></div>
+            <div class="gen-preview-footer"></div>
         </div>
     </div>
     
+    <!-- Modals (Create Character, Create Post, Civitai Search, Plan Upgrade) -->
     <!-- Create Character Modal -->
-    <div class="modal fade" id="createCharacterModal" tabindex="-1" aria-labelledby="createCharacterModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createCharacterModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-content" style="background: var(--studio-surface); border: 1px solid var(--studio-border);">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title text-white" id="createCharacterModalLabel">
-                        <i class="bi bi-person-plus me-2"></i>Create Character
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white"><i class="bi bi-person-plus me-2"></i>Create Character</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="text-center mb-3">
-                        <img id="characterPreviewImage" src="" alt="Character Preview" 
-                             style="max-height: 200px; border-radius: 12px; object-fit: cover;">
+                        <img id="characterPreviewImage" src="" alt="Preview" style="max-height: 180px; border-radius: 12px; object-fit: cover;">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label text-white">Prompt Used</label>
-                        <p id="characterPromptPreview" class="text-muted small" style="max-height: 80px; overflow: auto;"></p>
+                        <label class="form-label text-white small">Prompt Used</label>
+                        <p id="characterPromptPreview" class="text-muted small" style="max-height: 60px; overflow: auto;"></p>
                     </div>
                     <div class="mb-3">
-                        <label for="characterNameInput" class="form-label text-white">Character Name (optional)</label>
-                        <input type="text" class="form-control bg-dark text-white border-secondary" id="characterNameInput" 
-                               placeholder="Leave empty to auto-generate">
+                        <label for="characterNameInput" class="form-label text-white small">Character Name</label>
+                        <input type="text" class="form-control form-control-sm bg-dark text-white border-secondary" id="characterNameInput" placeholder="Leave empty to auto-generate">
                     </div>
                     <div class="mb-3">
-                        <label for="characterPersonalityInput" class="form-label text-white">Personality Description (optional)</label>
-                        <textarea class="form-control bg-dark text-white border-secondary" id="characterPersonalityInput" rows="2"
-                                  placeholder="Describe the character's personality..."></textarea>
+                        <label for="characterPersonalityInput" class="form-label text-white small">Personality</label>
+                        <textarea class="form-control form-control-sm bg-dark text-white border-secondary" id="characterPersonalityInput" rows="2" placeholder="Describe personality..."></textarea>
                     </div>
-                    <div class="mb-3">
-                        <label for="characterLanguageSelect" class="form-label text-white">Language</label>
-                        <select class="form-select bg-dark text-white border-secondary" id="characterLanguageSelect">
-                            <option value="english">English</option>
-                            <option value="japanese">Japanese</option>
-                        </select>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <label for="characterLanguageSelect" class="form-label text-white small">Language</label>
+                            <select class="form-select form-select-sm bg-dark text-white border-secondary" id="characterLanguageSelect">
+                                <option value="english">English</option>
+                                <option value="japanese">Japanese</option>
+                            </select>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-check mt-4">
+                                <input class="form-check-input" type="checkbox" id="characterNsfwCheck">
+                                <label class="form-check-label text-white small" for="characterNsfwCheck">NSFW</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="mb-3" id="characterImageModelSection" style="display: none;">
-                        <label for="characterImageModelSelect" class="form-label text-white">
-                            <i class="bi bi-palette me-1"></i>Text-to-Image Model
-                        </label>
-                        <select class="form-select bg-dark text-white border-secondary" id="characterImageModelSelect">
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                        <small class="form-text text-muted d-block mt-1">
-                            Select a model for generating images in character chat
-                        </small>
+                        <label for="characterImageModelSelect" class="form-label text-white small">Text-to-Image Model</label>
+                        <select class="form-select form-select-sm bg-dark text-white border-secondary" id="characterImageModelSelect"></select>
                     </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="characterNsfwCheck">
-                        <label class="form-check-label text-white" for="characterNsfwCheck">
-                            Mark as NSFW
-                        </label>
-                    </div>
-                    <div class="form-check mb-3">
+                    <div class="form-check">
                         <input class="form-check-input" type="checkbox" id="useImageAsBaseFaceCheck">
-                        <label class="form-check-label text-white" for="useImageAsBaseFaceCheck">
-                            Use this image as base face for generation
-                        </label>
+                        <label class="form-check-label text-white small" for="useImageAsBaseFaceCheck">Use as base face for generation</label>
                     </div>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success" id="confirmCreateCharacterBtn" onclick="genDashboard.confirmCreateCharacter()">
-                        <i class="bi bi-person-plus me-1"></i>Create Character
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-success" id="confirmCreateCharacterBtn" onclick="genDashboard.confirmCreateCharacter()">
+                        <i class="bi bi-person-plus me-1"></i>Create
                     </button>
                 </div>
             </div>
@@ -266,36 +1204,31 @@
     </div>
     
     <!-- Create Post Modal -->
-    <div class="modal fade" id="createPostModal" tabindex="-1" aria-labelledby="createPostModalLabel" aria-hidden="true">
+    <div class="modal fade" id="createPostModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-content" style="background: var(--studio-surface); border: 1px solid var(--studio-border);">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title text-white" id="createPostModalLabel">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Create Draft Post
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white"><i class="bi bi-file-earmark-plus me-2"></i>Save as Draft</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="post-media-preview mb-3 text-center">
-                        <!-- Media will be inserted here -->
-                    </div>
+                    <div class="post-media-preview mb-3 text-center"></div>
                     <div class="mb-3">
-                        <label for="postCaption" class="form-label text-white">Caption</label>
-                        <textarea class="form-control bg-dark text-white border-secondary" id="postCaption" rows="5" 
-                                  placeholder="Enter a caption for your post..."></textarea>
-                        <small class="text-muted">A caption will be auto-generated if left empty</small>
+                        <label for="postCaption" class="form-label text-white small">Caption</label>
+                        <textarea class="form-control form-control-sm bg-dark text-white border-secondary" id="postCaption" rows="4" placeholder="Enter caption..."></textarea>
+                        <small class="text-muted">AI will generate if left empty</small>
                     </div>
                     <div class="row g-2 mb-3">
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <label class="form-label text-white small">Style</label>
                             <select class="form-select form-select-sm bg-dark text-white border-secondary" id="postCaptionStyle">
-                                <option value="engaging" selected>Engaging</option>
+                                <option value="engaging">Engaging</option>
                                 <option value="casual">Casual</option>
                                 <option value="professional">Professional</option>
                                 <option value="funny">Funny</option>
                             </select>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-6">
                             <label class="form-label text-white small">Language</label>
                             <select class="form-select form-select-sm bg-dark text-white border-secondary" id="postCaptionLanguage">
                                 <option value="english">🇬🇧 English</option>
@@ -313,86 +1246,48 @@
                             </select>
                         </div>
                     </div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-info btn-sm" id="generatePostCaptionBtn" onclick="genDashboard.generateDraftCaption()">
-                            <i class="bi bi-magic me-1"></i>Generate Caption with AI
-                        </button>
-                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-info" id="generatePostCaptionBtn" onclick="genDashboard.generateDraftCaption()">
+                        <i class="bi bi-magic me-1"></i>Generate with AI
+                    </button>
                 </div>
                 <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" id="confirmCreatePostBtn" onclick="genDashboard.confirmCreatePost()">
-                        <i class="bi bi-check me-1"></i>Save as Draft
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-sm btn-primary" id="confirmCreatePostBtn" onclick="genDashboard.confirmCreatePost()">
+                        <i class="bi bi-check me-1"></i>Save Draft
                     </button>
                 </div>
             </div>
         </div>
     </div>
     
-    <script>
-        // Reset modal when hidden
-        document.getElementById('createPostModal')?.addEventListener('hidden.bs.modal', function() {
-            document.getElementById('postCaption').value = '';
-            document.getElementById('postCaption').disabled = false;
-            document.getElementById('generatePostCaptionBtn').disabled = false;
-            const btn = document.getElementById('confirmCreatePostBtn');
-            btn.textContent = '';
-            btn.innerHTML = '<i class="bi bi-check me-1"></i>Save as Draft';
-            btn.disabled = false;
-            btn.onclick = () => genDashboard.confirmCreatePost();
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-primary');
-        });
-    </script>
-    
-    <!-- Hidden File Inputs -->
-    <input type="file" id="baseImageInput" accept="image/*" style="display: none;">
-    <input type="file" id="faceImageInput" accept="image/*" style="display: none;">
-    <input type="file" id="targetImageInput" accept="image/*" style="display: none;">
-    <input type="file" id="baseVideoInput" accept="video/*" style="display: none;">
-    
     <!-- Civitai Model Search Modal -->
     <div class="modal fade" id="civitaiSearchModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content" style="background: #1a1a1a; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-content" style="background: var(--studio-surface); border: 1px solid var(--studio-border);">
                 <div class="modal-header border-0">
-                    <h5 class="modal-title text-white">
-                        <i class="bi bi-search me-2"></i>Search Custom Models
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" id="closeImageModelSearchModal" aria-label="Close"></button>
+                    <h5 class="modal-title text-white"><i class="bi bi-search me-2"></i>Search Models</h5>
+                    <button type="button" class="btn-close btn-close-white" id="closeImageModelSearchModal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <div class="input-group">
-                            <input type="text" 
-                                class="form-control bg-dark text-white border-secondary" 
-                                id="civitaiModalSearch" 
-                                placeholder="Search for Stable Diffusion models..."
-                                autocomplete="off">
-                            <button class="btn btn-primary" type="button" id="civitaiModalSearchBtn">
-                                <i class="bi bi-search"></i>
-                            </button>
+                        <div class="input-group input-group-sm">
+                            <input type="text" class="form-control bg-dark text-white border-secondary" id="civitaiModalSearch" placeholder="Search models..." autocomplete="off">
+                            <button class="btn btn-primary" type="button" id="civitaiModalSearchBtn"><i class="bi bi-search"></i></button>
                         </div>
-                        <small class="text-muted">Search for text-to-image models from Civitai</small>
                     </div>
-                    
-                    <!-- Search Results -->
                     <div id="civitaiSearchResults">
                         <div class="text-center text-muted py-4" id="civitaiSearchPlaceholder">
                             <i class="bi bi-box-seam fs-1 d-block mb-2"></i>
-                            <p>Enter a search term to find custom models</p>
+                            <p>Search for custom models</p>
                         </div>
                         <div class="text-center py-4 d-none" id="civitaiSearchLoading">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
-                            </div>
-                            <p class="mt-2 text-muted">Searching for models...</p>
+                            <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                            <p class="mt-2 text-muted small">Searching...</p>
                         </div>
                         <div id="civitaiSearchResultsList"></div>
                         <div class="text-center py-4 d-none" id="civitaiNoResults">
                             <i class="bi bi-emoji-frown fs-1 d-block mb-2 text-muted"></i>
-                            <p class="text-muted">No models found</p>
-                            <small class="text-muted">Try a different search term</small>
+                            <p class="text-muted small">No models found</p>
                         </div>
                     </div>
                 </div>
@@ -401,12 +1296,12 @@
     </div>
     
     <!-- Plan Upgrade Modal -->
-    <div class="modal fade" id="planUpgradeModal" tabindex="-1" aria-labelledby="planUpgradeModalLabel" aria-hidden="true">
+    <div class="modal fade" id="planUpgradeModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable mx-0">
             <div class="modal-content mx-auto">
                 <div class="modal-header">
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    <h5 class="modal-title" id="planUpgradeModalLabel">{{#if translations.plan_page}}{{translations.plan_page.premium}}{{else}}Premium{{/if}}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title">Premium</h5>
                 </div>
                 <div class="modal-body m-0 p-0 position-relative">
                     <div id="plan-container"></div>
@@ -414,20 +1309,43 @@
             </div>
         </div>
     </div>
-
-    <!-- Configuration Script -->
+    
+    <!-- Hidden File Inputs -->
+    <input type="file" id="baseImageInput" accept="image/*" style="display: none;">
+    <input type="file" id="faceImageInput" accept="image/*" style="display: none;">
+    <input type="file" id="targetImageInput" accept="image/*" style="display: none;">
+    <input type="file" id="baseVideoInput" accept="video/*" style="display: none;">
+    
+    <!-- Reset modals script -->
     <script>
-        // Pass server-side configuration to JavaScript
+        document.getElementById('createPostModal')?.addEventListener('hidden.bs.modal', function() {
+            document.getElementById('postCaption').value = '';
+            document.getElementById('postCaption').disabled = false;
+            document.getElementById('generatePostCaptionBtn').disabled = false;
+            const btn = document.getElementById('confirmCreatePostBtn');
+            btn.innerHTML = '<i class="bi bi-check me-1"></i>Save Draft';
+            btn.disabled = false;
+            btn.onclick = () => genDashboard.confirmCreatePost();
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+        });
+    </script>
+    
+    <!-- Configuration -->
+    <script>
         window.GEN_DASHBOARD_CONFIG = {
             userPoints: {{userPoints}},
             imageCostPerUnit: {{imageCostPerUnit}},
             videoCostPerUnit: {{videoCostPerUnit}},
             faceMergeCost: {{faceMergeCost}},
             imageModels: {{{json imageModels}}},
-            videoModels: {{{json videoModels}}}
+            videoModels: {{{json videoModels}}},
+            userCharacters: {{{json userCharacters}}},
+            selectedCharacter: {{{json selectedCharacter}}},
+            selectedCharacterId: {{#if selectedCharacterId}}"{{selectedCharacterId}}"{{else}}null{{/if}},
+            initialMode: '{{initialMode}}'
         };
         
-        // User data for custom model search
         window.user = {{{json user}}};
         window.translations = {{{json translations}}};
     </script>
@@ -437,23 +1355,16 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="/js/civitai-model-search.js"></script>
     <script>
-        // Plan page loader for premium gating
         var _planLoading = false;
         function loadPlanPage() {
-            if (!window.user) {
-                console.log('User is not logged in, cannot load plan page.');
-                return;
-            }
+            if (!window.user) return;
             if (_planLoading) return;
             _planLoading = true;
-
             var planModalEl = document.getElementById('planUpgradeModal');
             if (!planModalEl) { _planLoading = false; return; }
-
             var planModal = new bootstrap.Modal(planModalEl);
-            $('#plan-container').html('<div class="position-absolute d-flex justify-content-center align-items-center" style="inset:0;"><div class="spinner-border" role="status"></div></div>');
+            $('#plan-container').html('<div class="d-flex justify-content-center align-items-center p-5"><div class="spinner-border" role="status"></div></div>');
             planModal.show();
-
             $.ajax({
                 url: '/my-plan',
                 method: 'GET',
@@ -466,17 +1377,66 @@
                     script.onerror = function() { _planLoading = false; };
                     document.body.appendChild(script);
                 },
-                error: function() {
-                    console.error('Failed to load plan page');
-                    _planLoading = false;
-                }
+                error: function() { _planLoading = false; }
             });
         }
     </script>
     <script src="/js/dashboard-generation.js"></script>
-    <style>
-        .site-footer{ display: none !important; }
-    </style>
+    
+    <!-- Character Selector Initialization -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const characterBtn = document.getElementById('characterSelectorBtn');
+        const dropdown = document.getElementById('characterDropdown');
+        const overlay = document.getElementById('studioOverlay');
+        
+        if (characterBtn) {
+            characterBtn.addEventListener('click', function() {
+                dropdown.classList.toggle('visible');
+                overlay.classList.toggle('visible');
+            });
+        }
+        
+        if (overlay) {
+            overlay.addEventListener('click', function() {
+                dropdown.classList.remove('visible');
+                overlay.classList.remove('visible');
+            });
+        }
+        
+        // Aspect ratio buttons
+        document.querySelectorAll('.aspect-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.aspect-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const ratio = this.dataset.ratio;
+                if (window.genDashboard) {
+                    genDashboard.state.tools.aspectRatio = ratio;
+                    genDashboard.updateCost();
+                }
+                const mobileLabel = document.getElementById('mobileAspectLabel');
+                if (mobileLabel) mobileLabel.textContent = ratio;
+            });
+        });
+        
+        // Count buttons
+        document.querySelectorAll('.count-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const count = parseInt(this.dataset.count);
+                if (window.genDashboard) {
+                    genDashboard.state.tools.imageCount = count;
+                    genDashboard.updateCost();
+                }
+                const mobileLabel = document.getElementById('mobileCountLabel');
+                if (mobileLabel) mobileLabel.textContent = count + 'x';
+            });
+        });
+    });
+    </script>
+    
+    <style>.site-footer{ display: none !important; }</style>
     {{> dashboard-footer}}
 </body>
 </html>

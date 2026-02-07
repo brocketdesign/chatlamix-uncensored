@@ -512,7 +512,7 @@ class TemplatesDashboard {
     if (this.variations && this.variations[index]) {
       // Store in sessionStorage and redirect to image dashboard
       sessionStorage.setItem('promptFromTemplates', this.variations[index].mutatedPrompt);
-      window.location.href = '/dashboard/image';
+      window.location.href = '/dashboard/generation?mode=image';
     }
   }
 
@@ -526,7 +526,7 @@ class TemplatesDashboard {
 
     // Store in sessionStorage and redirect
     sessionStorage.setItem('promptFromTemplates', mutatedPrompt);
-    window.location.href = '/dashboard/image';
+    window.location.href = '/dashboard/generation?mode=image';
   }
 
   openMutateModal() {

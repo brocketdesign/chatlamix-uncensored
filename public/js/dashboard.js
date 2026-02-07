@@ -2125,6 +2125,15 @@ window.displaySimilarChats = function (chatData, targetGalleryIdParam) {
                 <i class="bi bi-chat-dots-fill"></i>
                 <span>${window.translations?.startChat || 'Chat'}</span>
               </button>
+              ${isOwner ? `
+              <a href="/dashboard/social/${chatId}" 
+                 class="btn rounded-pill py-2 d-flex align-items-center justify-content-center"
+                 onclick="event.stopPropagation();"
+                 style="background: rgba(139, 92, 246, 0.9); border: none; color: white; font-size: 0.8rem; min-width: 44px;"
+                 title="Social Manager">
+                <i class="bi bi-megaphone-fill"></i>
+              </a>
+              ` : ''}
               <button class="btn rounded-pill py-2 d-flex align-items-center justify-content-center"
                       onclick="event.stopPropagation(); openCharacterIntroModal('${chatId}')"
                       style="background: rgba(255,255,255,0.15); backdrop-filter: blur(4px); border: none; color: white; font-size: 0.8rem; min-width: 44px;">
